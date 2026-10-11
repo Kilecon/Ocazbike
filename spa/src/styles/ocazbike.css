@@ -1,0 +1,65 @@
+.oz-hero-overlay {
+  background: var(--oz-hero-overlay);
+}
+
+.oz-catalog-overlay {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.94) 0%,
+    rgba(255, 255, 255, 0.8) 49%,
+    rgba(255, 255, 255, 0.24) 100%
+  );
+}
+
+html[data-theme="dark"] .oz-catalog-overlay {
+  background: linear-gradient(
+    90deg,
+    rgba(9, 17, 16, 0.88) 0%,
+    rgba(9, 17, 16, 0.74) 45%,
+    rgba(9, 17, 16, 0.4) 100%
+  );
+}
+
+@media (max-width: 767px) {
+  .oz-hero-overlay {
+    background: linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.98) 0%,
+      rgba(255, 255, 255, 0.92) 51%,
+      rgba(255, 255, 255, 0.3) 100%
+    );
+  }
+
+  html[data-theme="dark"] .oz-hero-overlay {
+    background: linear-gradient(
+      0deg,
+      rgba(9, 17, 16, 0.96) 0%,
+      rgba(9, 17, 16, 0.9) 46%,
+      rgba(9, 17, 16, 0.5) 100%
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-app *,
+  .public-app *::before,
+  .public-app *::after {
+    scroll-behavior: auto;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+  }
+}
+
+@media (forced-colors: active) {
+  .public-app :focus-visible {
+    outline: 3px solid Highlight;
+  }
+
+  .public-app [data-slot="button"],
+  .public-app input,
+  .public-app select,
+  .public-app textarea {
+    border: 1px solid ButtonText;
+  }
+}

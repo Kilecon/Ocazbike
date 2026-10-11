@@ -1,0 +1,209 @@
+@import "tailwindcss";
+@source "../";
+@custom-variant dark (
+  &:where(html[data-theme="dark"], html[data-theme="dark"] *)
+);
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 1000;
+  src: url("../../public/assets/fonts/dm-sans-latin-ext-wght-normal.woff2")
+    format("woff2-variations");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 1000;
+  src: url("../../public/assets/fonts/dm-sans-latin-wght-normal.woff2")
+    format("woff2-variations");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url("../../public/assets/fonts/space-grotesk-latin-ext-wght-normal.woff2")
+    format("woff2-variations");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url("../../public/assets/fonts/space-grotesk-latin-wght-normal.woff2")
+    format("woff2-variations");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  --oz-primary: #15803d;
+  --oz-primary-dark: #166534;
+  --oz-foreground: #1f2937;
+  --oz-muted: #4b5563;
+  --oz-soft: #f3f4f6;
+  --oz-border: #d1d5db;
+  --oz-blue: #a8d7e5;
+  --oz-orange: #f59a3b;
+  --oz-mint: #a8e6c9;
+  --oz-focus: #103b27;
+  --oz-primary-hover: #14532d;
+  --oz-destructive: #a63d35;
+  --oz-destructive-hover: #842b26;
+  --oz-destructive-soft: #fff0ee;
+  --oz-outline-hover: #ecfdf3;
+  --oz-control-border: #a9bbb2;
+  --oz-surface: #ffffff;
+  --oz-on-dark: #f4f8f5;
+  --oz-sidebar-text: #e1ebe5;
+  --oz-sidebar-muted: #c1d0c9;
+  --oz-avatar-foreground: #332510;
+  --oz-admin-sidebar: #17352f;
+  --oz-admin-sidebar-hover: #2b5146;
+  --oz-admin-sidebar-line: #49635b;
+  --oz-header-bg: rgba(255, 255, 255, 0.97);
+  --oz-header-border: #e5e7eb;
+  --oz-page-bg: #ffffff;
+  --oz-page-surface: #f6f8f7;
+  --oz-hero-overlay: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.97) 0%,
+    rgba(255, 255, 255, 0.88) 42%,
+    rgba(255, 255, 255, 0.54) 68%,
+    rgba(255, 255, 255, 0.12) 100%
+  );
+  --font-sans: "DM Sans", "Avenir Next", sans-serif;
+  --font-display: "Space Grotesk", "Avenir Next", sans-serif;
+}
+
+html[data-theme="dark"] {
+  --oz-primary: #8ee0b3;
+  --oz-primary-dark: #6ad49d;
+  --oz-foreground: #edf8f4;
+  --oz-muted: #b6c8c0;
+  --oz-soft: #162b29;
+  --oz-border: #2d4d49;
+  --oz-blue: #5b7e8d;
+  --oz-orange: #f0b26d;
+  --oz-mint: #6ec9a0;
+  --oz-focus: #dff9ef;
+  --oz-primary-hover: #a9ecc0;
+  --oz-destructive: #f2a79f;
+  --oz-destructive-hover: #ffc1ba;
+  --oz-destructive-soft: rgba(190, 92, 80, 0.18);
+  --oz-outline-hover: rgba(147, 222, 176, 0.14);
+  --oz-control-border: #3e5c56;
+  --oz-surface: #111d1b;
+  --oz-on-dark: #edf8f4;
+  --oz-sidebar-text: #edf8f4;
+  --oz-sidebar-muted: #afc7c2;
+  --oz-avatar-foreground: #1f1d17;
+  --oz-admin-sidebar: #0d1c1a;
+  --oz-admin-sidebar-hover: #18352f;
+  --oz-admin-sidebar-line: #2b4b46;
+  --oz-header-bg: rgba(10, 18, 17, 0.88);
+  --oz-header-border: rgba(138, 162, 157, 0.18);
+  --oz-page-bg: #0e1716;
+  --oz-page-surface: #101c1a;
+  --oz-panel-soft: #0f1a19;
+  --oz-panel-alt: #162825;
+  --oz-hero-surface: #0d1b1a;
+  --oz-footer-bg: #0a1211;
+  --oz-card-shadow: rgba(0, 0, 0, 0.22);
+  --oz-hero-overlay: linear-gradient(
+    90deg,
+    rgba(9, 17, 16, 0.96) 0%,
+    rgba(9, 17, 16, 0.88) 42%,
+    rgba(9, 17, 16, 0.58) 68%,
+    rgba(9, 17, 16, 0.14) 100%
+  );
+}
+
+@theme {
+  --font-sans: "DM Sans", "Avenir Next", sans-serif;
+  --font-display: "Space Grotesk", "Avenir Next", sans-serif;
+  --color-primary: var(--oz-primary-dark);
+  --color-primary-hover: var(--oz-primary-hover);
+  --color-destructive: var(--oz-destructive);
+  --color-destructive-hover: var(--oz-destructive-hover);
+  --color-focus: var(--oz-focus);
+  --color-outline-hover: var(--oz-outline-hover);
+  --color-foreground: var(--oz-foreground);
+  --color-surface: var(--oz-surface);
+  --color-surface-muted: var(--oz-soft);
+  --color-muted: var(--oz-muted);
+  --color-mint: var(--oz-mint);
+  --color-destructive-soft: var(--oz-destructive-soft);
+  --color-border: var(--oz-border);
+  --color-control-border: var(--oz-control-border);
+}
+
+@layer base {
+  :root {
+    font-family: var(--font-sans);
+    color: var(--oz-foreground);
+    background: var(--oz-surface);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    color-scheme: light;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 88px;
+  }
+
+  html[data-theme="dark"] {
+    color-scheme: dark;
+  }
+
+  body {
+    min-width: 320px;
+    min-height: 100vh;
+    margin: 0;
+    background: var(--oz-page-bg);
+    color: var(--oz-foreground);
+    line-height: 1.55;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  select:focus-visible {
+    outline: 3px solid #e69b36;
+    outline-offset: 4px;
+  }
+
+  ::selection {
+    background: var(--oz-mint);
+    color: var(--oz-foreground);
+  }
+
+  #root {
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  @media (prefers-reduced-motion) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  @media (max-width: 760px) {
+    html {
+      scroll-padding-top: 72px;
+    }
+  }
+}
