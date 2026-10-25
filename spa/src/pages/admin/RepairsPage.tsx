@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
+import { useAdminToast } from "../../components/admin/AdminToast";
 import { StatusBadge } from "../../components/admin/StatusBadge";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
@@ -31,6 +32,7 @@ function today() {
 
 export function RepairsPage() {
   const { t } = useTranslation();
+  const { showToast, showErrorToast } = useAdminToast();
   const [repairs, setRepairs] = useState<RepairDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -48,8 +50,6 @@ export function RepairsPage() {
     unitPrice: "",
     vatRate: "20",
   });
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
   const total = useMemo(() => {
     const amount = Number(form.unitPrice);
     const vat = Number(form.vatRate);
@@ -59,17 +59,14 @@ export function RepairsPage() {
 
   const loadRepairs = useCallback(async () => {
     setLoading(true);
-    setError("");
     try {
       setRepairs(await getActiveRepairs());
     } catch (loadError) {
-      setError(
-        loadError instanceof Error ? loadError.message : t("repairsLoadError"),
-      );
+      showErrorToast(loadError, t("repairsLoadError"));
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [showErrorToast, t]);
 
   useEffect(() => {
     void loadRepairs();
@@ -95,11 +92,7 @@ export function RepairsPage() {
         })
         .catch((searchError: unknown) => {
           if (active) {
-            setError(
-              searchError instanceof Error
-                ? searchError.message
-                : t("repairsLoadError"),
-            );
+            showErrorToast(searchError, t("repairsLoadError"));
           }
         });
     }, 250);
@@ -108,14 +101,12 @@ export function RepairsPage() {
       active = false;
       window.clearTimeout(timer);
     };
-  }, [clientSearch, showForm, t]);
+  }, [clientSearch, showErrorToast, showForm, t]);
 
   const submitRepair = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!selectedClientId || !total) return;
     setSaving(true);
-    setError("");
-    setMessage("");
     try {
       await createRepair({
         clientId: selectedClientId,
@@ -136,12 +127,10 @@ export function RepairsPage() {
         unitPrice: "",
         vatRate: "20",
       });
-      setMessage(t("repairCreated"));
+      showToast("success", t("toastSuccess"), t("repairCreated"));
       await loadRepairs();
     } catch (saveError) {
-      setError(
-        saveError instanceof Error ? saveError.message : t("repairCreateError"),
-      );
+      showErrorToast(saveError, t("repairCreateError"));
     } finally {
       setSaving(false);
     }
@@ -150,10 +139,10 @@ export function RepairsPage() {
   return (
     <AdminLayout>
       <main
-        className="min-h-screen min-w-0 flex-1 p-[clamp(24px,4vw,56px)] max-[720px]:min-h-0 max-[720px]:px-4 max-[720px]:pt-6 max-[720px]:pb-10 [&_*:focus-visible]:outline-[3px] [&_*:focus-visible]:outline-offset-[3px] [&_*:focus-visible]:outline-[var(--oz-focus)]"
+        className="min-h-screen min-w-0 flex-1 p-[clamp(1.5rem,4vw,3.5rem)] max-[45rem]:min-h-0 max-[45rem]:px-4 max-[45rem]:pt-6 max-[45rem]:pb-10 [&_*:focus-visible]:outline-[0.1875rem] [&_*:focus-visible]:outline-offset-[0.1875rem] [&_*:focus-visible]:outline-[var(--oz-focus)]"
         aria-labelledby="repairs-title"
       >
-        <header className="mx-auto mb-6 flex max-w-[1240px] items-start justify-between gap-6 max-[560px]:grid max-[560px]:gap-4 [&_h1]:mt-1 [&_h1]:mb-[6px] [&_h1]:font-[var(--font-display)] [&_h1]:text-2xl [&_h1]:leading-[1.2] [&_h1]:font-bold [&_h1]:text-foreground max-[560px]:[&_h1]:text-[1.6rem] [&_p]:m-0 [&_p]:max-w-[620px] [&_p]:leading-6 [&_p]:text-muted">
+        <header className="mx-auto mb-6 flex max-w-[77.5rem] items-start justify-between gap-6 max-[35rem]:grid max-[35rem]:gap-4 [&_h1]:mt-1 [&_h1]:mb-[0.375rem] [&_h1]:font-[var(--font-display)] [&_h1]:text-2xl [&_h1]:leading-[1.2] [&_h1]:font-bold [&_h1]:text-foreground max-[35rem]:[&_h1]:text-[1.6rem] [&_p]:m-0 [&_p]:max-w-[38.75rem] [&_p]:leading-6 [&_p]:text-muted">
           <div>
             <span className="text-[0.72rem] font-bold text-muted">
               {t("adminRepairs")}
@@ -174,26 +163,9 @@ export function RepairsPage() {
           </Button>
         </header>
 
-        {error && (
-          <p
-            className="mx-auto mb-4 max-w-[1240px] rounded-[5px] border border-destructive bg-surface px-4 py-3 text-destructive"
-            role="alert"
-          >
-            {error}
-          </p>
-        )}
-        {message && (
-          <p
-            className="mx-auto mb-4 max-w-[1240px] rounded-[5px] border border-primary bg-surface px-4 py-3 text-primary"
-            role="status"
-          >
-            {message}
-          </p>
-        )}
-
         {showForm && (
           <form
-            className="mx-auto mb-[18px] grid max-w-[1240px] gap-3.5 rounded-md border border-border bg-surface p-5 max-[560px]:p-[15px] [&>label]:grid [&>label]:gap-1.5 [&>label]:text-sm [&>label]:font-semibold [&>label]:text-foreground [&_select]:min-h-11 [&_select]:rounded-[5px] [&_select]:border [&_select]:border-control-border [&_select]:bg-surface [&_select]:px-[11px] [&_select]:py-[9px] [&_select]:text-foreground"
+            className="mx-auto mb-[1.125rem] grid max-w-[77.5rem] gap-3.5 rounded-md border border-border bg-surface p-5 max-[35rem]:p-[0.9375rem] [&>label]:grid [&>label]:gap-1.5 [&>label]:text-sm [&>label]:font-semibold [&>label]:text-foreground [&_select]:min-h-11 [&_select]:rounded-[0.3125rem] [&_select]:border [&_select]:border-control-border [&_select]:bg-surface [&_select]:px-[0.6875rem] [&_select]:py-[0.5625rem] [&_select]:text-foreground"
             onSubmit={submitRepair}
           >
             <h2 className="m-0 text-[1.05rem] text-foreground">
@@ -218,7 +190,7 @@ export function RepairsPage() {
             </label>
             {clientSearch.trim().length >= 2 && !selectedClientId && (
               <div
-                className="grid max-h-[220px] overflow-auto rounded-[5px] border border-border"
+                className="grid max-h-[13.75rem] overflow-auto rounded-[0.3125rem] border border-border"
                 role="listbox"
                 aria-label={t("clientSearchResults")}
               >
@@ -255,7 +227,7 @@ export function RepairsPage() {
               </p>
             )}
 
-            <div className="grid grid-cols-3 gap-3.5 max-[720px]:grid-cols-2 max-[560px]:grid-cols-1 [&>label]:grid [&>label]:gap-1.5 [&>label]:text-sm [&>label]:font-semibold [&>label]:text-foreground">
+            <div className="grid grid-cols-3 gap-3.5 max-[45rem]:grid-cols-2 max-[35rem]:grid-cols-1 [&>label]:grid [&>label]:gap-1.5 [&>label]:text-sm [&>label]:font-semibold [&>label]:text-foreground">
               <label htmlFor="repair-description">
                 {t("repairDescription")}
                 <Input
@@ -283,7 +255,7 @@ export function RepairsPage() {
               <label htmlFor="repair-status">
                 {t("status")}
                 <select
-                  className="min-h-11 rounded-[5px] border border-control-border bg-surface px-[11px] py-[9px] text-foreground"
+                  className="min-h-11 rounded-[0.3125rem] border border-control-border bg-surface px-[0.6875rem] py-[0.5625rem] text-foreground"
                   id="repair-status"
                   value={form.status}
                   onChange={(event) =>
@@ -334,7 +306,7 @@ export function RepairsPage() {
                 <Input id="repair-total" value={total} readOnly />
               </label>
               <label
-                className="col-span-full max-[560px]:col-auto"
+                className="col-span-full max-[35rem]:col-auto"
                 htmlFor="repair-comment"
               >
                 {t("comment")}
@@ -347,7 +319,7 @@ export function RepairsPage() {
                 />
               </label>
             </div>
-            <div className="mt-1 flex items-center justify-end gap-3 max-[560px]:items-stretch max-[560px]:flex-col [&_[data-slot=button]]:max-[560px]:w-full">
+            <div className="mt-1 flex items-center justify-end gap-3 max-[35rem]:items-stretch max-[35rem]:flex-col [&_[data-slot=button]]:max-[35rem]:w-full">
               <Button type="submit" disabled={saving || !selectedClientId}>
                 {saving ? t("saving") : t("saveRepair")}
               </Button>
@@ -356,10 +328,10 @@ export function RepairsPage() {
         )}
 
         <section
-          className="mx-auto mb-[18px] max-w-[1240px] rounded-md border border-border bg-surface p-5 max-[560px]:p-[15px]"
+          className="mx-auto mb-[1.125rem] max-w-[77.5rem] rounded-md border border-border bg-surface p-5 max-[35rem]:p-[0.9375rem]"
           aria-labelledby="active-repairs-title"
         >
-          <div className="mb-[14px] flex items-center justify-between gap-3">
+          <div className="mb-[0.875rem] flex items-center justify-between gap-3">
             <div>
               <h2
                 className="m-0 text-[1.05rem] text-foreground"
@@ -381,7 +353,7 @@ export function RepairsPage() {
             <p className="text-[0.8rem] text-muted">{t("noActiveRepairs")}</p>
           ) : (
             <div className="w-full overflow-x-auto">
-              <table className="w-full border-collapse text-left [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:px-3 [&_th]:py-[11px] [&_th]:text-[0.72rem] [&_th]:font-bold [&_th]:text-muted [&_td]:min-w-[130px] [&_td]:border-b [&_td]:border-border [&_td]:px-3 [&_td]:py-[13px] [&_td]:align-top [&_td]:text-[0.85rem] [&_td]:text-foreground [&_td:first-child]:min-w-[210px] [&_td:first-child_strong]:block [&_td:first-child_span]:mt-1 [&_td:first-child_span]:block [&_td:first-child_span]:text-[0.76rem] [&_td:first-child_span]:text-muted [&_tbody_tr:last-child_td]:border-b-0 [&_td_strong]:block [&_td_strong]:font-semibold [&_td_span]:mt-1 [&_td_span]:block [&_td_span]:text-[0.76rem] [&_td_span]:text-muted">
+              <table className="w-full border-collapse text-left [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:px-3 [&_th]:py-[0.6875rem] [&_th]:text-[0.72rem] [&_th]:font-bold [&_th]:text-muted [&_td]:min-w-[8.125rem] [&_td]:border-b [&_td]:border-border [&_td]:px-3 [&_td]:py-[0.8125rem] [&_td]:align-top [&_td]:text-[0.85rem] [&_td]:text-foreground [&_td:first-child]:min-w-[13.125rem] [&_td:first-child_strong]:block [&_td:first-child_span]:mt-1 [&_td:first-child_span]:block [&_td:first-child_span]:text-[0.76rem] [&_td:first-child_span]:text-muted [&_tbody_tr:last-child_td]:border-b-0 [&_td_strong]:block [&_td_strong]:font-semibold [&_td_span]:mt-1 [&_td_span]:block [&_td_span]:text-[0.76rem] [&_td_span]:text-muted">
                 <thead>
                   <tr>
                     <th>{t("client")}</th>

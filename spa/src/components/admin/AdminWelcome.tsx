@@ -1,13 +1,13 @@
-import { CalendarClock } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Button } from "../ui/button";
+import { useCurrentUser } from "../../contexts/CurrentUser";
 
 export function AdminWelcome() {
   const { t } = useTranslation();
+  const currentUser = useCurrentUser();
 
   return (
     <section
-      className="mx-auto flex max-w-[1240px] items-center justify-between gap-4 rounded-md border border-border bg-surface p-5 max-[560px]:items-start max-[560px]:flex-col"
+      className="mx-auto max-w-[77.5rem] rounded-md border border-border bg-surface p-5"
       aria-labelledby="admin-welcome-title"
     >
       <div>
@@ -18,18 +18,12 @@ export function AdminWelcome() {
           className="m-0 text-base font-bold text-foreground"
           id="admin-welcome-title"
         >
-          {t("adminTitle")}
+          {t("adminTitle", { name: currentUser?.firstname ?? "" })}
         </h2>
-        <p className="mt-1.5 mb-0 max-w-[540px] text-sm leading-6 text-muted">
+        <p className="mt-1.5 mb-0 max-w-[33.75rem] text-sm leading-6 text-muted">
           {t("adminIntro")}
         </p>
       </div>
-      <Button asChild variant="default">
-        <a href="/admin/schedules">
-          <CalendarClock size={17} aria-hidden="true" />
-          {t("manageHours")}
-        </a>
-      </Button>
     </section>
   );
 }

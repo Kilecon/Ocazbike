@@ -4,7 +4,7 @@ export function AdminHeader() {
   const { t } = useTranslation();
 
   return (
-    <header className="mx-auto mb-6 flex max-w-[1240px] items-center justify-between gap-4">
+    <header className="mx-auto mb-6 flex max-w-[77.5rem] items-center justify-between gap-4">
       <div>
         <span className="text-[0.72rem] font-bold text-muted">
           {t("adminKicker")}
@@ -16,7 +16,7 @@ export function AdminHeader() {
           {t("adminDashboard")}
         </h1>
       </div>
-      <span className="self-start pt-[3px] text-[0.72rem] text-muted">
+      <span className="self-start pt-[0.1875rem] text-[0.72rem] text-muted">
         2026
       </span>
     </header>

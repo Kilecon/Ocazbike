@@ -20,7 +20,7 @@ html[data-theme="dark"] .oz-catalog-overlay {
   );
 }
 
-@media (max-width: 767px) {
+@media (max-width: 47.9375rem) {
   .oz-hero-overlay {
     background: linear-gradient(
       0deg,
@@ -53,13 +53,13 @@ html[data-theme="dark"] .oz-catalog-overlay {
 
 @media (forced-colors: active) {
   .public-app :focus-visible {
-    outline: 3px solid Highlight;
+    outline: 0.1875rem solid Highlight;
   }
 
   .public-app [data-slot="button"],
   .public-app input,
   .public-app select,
   .public-app textarea {
-    border: 1px solid ButtonText;
+    border: 0.0625rem solid ButtonText;
   }
 }

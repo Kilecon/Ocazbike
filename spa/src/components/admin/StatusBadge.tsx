@@ -17,7 +17,7 @@ export function StatusBadge({ status }: { status: string }) {
   const { t } = useTranslation();
   return (
     <Badge
-      className={`whitespace-nowrap px-[9px] ${statusClasses[status] ?? ""}`}
+      className={`whitespace-nowrap px-[0.5625rem] ${statusClasses[status] ?? ""}`}
     >
       {t(`status_${status}`, { defaultValue: status })}
     </Badge>

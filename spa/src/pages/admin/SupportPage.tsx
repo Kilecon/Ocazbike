@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useAdminToast } from "../../components/admin/AdminToast";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -12,28 +13,34 @@ import type {
 
 export function SupportPage() {
   const { t } = useTranslation();
+  const { showToast, showErrorToast } = useAdminToast();
   const [type, setType] = useState<SupportRequestType>("SR");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
   const [created, setCreated] = useState<SupportRequestDTO | null>(null);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSaving(true);
-    setError("");
     setCreated(null);
     try {
-      setCreated(await createSupportRequest({ type, title, description }));
+      const createdRequest = await createSupportRequest({
+        type,
+        title,
+        description,
+      });
+      setCreated(createdRequest);
       setTitle("");
       setDescription("");
+      showToast("success", t("toastSuccess"), t("supportCreated"));
+      if (createdRequest.discordNotification === "sent") {
+        showToast("info", t("toastInfo"), t("supportDiscordSent"));
+      } else {
+        showToast("warning", t("toastWarning"), t("supportDiscordFailed"));
+      }
     } catch (submitError) {
-      setError(
-        submitError instanceof Error
-          ? submitError.message
-          : t("supportCreateError"),
-      );
+      showErrorToast(submitError, t("supportCreateError"));
     } finally {
       setSaving(false);
     }
@@ -42,37 +49,29 @@ export function SupportPage() {
   return (
     <AdminLayout>
       <main
-        className="min-h-screen min-w-0 flex-1 p-[clamp(24px,4vw,56px)] max-[720px]:min-h-0 max-[720px]:px-4 max-[720px]:pt-6 max-[720px]:pb-10 [&_*:focus-visible]:outline-[3px] [&_*:focus-visible]:outline-offset-[3px] [&_*:focus-visible]:outline-[var(--oz-focus)]"
+        className="min-h-screen min-w-0 flex-1 p-[clamp(1.5rem,4vw,3.5rem)] max-[45rem]:min-h-0 max-[45rem]:px-4 max-[45rem]:pt-6 max-[45rem]:pb-10 [&_*:focus-visible]:outline-[0.1875rem] [&_*:focus-visible]:outline-offset-[0.1875rem] [&_*:focus-visible]:outline-[var(--oz-focus)]"
         aria-labelledby="support-title"
       >
-        <header className="mx-auto mb-6 flex max-w-[1240px] items-start justify-between gap-6 max-[560px]:grid max-[560px]:gap-4">
+        <header className="mx-auto mb-6 flex max-w-[77.5rem] items-start justify-between gap-6 max-[35rem]:grid max-[35rem]:gap-4">
           <div>
             <span className="text-[0.72rem] font-bold text-muted">
               {t("adminSupport")}
             </span>
             <h1
-              className="mt-1 mb-0 font-[var(--font-display)] text-2xl leading-[1.2] font-bold text-foreground max-[560px]:text-[1.6rem]"
+              className="mt-1 mb-0 font-[var(--font-display)] text-2xl leading-[1.2] font-bold text-foreground max-[35rem]:text-[1.6rem]"
               id="support-title"
             >
               {t("supportTitle")}
             </h1>
-            <p className="mt-0 max-w-[620px] mb-0 leading-6 text-muted">
+            <p className="mt-0 max-w-[38.75rem] mb-0 leading-6 text-muted">
               {t("supportIntro")}
             </p>
           </div>
         </header>
 
-        {error && (
-          <p
-            className="mx-auto mb-4 max-w-[1240px] rounded-[5px] border border-destructive bg-surface px-4 py-3 text-destructive"
-            role="alert"
-          >
-            {error}
-          </p>
-        )}
         {created && (
           <section
-            className="mx-auto mb-4 max-w-[1240px] rounded-[5px] border border-border bg-surface px-4 py-3"
+            className="mx-auto mb-4 max-w-[77.5rem] rounded-[0.3125rem] border border-border bg-surface px-4 py-3"
             role="status"
           >
             <div className="flex items-center gap-2.5 text-foreground">
@@ -88,20 +87,20 @@ export function SupportPage() {
         )}
 
         <form
-          className="mx-auto mb-[18px] grid max-w-[850px] gap-3.5 rounded-md border border-border bg-surface p-5 [&>label]:grid [&>label]:gap-1.5 [&>label]:text-sm [&>label]:font-semibold [&>label]:text-foreground"
+          className="mx-auto mb-[1.125rem] grid max-w-[53.125rem] gap-3.5 rounded-md border border-border bg-surface p-5 [&>label]:grid [&>label]:gap-1.5 [&>label]:text-sm [&>label]:font-semibold [&>label]:text-foreground"
           onSubmit={submit}
         >
           <h2 className="m-0 text-[1.05rem] text-foreground">
             {t("supportNewRequest")}
           </h2>
-          <fieldset className="grid grid-cols-3 gap-2.5 m-0 p-0 border-0 max-[560px]:grid-cols-1">
+          <fieldset className="grid grid-cols-3 gap-2.5 m-0 p-0 border-0 max-[35rem]:grid-cols-1">
             <legend className="mb-2 text-sm font-semibold text-foreground">
               {t("supportType")}
             </legend>
             {(["SR", "INC", "BUG"] as const).map((requestType) => (
               <label
                 key={requestType}
-                className="flex min-h-[74px] cursor-pointer items-center gap-2.5 rounded-[5px] border border-border bg-surface-muted p-3"
+                className="flex min-h-[4.625rem] cursor-pointer items-center gap-2.5 rounded-[0.3125rem] border border-border bg-surface-muted p-3"
               >
                 <input
                   className="accent-primary"
@@ -132,7 +131,7 @@ export function SupportPage() {
             {t("supportDescription")}
             <textarea
               id="support-description"
-              className="min-h-[150px] w-full resize-y rounded-[5px] border border-control-border bg-surface px-3 py-2.5 text-foreground"
+              className="min-h-[9.375rem] w-full resize-y rounded-[0.3125rem] border border-control-border bg-surface px-3 py-2.5 text-foreground"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               rows={7}
@@ -140,7 +139,7 @@ export function SupportPage() {
               required
             />
           </label>
-          <div className="mt-1 flex items-center justify-end gap-3 max-[560px]:items-stretch max-[560px]:flex-col [&_[data-slot=button]]:max-[560px]:w-full">
+          <div className="mt-1 flex items-center justify-end gap-3 max-[35rem]:items-stretch max-[35rem]:flex-col [&_[data-slot=button]]:max-[35rem]:w-full">
             <Button type="submit" disabled={saving}>
               {saving ? t("saving") : t("supportSubmit")}
             </Button>

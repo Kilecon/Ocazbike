@@ -19,10 +19,11 @@ const badgeVariants = cva(
 
 type BadgeProps = ComponentProps<"span"> & VariantProps<typeof badgeVariants>;
 
-function Badge({ className, variant, ...props }: BadgeProps) {
+function Badge({ className, color, variant, ...props }: BadgeProps) {
   return (
     <span
       data-slot="badge"
+      style={{ color: color }}
       className={cn(badgeVariants({ variant }), className)}
       {...props}
     />

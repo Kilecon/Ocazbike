@@ -162,7 +162,7 @@ html[data-theme="dark"] {
 
   html {
     scroll-behavior: smooth;
-    scroll-padding-top: 88px;
+    scroll-padding-top: 5.5rem;
   }
 
   html[data-theme="dark"] {
@@ -170,7 +170,7 @@ html[data-theme="dark"] {
   }
 
   body {
-    min-width: 320px;
+    min-width: 2rem;
     min-height: 100vh;
     margin: 0;
     background: var(--oz-page-bg);
@@ -181,8 +181,8 @@ html[data-theme="dark"] {
   button:focus-visible,
   a:focus-visible,
   select:focus-visible {
-    outline: 3px solid #e69b36;
-    outline-offset: 4px;
+    outline: 0.1875rem solid #e69b36;
+    outline-offset: 0.25rem;
   }
 
   ::selection {
@@ -201,9 +201,9 @@ html[data-theme="dark"] {
     }
   }
 
-  @media (max-width: 760px) {
+  @media (max-width: 47.5rem) {
     html {
-      scroll-padding-top: 72px;
+      scroll-padding-top: 4.5rem;
     }
   }
 }

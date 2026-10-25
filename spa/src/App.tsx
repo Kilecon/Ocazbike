@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { AdminToastProvider } from "./components/admin/AdminToast";
 import "./styles/ocazbike.css";
 import { PublicLayout } from "./layouts/PublicLayout";
 import { AdminRoute } from "./pages/admin/AdminRoute";
@@ -26,14 +27,20 @@ export function App() {
   const pathname = window.location.pathname.replace(/\/+$/, "") || "/";
 
   if (pathname.startsWith("/admin")) {
-    return <AdminRoute />;
+    return (
+      <AdminToastProvider>
+        <AdminRoute />
+      </AdminToastProvider>
+    );
   }
+  return null;
 
-  return (
-    <PublicLayout>
-      {pathname === "/velo" ? <BikeCatalogPage /> : <OcazbikeHome />}
-    </PublicLayout>
-  );
+  // Public dépriorisé 21/10/2026
+  // return (
+  //   <PublicLayout>
+  //     {pathname === "/velo" ? <BikeCatalogPage /> : <OcazbikeHome />}
+  //   </PublicLayout>
+  // );
 }
 
 export default App;

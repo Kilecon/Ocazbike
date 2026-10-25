@@ -2,6 +2,7 @@ import { Moon, SunMedium } from "lucide-react";
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../components/ui/button";
+import { ApiError } from "../../services/api-client";
 import { login } from "../../services/auth.api";
 import { applyTheme, getPreferredTheme } from "../../theme";
 
@@ -21,13 +22,13 @@ export function LoginPage() {
     setError("");
 
     try {
-      const tokens = await login(email, password);
-      localStorage.setItem("accessToken", tokens.accessToken);
-      localStorage.setItem("refreshToken", tokens.refreshToken);
+      await login(email, password);
       window.location.assign("/admin");
     } catch (loginError) {
       setError(
-        loginError instanceof Error ? loginError.message : t("loginError"),
+        loginError instanceof ApiError && loginError.code === "UNAUTHORIZED"
+          ? t("InvalidCreds")
+          : t("loginError"),
       );
     } finally {
       setSubmitting(false);
@@ -43,13 +44,13 @@ export function LoginPage() {
   return (
     <main className="grid min-h-screen place-items-center bg-surface-muted p-6 dark:bg-[var(--oz-page-bg)]">
       <section
-        className="w-full max-w-[440px] rounded-md border border-border bg-surface p-[clamp(24px,5vw,40px)] [&_*:focus-visible]:outline-[3px] [&_*:focus-visible]:outline-offset-[3px] [&_*:focus-visible]:outline-[var(--oz-focus)]"
+        className="w-full max-w-[27.5rem] rounded-md border border-border bg-surface p-[clamp(1.5rem,5vw,2.5rem)] [&_*:focus-visible]:outline-[0.1875rem] [&_*:focus-visible]:outline-offset-[0.1875rem] [&_*:focus-visible]:outline-[var(--oz-focus)]"
         aria-labelledby="login-title"
       >
         <div className="mb-3 flex items-center justify-between gap-4">
           <div className="flex w-fit items-center gap-2.5 font-[var(--font-display)] text-[1.05rem] font-bold text-foreground no-underline">
-            <span className="grid size-8 shrink-0 place-items-center rounded-[5px] bg-primary text-[0.8rem] text-[var(--oz-on-dark)]">
-              N
+            <span className="grid size-8 shrink-0 place-items-center rounded-[0.3125rem] bg-primary text-[0.8rem] text-[var(--oz-on-dark)]">
+              O
             </span>
             <span>{t("adminBrand")}</span>
           </div>
@@ -81,7 +82,7 @@ export function LoginPage() {
         <p className="m-0 text-muted">{t("loginIntro")}</p>
         <form
           onSubmit={submit}
-          className="mt-6 grid gap-4 [&>label]:grid [&>label]:gap-1.5 [&>label]:text-sm [&>label]:font-semibold [&>label]:text-foreground [&_input]:min-h-11 [&_input]:rounded-[5px] [&_input]:border [&_input]:border-control-border [&_input]:bg-surface [&_input]:px-[11px] [&_input]:py-[9px] [&_input]:text-foreground"
+          className="mt-6 grid gap-4 [&>label]:grid [&>label]:gap-1.5 [&>label]:text-sm [&>label]:font-semibold [&>label]:text-foreground [&_input]:min-h-11 [&_input]:rounded-[0.3125rem] [&_input]:border [&_input]:border-control-border [&_input]:bg-surface [&_input]:px-[0.6875rem] [&_input]:py-[0.5625rem] [&_input]:text-foreground"
         >
           <label>
             {t("email")}

@@ -1,54 +1,39 @@
-export interface SlotDTO {
-  id: number;
-  scheduleId: number;
-  dayOfWeek: number;
-  dayName: string;
-  startTime: string;
-  endTime: string;
-}
-
-export interface ScheduleDTO {
-  id: number;
-  effectiveFrom: string;
-  effectiveTo: string | null;
-  createdAt: string;
-  slots: SlotDTO[];
-}
-
-export interface ClosureDTO {
-  id: number;
-  startDateTime: string;
-  endDateTime: string;
-  reason: string | null;
-  createdAt: string;
-  isExpired: boolean;
-}
-
-export interface OpeningStatusDTO {
-  isOpen: boolean;
-  dateTime: string;
-  reason: "schedule" | "closure" | "no_schedule";
-  nextOpening?: string;
-  nextClosing?: string;
-}
-
 export interface AuthTokens {
   accessToken: string;
-  refreshToken: string;
   expiresIn: number;
-  user: { id: number; email: string; role: "user" | "admin" };
+  user: PublicUser;
 }
 
 export interface PublicUser {
   id: number;
   email: string;
-  role: "user" | "admin";
+  firstname: string;
+  lastname: string;
+  role: "Admin" | "Subadmin";
+  isActive: boolean;
+  mustChangePassword: boolean; // WARN : A voir
 }
 
-export interface ClosuresResponse {
-  closures: ClosureDTO[];
-  total: number;
-  activeCount: number;
+export interface CurrentUser {
+  email: string;
+  firstname: string;
+  lastname: string;
+  role: "Admin" | "Subadmin";
+  mustChangePassword: boolean;
+  lastLoginAtEpochMs: number | null;
+}
+
+export interface ManagedUser {
+  id: number;
+  email: string;
+  firstname: string;
+  lastname: string;
+  role: "Admin" | "Subadmin";
+  isActive: boolean;
+  mustChangePassword: boolean;
+  lastLoginAtEpochMs: number | null;
+  createdAtEpochMs: number;
+  updatedAtEpochMs: number;
 }
 
 export type BillingDocumentStatus =

@@ -7,14 +7,14 @@ export function ActivityPanel() {
   const { t } = useTranslation();
 
   return (
-    <Card asChild className="min-h-[190px]">
+    <Card asChild className="min-h-[11.875rem]">
       <article>
-        <CardHeader className="min-h-[68px] flex-row items-center justify-between px-5 pt-5 pb-3">
+        <CardHeader className="min-h-[4.25rem] flex-row items-center justify-between px-5 pt-5 pb-3">
           <CardTitle>{t("adminActivity")}</CardTitle>
           <Badge variant="secondary">{t("adminLastSevenDays")}</Badge>
         </CardHeader>
         <CardContent
-          className="flex min-h-[100px] items-center gap-3 text-muted"
+          className="flex min-h-[6.25rem] items-center gap-3 text-muted"
           role="status"
         >
           <Activity

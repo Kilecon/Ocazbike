@@ -98,24 +98,24 @@ export function OcazbikeHome() {
   return (
     <>
       <section
-        className="relative flex min-h-[min(780px,calc(100svh-68px))] items-center overflow-hidden bg-[var(--oz-page-surface)] max-[767px]:min-h-[760px] max-[767px]:items-end max-[480px]:min-h-[790px]"
+        className="relative flex min-h-[min(48.75rem,calc(100svh-4.25rem))] items-center overflow-hidden bg-[var(--oz-page-surface)] max-[47.9375rem]:min-h-[47.5rem] max-[47.9375rem]:items-end max-[3rem]:min-h-[49.375rem]"
         id="Presentation"
         aria-labelledby="home-title"
       >
-        <div className="absolute inset-0 [&_img]:absolute [&_img]:inset-0 [&_img]:size-full [&_img]:object-cover [&_img]:[object-position:center_53%] max-[767px]:[&_img]:[object-position:60%_center]">
+        <div className="absolute inset-0 [&_img]:absolute [&_img]:inset-0 [&_img]:size-full [&_img]:object-cover [&_img]:[object-position:center_53%] max-[47.9375rem]:[&_img]:[object-position:60%_center]">
           <img
             src="https://s3.mizury.fr/ocazbike/Ocazbike_devanture.webp"
             alt={t("publicHeroImageAlt")}
           />
           <div className="oz-hero-overlay absolute inset-0" />
         </div>
-        <div className="relative z-[1] mx-auto w-[min(1200px,calc(100%-48px))] py-[76px] pb-12 max-[767px]:w-[min(100%-32px,600px)] max-[767px]:py-0 max-[767px]:pb-8 max-[480px]:w-[min(100%-28px,440px)]">
-          <div className="max-w-[690px]">
-            <p className="mt-0 mb-3.5 text-[13px] font-bold tracking-[0.04em] text-primary uppercase">
+        <div className="relative z-[1] mx-auto w-[min(75rem,calc(100%-3rem))] py-[4.75rem] pb-12 max-[47.9375rem]:w-[min(100%-2rem,37.5rem)] max-[47.9375rem]:py-0 max-[47.9375rem]:pb-8 max-[3rem]:w-[min(100%-1.75rem,27.5rem)]">
+          <div className="max-w-[43.125rem]">
+            <p className="mt-0 mb-3.5 text-[0.8125rem] font-bold tracking-[0.04em] text-primary uppercase">
               {t("publicHeroEyebrow")}
             </p>
             <h1
-              className="m-0 text-[58px] leading-[1.08] font-bold text-foreground max-[767px]:text-[45px] max-[480px]:text-[39px]"
+              className="m-0 text-[3.625rem] leading-[1.08] font-bold text-foreground max-[47.9375rem]:text-[2.8125rem] max-[3rem]:text-[2.4375rem]"
               id="home-title"
             >
               {t("publicHeroTitlePrefix")}
@@ -125,13 +125,13 @@ export function OcazbikeHome() {
                 {t("publicHeroTitleCity")}
               </span>
             </h1>
-            <p className="mt-[22px] max-w-[620px] text-[19px] leading-[1.65] text-muted max-[767px]:text-base">
+            <p className="mt-[1.375rem] max-w-[38.75rem] text-[1.1875rem] leading-[1.65] text-muted max-[47.9375rem]:text-base">
               {t("publicHeroText")}
             </p>
-            <div className="mt-[27px] flex flex-wrap gap-3.5 max-[767px]:mx-auto max-[767px]:max-w-[330px] max-[767px]:flex-col max-[767px]:items-stretch">
+            <div className="mt-[1.6875rem] flex flex-wrap gap-3.5 max-[47.9375rem]:mx-auto max-[47.9375rem]:max-w-[20.625rem] max-[47.9375rem]:flex-col max-[47.9375rem]:items-stretch">
               <Button
                 asChild
-                className="min-h-[50px] gap-[9px] rounded-md border border-primary bg-primary px-[21px] text-[15px] text-[var(--oz-on-dark)] hover:bg-primary-hover hover:text-[var(--oz-on-dark)] dark:text-[#0d1715] max-[480px]:w-full"
+                className="min-h-[3.125rem] gap-[0.5625rem] rounded-md border border-primary bg-primary px-[1.3125rem] text-[0.9375rem] text-[var(--oz-on-dark)] hover:bg-primary-hover hover:text-[var(--oz-on-dark)] dark:text-[#0d1715] max-[3rem]:w-full"
               >
                 <a href="#services">
                   {t("publicServicesCta")}
@@ -140,7 +140,7 @@ export function OcazbikeHome() {
               </Button>
               <Button
                 asChild
-                className="min-h-[50px] gap-[9px] rounded-md border border-primary bg-surface px-[21px] text-[15px] text-primary hover:bg-[var(--oz-outline-hover)] max-[480px]:w-full"
+                className="min-h-[3.125rem] gap-[0.5625rem] rounded-md border border-primary bg-surface px-[1.3125rem] text-[0.9375rem] text-primary hover:bg-[var(--oz-outline-hover)] max-[3rem]:w-full"
                 variant="outline"
               >
                 <a href="/velo">{t("publicBikesCta")}</a>
@@ -148,23 +148,23 @@ export function OcazbikeHome() {
             </div>
           </div>
           <section
-            className="mt-12 grid max-w-[820px] grid-cols-3 gap-3 max-[767px]:mt-[25px] max-[767px]:grid-cols-1 max-[767px]:gap-2"
+            className="mt-12 grid max-w-[51.25rem] grid-cols-3 gap-3 max-[47.9375rem]:mt-[1.5625rem] max-[47.9375rem]:grid-cols-1 max-[47.9375rem]:gap-2"
             aria-labelledby="quick-info-title"
           >
             <h2 className="sr-only" id="quick-info-title">
               {t("publicQuickInfoLabel")}
             </h2>
-            <div className="grid min-h-[91px] grid-cols-[24px_minmax(0,1fr)] content-center gap-x-3 rounded-lg border border-border bg-surface p-[15px] shadow-[0_4px_15px_var(--oz-card-shadow)] max-[767px]:min-h-[67px] max-[767px]:p-[10px_13px] [&_svg]:row-span-2 [&_svg]:mt-0.5 [&_svg]:size-[21px] [&_svg]:text-primary [&_span]:text-sm [&_span]:font-bold [&_small]:text-xs [&_small]:text-muted">
+            <div className="grid min-h-[5.6875rem] grid-cols-[1.5rem_minmax(0,1fr)] content-center gap-x-3 rounded-lg border border-border bg-surface p-[0.9375rem] shadow-[0_0.25rem_0.9375rem_var(--oz-card-shadow)] max-[47.9375rem]:min-h-[4.1875rem] max-[47.9375rem]:p-[0.625rem_0.8125rem] [&_svg]:row-span-2 [&_svg]:mt-0.5 [&_svg]:size-[1.3125rem] [&_svg]:text-primary [&_span]:text-sm [&_span]:font-bold [&_small]:text-xs [&_small]:text-muted">
               <MapPin aria-hidden="true" />
               <span>{t("publicAddressValue")}</span>
               <small>{t("publicAddressPending")}</small>
             </div>
-            <div className="grid min-h-[91px] grid-cols-[24px_minmax(0,1fr)] content-center gap-x-3 rounded-lg border border-border bg-surface p-[15px] shadow-[0_4px_15px_var(--oz-card-shadow)] max-[767px]:min-h-[67px] max-[767px]:p-[10px_13px] [&_svg]:row-span-2 [&_svg]:mt-0.5 [&_svg]:size-[21px] [&_svg]:text-primary [&_span]:text-sm [&_span]:font-bold [&_small]:text-xs [&_small]:text-muted">
+            <div className="grid min-h-[5.6875rem] grid-cols-[1.5rem_minmax(0,1fr)] content-center gap-x-3 rounded-lg border border-border bg-surface p-[0.9375rem] shadow-[0_0.25rem_0.9375rem_var(--oz-card-shadow)] max-[47.9375rem]:min-h-[4.1875rem] max-[47.9375rem]:p-[0.625rem_0.8125rem] [&_svg]:row-span-2 [&_svg]:mt-0.5 [&_svg]:size-[1.3125rem] [&_svg]:text-primary [&_span]:text-sm [&_span]:font-bold [&_small]:text-xs [&_small]:text-muted">
               <Phone aria-hidden="true" />
               <span>{t("publicPhonePending")}</span>
               <small>{t("publicPhoneCaption")}</small>
             </div>
-            <div className="grid min-h-[91px] grid-cols-[24px_minmax(0,1fr)] content-center gap-x-3 rounded-lg border border-border bg-surface p-[15px] shadow-[0_4px_15px_var(--oz-card-shadow)] max-[767px]:min-h-[67px] max-[767px]:p-[10px_13px] [&_svg]:row-span-2 [&_svg]:mt-0.5 [&_svg]:size-[21px] [&_svg]:text-primary [&_span]:text-sm [&_span]:font-bold [&_small]:text-xs [&_small]:text-muted">
+            <div className="grid min-h-[5.6875rem] grid-cols-[1.5rem_minmax(0,1fr)] content-center gap-x-3 rounded-lg border border-border bg-surface p-[0.9375rem] shadow-[0_0.25rem_0.9375rem_var(--oz-card-shadow)] max-[47.9375rem]:min-h-[4.1875rem] max-[47.9375rem]:p-[0.625rem_0.8125rem] [&_svg]:row-span-2 [&_svg]:mt-0.5 [&_svg]:size-[1.3125rem] [&_svg]:text-primary [&_span]:text-sm [&_span]:font-bold [&_small]:text-xs [&_small]:text-muted">
               <Clock3 aria-hidden="true" />
               <span>{t("publicHoursPending")}</span>
               <small>{t("publicHoursCaption")}</small>
@@ -174,44 +174,44 @@ export function OcazbikeHome() {
       </section>
 
       <section
-        className="bg-[linear-gradient(180deg,var(--oz-page-bg)_0%,var(--oz-soft)_100%)] px-0 py-[82px] max-[767px]:py-16"
+        className="bg-[linear-gradient(180deg,var(--oz-page-bg)_0%,var(--oz-soft)_100%)] px-0 py-[5.125rem] max-[47.9375rem]:py-16"
         id="services"
         aria-labelledby="services-title"
       >
-        <div className="mx-auto w-[min(1200px,calc(100%-48px))] max-[767px]:w-[min(100%-32px,600px)] max-[480px]:w-[min(100%-28px,440px)]">
-          <header className="mx-auto mb-[43px] max-w-[790px] text-center max-[767px]:mb-[31px] [&>h2]:m-0 [&>h2]:text-[38px] [&>h2]:leading-[1.2] [&>h2]:font-bold [&>h2]:text-foreground max-[767px]:[&>h2]:text-[31px] [&>p]:mt-[14px] [&>p]:mb-0 [&>p]:text-base [&>p]:leading-[1.65] [&>p]:text-muted max-[767px]:[&>p]:text-[15px]">
+        <div className="mx-auto w-[min(75rem,calc(100%-3rem))] max-[47.9375rem]:w-[min(100%-2rem,37.5rem)] max-[3rem]:w-[min(100%-1.75rem,27.5rem)]">
+          <header className="mx-auto mb-[2.6875rem] max-w-[49.375rem] text-center max-[47.9375rem]:mb-[1.9375rem] [&>h2]:m-0 [&>h2]:text-[2.375rem] [&>h2]:leading-[1.2] [&>h2]:font-bold [&>h2]:text-foreground max-[47.9375rem]:[&>h2]:text-[1.9375rem] [&>p]:mt-[0.875rem] [&>p]:mb-0 [&>p]:text-base [&>p]:leading-[1.65] [&>p]:text-muted max-[47.9375rem]:[&>p]:text-[0.9375rem]">
             <h2 id="services-title">{t("publicServicesTitle")}</h2>
             <p>{t("publicServicesIntro")}</p>
           </header>
-          <div className="grid grid-cols-3 gap-6 max-[767px]:grid-cols-2 max-[767px]:gap-[15px] max-[480px]:grid-cols-1">
+          <div className="grid grid-cols-3 gap-6 max-[47.9375rem]:grid-cols-2 max-[47.9375rem]:gap-[0.9375rem] max-[3rem]:grid-cols-1">
             {services.map((service) => {
               const Icon = service.icon;
               return (
                 <article
-                  className="flex min-w-0 flex-col rounded-lg border border-border bg-surface p-[25px] shadow-[0_4px_18px_var(--oz-card-shadow)] transition duration-200 hover:-translate-y-0.5 hover:border-[rgba(21,128,61,0.45)] hover:shadow-[0_9px_25px_rgba(31,41,55,0.11)] max-[767px]:p-[18px] forced-colors:border-[CanvasText]"
+                  className="flex min-w-0 flex-col rounded-lg border border-border bg-surface p-[1.5625rem] shadow-[0_0.25rem_1.125rem_var(--oz-card-shadow)] transition duration-200 hover:-translate-y-0.5 hover:border-[rgba(21,128,61,0.45)] hover:shadow-[0_0.5625rem_1.5625rem_rgba(31,41,55,0.11)] max-[47.9375rem]:p-[1.125rem] forced-colors:border-[CanvasText]"
                   key={service.title}
                 >
                   <div
-                    className="mx-auto mb-4 grid size-[62px] place-items-center rounded-full bg-surface-muted text-primary [&_svg]:size-[29px]"
+                    className="mx-auto mb-4 grid size-[3.875rem] place-items-center rounded-full bg-surface-muted text-primary [&_svg]:size-[1.8125rem]"
                     aria-hidden="true"
                   >
                     <Icon />
                   </div>
-                  <h3 className="m-0 text-center text-[21px] font-bold text-foreground max-[767px]:text-lg">
+                  <h3 className="m-0 text-center text-[1.3125rem] font-bold text-foreground max-[47.9375rem]:text-lg">
                     {t(service.title)}
                   </h3>
-                  <p className="mt-2 mb-4 min-h-12 text-center text-sm text-muted max-[767px]:min-h-16 max-[767px]:text-[13px] max-[480px]:min-h-0">
+                  <p className="mt-2 mb-4 min-h-12 text-center text-sm text-muted max-[47.9375rem]:min-h-16 max-[47.9375rem]:text-[0.8125rem] max-[3rem]:min-h-0">
                     {t(service.description)}
                   </p>
                   {"image" in service && (
                     <img
-                      className="mb-[17px] h-[148px] w-full rounded-md bg-surface-muted object-cover"
+                      className="mb-[1.0625rem] h-[9.25rem] w-full rounded-md bg-surface-muted object-cover"
                       src={service.image}
                       alt={t("publicRepairImageAlt")}
                       loading="lazy"
                     />
                   )}
-                  <ul className="mb-[23px] mt-0 grid list-none gap-[9px] p-0 [&>li]:flex [&>li]:items-start [&>li]:gap-2.5 [&>li]:text-[13px] [&>li]:leading-[1.45] [&>li]:text-muted max-[767px]:[&>li]:text-xs [&_li>span]:mt-[5px] [&_li>span]:size-2 [&_li>span]:shrink-0 [&_li>span]:rounded-full [&_li>span]:bg-[var(--oz-primary)]">
+                  <ul className="mb-[1.4375rem] mt-0 grid list-none gap-[0.5625rem] p-0 [&>li]:flex [&>li]:items-start [&>li]:gap-2.5 [&>li]:text-[0.8125rem] [&>li]:leading-[1.45] [&>li]:text-muted max-[47.9375rem]:[&>li]:text-xs [&_li>span]:mt-[0.3125rem] [&_li>span]:size-2 [&_li>span]:shrink-0 [&_li>span]:rounded-full [&_li>span]:bg-[var(--oz-primary)]">
                     {service.details.map((detail) => (
                       <li key={detail}>
                         <span aria-hidden="true" />
@@ -242,22 +242,22 @@ export function OcazbikeHome() {
       </section>
 
       <section
-        className="bg-[var(--oz-page-bg)] px-0 py-[82px] max-[767px]:py-16"
+        className="bg-[var(--oz-page-bg)] px-0 py-[5.125rem] max-[47.9375rem]:py-16"
         id="bikes"
         aria-labelledby="bikes-title"
       >
-        <div className="mx-auto w-[min(1200px,calc(100%-48px))] max-[767px]:w-[min(100%-32px,600px)] max-[480px]:w-[min(100%-28px,440px)]">
-          <header className="mx-auto mb-[43px] max-w-[790px] text-center max-[767px]:mb-[31px] [&>h2]:m-0 [&>h2]:text-[38px] [&>h2]:leading-[1.2] [&>h2]:font-bold [&>h2]:text-foreground max-[767px]:[&>h2]:text-[31px] [&>p]:mt-[14px] [&>p]:mb-0 [&>p]:text-base [&>p]:leading-[1.65] [&>p]:text-muted max-[767px]:[&>p]:text-[15px]">
+        <div className="mx-auto w-[min(75rem,calc(100%-3rem))] max-[47.9375rem]:w-[min(100%-2rem,37.5rem)] max-[3rem]:w-[min(100%-1.75rem,27.5rem)]">
+          <header className="mx-auto mb-[2.6875rem] max-w-[49.375rem] text-center max-[47.9375rem]:mb-[1.9375rem] [&>h2]:m-0 [&>h2]:text-[2.375rem] [&>h2]:leading-[1.2] [&>h2]:font-bold [&>h2]:text-foreground max-[47.9375rem]:[&>h2]:text-[1.9375rem] [&>p]:mt-[0.875rem] [&>p]:mb-0 [&>p]:text-base [&>p]:leading-[1.65] [&>p]:text-muted max-[47.9375rem]:[&>p]:text-[0.9375rem]">
             <h2 id="bikes-title">{t("publicBikesTitle")}</h2>
             <p>{t("publicBikesIntro")}</p>
           </header>
           <nav
-            className="mx-auto mb-[29px] flex flex-wrap justify-center gap-[9px]"
+            className="mx-auto mb-[1.8125rem] flex flex-wrap justify-center gap-[0.5625rem]"
             aria-label={t("publicCategoryNavigation")}
           >
             {categories.map((category) => (
               <a
-                className={`inline-flex min-h-10 items-center justify-center rounded-full border px-4 py-2 text-[13px] font-semibold no-underline transition-colors ${category.value === "" ? "border-primary bg-primary text-[var(--oz-on-dark)] dark:text-[#0d1715]" : "border-border bg-surface text-foreground hover:border-primary hover:bg-primary hover:text-[var(--oz-on-dark)] dark:hover:text-[#0d1715]"}`}
+                className={`inline-flex min-h-10 items-center justify-center rounded-full border px-4 py-2 text-[0.8125rem] font-semibold no-underline transition-colors ${category.value === "" ? "border-primary bg-primary text-[var(--oz-on-dark)] dark:text-[#0d1715]" : "border-border bg-surface text-foreground hover:border-primary hover:bg-primary hover:text-[var(--oz-on-dark)] dark:hover:text-[#0d1715]"}`}
                 href={
                   category.value
                     ? `/velo?category=${encodeURIComponent(category.value)}`
@@ -270,22 +270,22 @@ export function OcazbikeHome() {
             ))}
           </nav>
           <div
-            className="flex min-h-[230px] flex-col items-center justify-center rounded-lg border border-border bg-surface-muted p-8 text-center forced-colors:border-[CanvasText]"
+            className="flex min-h-[14.375rem] flex-col items-center justify-center rounded-lg border border-border bg-surface-muted p-8 text-center forced-colors:border-[CanvasText]"
             role="status"
             aria-live="polite"
           >
             <Bike
-              className="mb-[15px] size-[38px] text-primary"
+              className="mb-[0.9375rem] size-[2.375rem] text-primary"
               aria-hidden="true"
             />
-            <h3 className="m-0 text-[19px] font-bold text-foreground">
+            <h3 className="m-0 text-[1.1875rem] font-bold text-foreground">
               {t("publicBikesEmptyTitle")}
             </h3>
-            <p className="mt-[9px] mb-0 max-w-[540px] text-sm text-muted">
+            <p className="mt-[0.5625rem] mb-0 max-w-[33.75rem] text-sm text-muted">
               {t("publicBikesEmptyText")}
             </p>
           </div>
-          <div className="mt-[30px] text-center">
+          <div className="mt-[1.875rem] text-center">
             <Button
               asChild
               className="min-h-11 rounded-md border border-primary bg-surface text-primary hover:bg-[var(--oz-outline-hover)]"
@@ -298,17 +298,17 @@ export function OcazbikeHome() {
       </section>
 
       <section
-        className="bg-[linear-gradient(180deg,var(--oz-panel-soft)_0%,var(--oz-page-bg)_100%)] px-0 py-[82px] max-[767px]:py-16"
+        className="bg-[linear-gradient(180deg,var(--oz-panel-soft)_0%,var(--oz-page-bg)_100%)] px-0 py-[5.125rem] max-[47.9375rem]:py-16"
         id="reviews"
         aria-labelledby="reviews-title"
       >
-        <div className="mx-auto w-[min(1200px,calc(100%-48px))] max-[767px]:w-[min(100%-32px,600px)] max-[480px]:w-[min(100%-28px,440px)]">
-          <header className="mx-auto mb-[43px] max-w-[790px] text-center max-[767px]:mb-[31px] [&>h2]:m-0 [&>h2]:text-[38px] [&>h2]:leading-[1.2] [&>h2]:font-bold [&>h2]:text-foreground max-[767px]:[&>h2]:text-[31px] [&>p]:mt-[14px] [&>p]:mb-0 [&>p]:text-base [&>p]:leading-[1.65] [&>p]:text-muted max-[767px]:[&>p]:text-[15px]">
+        <div className="mx-auto w-[min(75rem,calc(100%-3rem))] max-[47.9375rem]:w-[min(100%-2rem,37.5rem)] max-[3rem]:w-[min(100%-1.75rem,27.5rem)]">
+          <header className="mx-auto mb-[2.6875rem] max-w-[49.375rem] text-center max-[47.9375rem]:mb-[1.9375rem] [&>h2]:m-0 [&>h2]:text-[2.375rem] [&>h2]:leading-[1.2] [&>h2]:font-bold [&>h2]:text-foreground max-[47.9375rem]:[&>h2]:text-[1.9375rem] [&>p]:mt-[0.875rem] [&>p]:mb-0 [&>p]:text-base [&>p]:leading-[1.65] [&>p]:text-muted max-[47.9375rem]:[&>p]:text-[0.9375rem]">
             <h2 id="reviews-title">{t("publicReviewsTitle")}</h2>
             <p>{t("publicReviewsIntro")}</p>
           </header>
           <div
-            className="mx-auto max-w-[800px] rounded-lg border border-border bg-surface px-8 py-[27px] text-center text-muted shadow-[0_4px_18px_var(--oz-card-shadow)] forced-colors:border-[CanvasText]"
+            className="mx-auto max-w-[5rem] rounded-lg border border-border bg-surface px-8 py-[1.6875rem] text-center text-muted shadow-[0_0.25rem_1.125rem_var(--oz-card-shadow)] forced-colors:border-[CanvasText]"
             role="status"
             aria-live="polite"
           >
@@ -318,22 +318,22 @@ export function OcazbikeHome() {
       </section>
 
       <section
-        className="bg-[var(--oz-soft)] px-0 py-[82px] max-[767px]:py-16"
+        className="bg-[var(--oz-soft)] px-0 py-[5.125rem] max-[47.9375rem]:py-16"
         id="contact"
         aria-labelledby="contact-title"
       >
-        <div className="mx-auto w-[min(1200px,calc(100%-48px))] max-[767px]:w-[min(100%-32px,600px)] max-[480px]:w-[min(100%-28px,440px)]">
-          <header className="mx-auto mb-[43px] max-w-[790px] text-center max-[767px]:mb-[31px] [&>h2]:m-0 [&>h2]:text-[38px] [&>h2]:leading-[1.2] [&>h2]:font-bold [&>h2]:text-foreground max-[767px]:[&>h2]:text-[31px] [&>p]:mt-[14px] [&>p]:mb-0 [&>p]:text-base [&>p]:leading-[1.65] [&>p]:text-muted max-[767px]:[&>p]:text-[15px]">
+        <div className="mx-auto w-[min(75rem,calc(100%-3rem))] max-[47.9375rem]:w-[min(100%-2rem,37.5rem)] max-[3rem]:w-[min(100%-1.75rem,27.5rem)]">
+          <header className="mx-auto mb-[2.6875rem] max-w-[49.375rem] text-center max-[47.9375rem]:mb-[1.9375rem] [&>h2]:m-0 [&>h2]:text-[2.375rem] [&>h2]:leading-[1.2] [&>h2]:font-bold [&>h2]:text-foreground max-[47.9375rem]:[&>h2]:text-[1.9375rem] [&>p]:mt-[0.875rem] [&>p]:mb-0 [&>p]:text-base [&>p]:leading-[1.65] [&>p]:text-muted max-[47.9375rem]:[&>p]:text-[0.9375rem]">
             <h2 id="contact-title">{t("publicContactTitle")}</h2>
             <p>{t("publicContactIntro")}</p>
           </header>
-          <div className="grid grid-cols-2 items-start gap-8 max-[767px]:grid-cols-1 max-[767px]:gap-[26px]">
+          <div className="grid grid-cols-2 items-start gap-8 max-[47.9375rem]:grid-cols-1 max-[47.9375rem]:gap-[1.625rem]">
             <div>
-              <h3 className="mt-0 mb-[19px] text-[23px] font-bold text-foreground">
+              <h3 className="mt-0 mb-[1.1875rem] text-[1.4375rem] font-bold text-foreground">
                 {t("publicContactPanelLabel")}
               </h3>
-              <div className="grid grid-cols-2 gap-[13px] max-[480px]:grid-cols-1">
-                <div className="flex min-h-[105px] items-start gap-3 rounded-lg border border-border bg-surface p-4 forced-colors:border-[CanvasText]">
+              <div className="grid grid-cols-2 gap-[0.8125rem] max-[3rem]:grid-cols-1">
+                <div className="flex min-h-[6.5625rem] items-start gap-3 rounded-lg border border-border bg-surface p-4 forced-colors:border-[CanvasText]">
                   <MapPin
                     className="mt-0.5 size-5 shrink-0 text-primary"
                     aria-hidden="true"
@@ -342,15 +342,15 @@ export function OcazbikeHome() {
                     <h4 className="mt-0 mb-1 text-sm text-foreground">
                       {t("contactAddressLabel")}
                     </h4>
-                    <p className="m-0 text-[13px] text-muted">
+                    <p className="m-0 text-[0.8125rem] text-muted">
                       {t("publicAddressValue")}
                     </p>
-                    <small className="mt-[3px] block text-[11px] text-muted">
+                    <small className="mt-[0.1875rem] block text-[0.6875rem] text-muted">
                       {t("publicAddressPending")}
                     </small>
                   </div>
                 </div>
-                <div className="flex min-h-[105px] items-start gap-3 rounded-lg border border-border bg-surface p-4 forced-colors:border-[CanvasText]">
+                <div className="flex min-h-[6.5625rem] items-start gap-3 rounded-lg border border-border bg-surface p-4 forced-colors:border-[CanvasText]">
                   <Phone
                     className="mt-0.5 size-5 shrink-0 text-primary"
                     aria-hidden="true"
@@ -359,15 +359,15 @@ export function OcazbikeHome() {
                     <h4 className="mt-0 mb-1 text-sm text-foreground">
                       {t("contactPhoneLabel")}
                     </h4>
-                    <p className="m-0 text-[13px] text-muted">
+                    <p className="m-0 text-[0.8125rem] text-muted">
                       {t("publicPhonePending")}
                     </p>
-                    <small className="mt-[3px] block text-[11px] text-muted">
+                    <small className="mt-[0.1875rem] block text-[0.6875rem] text-muted">
                       {t("publicPhoneCaption")}
                     </small>
                   </div>
                 </div>
-                <div className="flex min-h-[105px] items-start gap-3 rounded-lg border border-border bg-surface p-4 forced-colors:border-[CanvasText]">
+                <div className="flex min-h-[6.5625rem] items-start gap-3 rounded-lg border border-border bg-surface p-4 forced-colors:border-[CanvasText]">
                   <Clock3
                     className="mt-0.5 size-5 shrink-0 text-primary"
                     aria-hidden="true"
@@ -376,10 +376,10 @@ export function OcazbikeHome() {
                     <h4 className="mt-0 mb-1 text-sm text-foreground">
                       {t("contactHoursLabel")}
                     </h4>
-                    <p className="m-0 text-[13px] text-muted">
+                    <p className="m-0 text-[0.8125rem] text-muted">
                       {t("publicHoursPending")}
                     </p>
-                    <small className="mt-[3px] block text-[11px] text-muted">
+                    <small className="mt-[0.1875rem] block text-[0.6875rem] text-muted">
                       {t("publicHoursCaption")}
                     </small>
                   </div>
@@ -387,7 +387,7 @@ export function OcazbikeHome() {
               </div>
               <div className="mt-4 grid gap-3">
                 <iframe
-                  className="block min-h-[205px] w-full rounded-lg border border-[#c8d5cd] bg-[#e8f1ed] [aspect-ratio:16/9]"
+                  className="block min-h-[12.8125rem] w-full rounded-lg border border-[#c8d5cd] bg-[#e8f1ed] [aspect-ratio:16/9]"
                   src="https://www.google.com/maps?q=44.8835997,-0.6496945&z=17&output=embed"
                   title={t("publicMapFrameTitle")}
                   loading="lazy"
@@ -413,11 +413,11 @@ export function OcazbikeHome() {
             </div>
 
             <section
-              className="rounded-lg border border-border bg-surface p-[25px] shadow-[0_4px_20px_var(--oz-card-shadow)] forced-colors:border-[CanvasText] max-[480px]:p-[19px]"
+              className="rounded-lg border border-border bg-surface p-[1.5625rem] shadow-[0_0.25rem_1.25rem_var(--oz-card-shadow)] forced-colors:border-[CanvasText] max-[3rem]:p-[1.1875rem]"
               aria-labelledby="contact-form-title"
             >
               <h3
-                className="mt-0 mb-[5px] text-[23px] font-bold text-foreground"
+                className="mt-0 mb-[0.3125rem] text-[1.4375rem] font-bold text-foreground"
                 id="contact-form-title"
               >
                 {t("publicContactFormTitle")}
@@ -426,11 +426,11 @@ export function OcazbikeHome() {
                 {t("publicContactFormIntro")}
               </p>
               <form
-                className="grid gap-[15px]"
+                className="grid gap-[0.9375rem]"
                 onSubmit={(event) => event.preventDefault()}
               >
-                <div className="grid grid-cols-2 gap-[13px] max-[480px]:grid-cols-1">
-                  <div className="grid min-w-0 gap-1.5 [&>label]:text-[13px] [&>label]:font-semibold [&>label]:text-foreground [&_input]:min-h-[43px] [&_input]:w-full [&_input]:rounded-md [&_input]:border [&_input]:border-control-border [&_input]:bg-surface [&_input]:px-[11px] [&_input]:py-[9px] [&_input]:text-sm [&_input]:text-foreground [&_label>span]:text-[#9b1c1c]">
+                <div className="grid grid-cols-2 gap-[0.8125rem] max-[3rem]:grid-cols-1">
+                  <div className="grid min-w-0 gap-1.5 [&>label]:text-[0.8125rem] [&>label]:font-semibold [&>label]:text-foreground [&_input]:min-h-[2.6875rem] [&_input]:w-full [&_input]:rounded-md [&_input]:border [&_input]:border-control-border [&_input]:bg-surface [&_input]:px-[0.6875rem] [&_input]:py-[0.5625rem] [&_input]:text-sm [&_input]:text-foreground [&_label>span]:text-[#9b1c1c]">
                     <label htmlFor="contact-first-name">
                       {t("contactFirstName")} <span aria-hidden="true">*</span>
                     </label>
@@ -441,7 +441,7 @@ export function OcazbikeHome() {
                       required
                     />
                   </div>
-                  <div className="grid min-w-0 gap-1.5 [&>label]:text-[13px] [&>label]:font-semibold [&>label]:text-foreground [&_input]:min-h-[43px] [&_input]:w-full [&_input]:rounded-md [&_input]:border [&_input]:border-control-border [&_input]:bg-surface [&_input]:px-[11px] [&_input]:py-[9px] [&_input]:text-sm [&_input]:text-foreground [&_label>span]:text-[#9b1c1c]">
+                  <div className="grid min-w-0 gap-1.5 [&>label]:text-[0.8125rem] [&>label]:font-semibold [&>label]:text-foreground [&_input]:min-h-[2.6875rem] [&_input]:w-full [&_input]:rounded-md [&_input]:border [&_input]:border-control-border [&_input]:bg-surface [&_input]:px-[0.6875rem] [&_input]:py-[0.5625rem] [&_input]:text-sm [&_input]:text-foreground [&_label>span]:text-[#9b1c1c]">
                     <label htmlFor="contact-last-name">
                       {t("contactLastName")} <span aria-hidden="true">*</span>
                     </label>
@@ -453,7 +453,7 @@ export function OcazbikeHome() {
                     />
                   </div>
                 </div>
-                <div className="grid min-w-0 gap-1.5 [&>label]:text-[13px] [&>label]:font-semibold [&>label]:text-foreground [&_input]:min-h-[43px] [&_input]:w-full [&_input]:rounded-md [&_input]:border [&_input]:border-control-border [&_input]:bg-surface [&_input]:px-[11px] [&_input]:py-[9px] [&_input]:text-sm [&_input]:text-foreground [&_label>span]:text-[#9b1c1c]">
+                <div className="grid min-w-0 gap-1.5 [&>label]:text-[0.8125rem] [&>label]:font-semibold [&>label]:text-foreground [&_input]:min-h-[2.6875rem] [&_input]:w-full [&_input]:rounded-md [&_input]:border [&_input]:border-control-border [&_input]:bg-surface [&_input]:px-[0.6875rem] [&_input]:py-[0.5625rem] [&_input]:text-sm [&_input]:text-foreground [&_label>span]:text-[#9b1c1c]">
                   <label htmlFor="contact-email">
                     {t("contactEmail")} <span aria-hidden="true">*</span>
                   </label>
@@ -465,7 +465,7 @@ export function OcazbikeHome() {
                     required
                   />
                 </div>
-                <div className="grid min-w-0 gap-1.5 [&>label]:text-[13px] [&>label]:font-semibold [&>label]:text-foreground [&_input]:min-h-[43px] [&_input]:w-full [&_input]:rounded-md [&_input]:border [&_input]:border-control-border [&_input]:bg-surface [&_input]:px-[11px] [&_input]:py-[9px] [&_input]:text-sm [&_input]:text-foreground [&_label>span]:text-[#9b1c1c]">
+                <div className="grid min-w-0 gap-1.5 [&>label]:text-[0.8125rem] [&>label]:font-semibold [&>label]:text-foreground [&_input]:min-h-[2.6875rem] [&_input]:w-full [&_input]:rounded-md [&_input]:border [&_input]:border-control-border [&_input]:bg-surface [&_input]:px-[0.6875rem] [&_input]:py-[0.5625rem] [&_input]:text-sm [&_input]:text-foreground [&_label>span]:text-[#9b1c1c]">
                   <label htmlFor="contact-phone">{t("contactPhone")}</label>
                   <input
                     id="contact-phone"
@@ -474,13 +474,13 @@ export function OcazbikeHome() {
                     autoComplete="tel"
                   />
                 </div>
-                <div className="grid min-w-0 gap-1.5 [&>label]:text-[13px] [&>label]:font-semibold [&>label]:text-foreground [&_input]:min-h-[43px] [&_input]:w-full [&_input]:rounded-md [&_input]:border [&_input]:border-control-border [&_input]:bg-surface [&_input]:px-[11px] [&_input]:py-[9px] [&_input]:text-sm [&_input]:text-foreground [&_label>span]:text-[#9b1c1c]">
+                <div className="grid min-w-0 gap-1.5 [&>label]:text-[0.8125rem] [&>label]:font-semibold [&>label]:text-foreground [&_input]:min-h-[2.6875rem] [&_input]:w-full [&_input]:rounded-md [&_input]:border [&_input]:border-control-border [&_input]:bg-surface [&_input]:px-[0.6875rem] [&_input]:py-[0.5625rem] [&_input]:text-sm [&_input]:text-foreground [&_label>span]:text-[#9b1c1c]">
                   <label htmlFor="contact-subject">
                     {t("contactSubject")} <span aria-hidden="true">*</span>
                   </label>
                   <input id="contact-subject" name="subject" required />
                 </div>
-                <div className="grid min-w-0 gap-1.5 [&>label]:text-[13px] [&>label]:font-semibold [&>label]:text-foreground [&_textarea]:min-h-[118px] [&_textarea]:w-full [&_textarea]:resize-y [&_textarea]:rounded-md [&_textarea]:border [&_textarea]:border-control-border [&_textarea]:bg-surface [&_textarea]:px-[11px] [&_textarea]:py-[9px] [&_textarea]:text-sm [&_textarea]:text-foreground [&_label>span]:text-[#9b1c1c]">
+                <div className="grid min-w-0 gap-1.5 [&>label]:text-[0.8125rem] [&>label]:font-semibold [&>label]:text-foreground [&_textarea]:min-h-[7.375rem] [&_textarea]:w-full [&_textarea]:resize-y [&_textarea]:rounded-md [&_textarea]:border [&_textarea]:border-control-border [&_textarea]:bg-surface [&_textarea]:px-[0.6875rem] [&_textarea]:py-[0.5625rem] [&_textarea]:text-sm [&_textarea]:text-foreground [&_label>span]:text-[#9b1c1c]">
                   <label htmlFor="contact-message">
                     {t("contactMessage")} <span aria-hidden="true">*</span>
                   </label>

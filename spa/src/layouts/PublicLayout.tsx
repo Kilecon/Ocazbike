@@ -69,7 +69,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 
   const closeMobileMenu = () => {
     setMenuOpen(false);
-    if (window.matchMedia("(max-width: 767px)").matches) {
+    if (window.matchMedia("(max-width: 47.9375rem)").matches) {
       menuButtonRef.current?.focus();
     }
   };
@@ -81,28 +81,28 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="public-app min-h-screen bg-[var(--oz-page-bg)] text-foreground [&_*]:box-border [&_a]:text-inherit [&_*:focus-visible]:outline-[3px] [&_*:focus-visible]:outline-offset-[3px] [&_*:focus-visible]:outline-[var(--oz-focus)]">
+    <div className="public-app min-h-screen bg-[var(--oz-page-bg)] text-foreground [&_*]:box-border [&_a]:text-inherit [&_*:focus-visible]:outline-[0.1875rem] [&_*:focus-visible]:outline-offset-[0.1875rem] [&_*:focus-visible]:outline-[var(--oz-focus)]">
       <a
         className="fixed top-2 left-2 z-[100] -translate-y-[150%] bg-surface px-4 py-3 font-bold text-foreground focus:translate-y-0"
         href="#main-content"
       >
         {t("publicSkipContent")}
       </a>
-      <header className="sticky top-0 z-50 border-b border-[var(--oz-header-border)] bg-[var(--oz-header-bg)] backdrop-blur-[10px]">
-        <div className="relative mx-auto flex min-h-[68px] w-[min(1280px,calc(100%-48px))] items-center gap-6 max-[1060px]:gap-[15px] max-[767px]:min-h-16 max-[767px]:w-[min(100%-32px,600px)] max-[767px]:gap-[11px] max-[480px]:w-[min(100%-28px,440px)]">
+      <header className="sticky top-0 z-50 border-b border-[var(--oz-header-border)] bg-[var(--oz-header-bg)] backdrop-blur-[0.625rem]">
+        <div className="relative mx-auto flex min-h-[4.25rem] w-[min(8rem,calc(100%-3rem))] items-center gap-6 max-[66.25rem]:gap-[0.9375rem] max-[47.9375rem]:min-h-16 max-[47.9375rem]:w-[min(100%-2rem,37.5rem)] max-[47.9375rem]:gap-[0.6875rem] max-[3rem]:w-[min(100%-1.75rem,27.5rem)]">
           <a
             className="inline-flex shrink-0 items-center no-underline"
             href="/"
             aria-label={t("publicBrandHome")}
           >
             <img
-              className="block h-[50px] w-[138px] object-contain max-[767px]:h-[45px] max-[767px]:w-[116px]"
+              className="block h-[3.125rem] w-[8.625rem] object-contain max-[47.9375rem]:h-[2.8125rem] max-[47.9375rem]:w-[7.25rem]"
               src={logo}
               alt=""
             />
           </a>
           <button
-            className="inline-flex size-10 cursor-pointer items-center justify-center rounded-md border border-border bg-surface text-foreground min-[768px]:hidden max-[767px]:order-2 max-[767px]:ml-auto"
+            className="inline-flex size-10 cursor-pointer items-center justify-center rounded-md border border-border bg-surface text-foreground min-[48rem]:hidden max-[47.9375rem]:order-2 max-[47.9375rem]:ml-auto"
             ref={menuButtonRef}
             type="button"
             aria-expanded={menuOpen}
@@ -117,7 +117,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             )}
           </button>
           <nav
-            className={`ml-auto flex items-center justify-center gap-[clamp(14px,2vw,29px)] [&>a:not([data-slot])]:inline-flex [&>a:not([data-slot])]:min-h-11 [&>a:not([data-slot])]:items-center [&>a:not([data-slot])]:text-sm [&>a:not([data-slot])]:font-semibold [&>a:not([data-slot])]:text-foreground [&>a:not([data-slot])]:no-underline [&>a:not([data-slot])]:underline-offset-[5px] [&>a:not([data-slot])]:hover:text-primary [&>a:not([data-slot])]:hover:underline [&>a:not([data-slot])]:aria-[current=page]:text-primary [&>a:not([data-slot])]:aria-[current=page]:underline max-[1060px]:gap-[15px] max-[1060px]:[&>a:not([data-slot])]:text-xs max-[767px]:absolute max-[767px]:top-full max-[767px]:right-[-16px] max-[767px]:left-[-16px] max-[767px]:hidden max-[767px]:items-stretch max-[767px]:flex-col max-[767px]:gap-0 max-[767px]:border-b max-[767px]:border-border max-[767px]:bg-surface max-[767px]:px-4 max-[767px]:pt-[9px] max-[767px]:pb-[18px] max-[767px]:shadow-[0_12px_16px_rgba(31,41,55,0.1)] max-[767px]:[&>a:not([data-slot])]:min-h-[46px] max-[767px]:[&>a:not([data-slot])]:border-b max-[767px]:[&>a:not([data-slot])]:border-border max-[767px]:[&>a:not([data-slot])]:py-[13px] max-[767px]:[&>a:not([data-slot])]:text-sm ${menuOpen ? "max-[767px]:flex" : ""}`}
+            className={`ml-auto flex items-center justify-center gap-[clamp(0.875rem,2vw,1.8125rem)] [&>a:not([data-slot])]:inline-flex [&>a:not([data-slot])]:min-h-11 [&>a:not([data-slot])]:items-center [&>a:not([data-slot])]:text-sm [&>a:not([data-slot])]:font-semibold [&>a:not([data-slot])]:text-foreground [&>a:not([data-slot])]:no-underline [&>a:not([data-slot])]:underline-offset-[0.3125rem] [&>a:not([data-slot])]:hover:text-primary [&>a:not([data-slot])]:hover:underline [&>a:not([data-slot])]:aria-[current=page]:text-primary [&>a:not([data-slot])]:aria-[current=page]:underline max-[66.25rem]:gap-[0.9375rem] max-[66.25rem]:[&>a:not([data-slot])]:text-xs max-[47.9375rem]:absolute max-[47.9375rem]:top-full max-[47.9375rem]:right-[-1rem] max-[47.9375rem]:left-[-1rem] max-[47.9375rem]:hidden max-[47.9375rem]:items-stretch max-[47.9375rem]:flex-col max-[47.9375rem]:gap-0 max-[47.9375rem]:border-b max-[47.9375rem]:border-border max-[47.9375rem]:bg-surface max-[47.9375rem]:px-4 max-[47.9375rem]:pt-[0.5625rem] max-[47.9375rem]:pb-[1.125rem] max-[47.9375rem]:shadow-[0_0.75rem_1rem_rgba(31,41,55,0.1)] max-[47.9375rem]:[&>a:not([data-slot])]:min-h-[2.875rem] max-[47.9375rem]:[&>a:not([data-slot])]:border-b max-[47.9375rem]:[&>a:not([data-slot])]:border-border max-[47.9375rem]:[&>a:not([data-slot])]:py-[0.8125rem] max-[47.9375rem]:[&>a:not([data-slot])]:text-sm ${menuOpen ? "max-[47.9375rem]:flex" : ""}`}
             id="public-navigation"
             aria-label={t("publicMainNavigation")}
           >
@@ -135,13 +135,13 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             ))}
             <Button
               asChild
-              className="min-h-11 rounded-md border border-primary bg-primary text-[var(--oz-on-dark)] hover:bg-primary-hover hover:text-[var(--oz-on-dark)] dark:text-[#0d1715] max-[767px]:mt-3"
+              className="min-h-11 rounded-md border border-primary bg-primary text-[var(--oz-on-dark)] hover:bg-primary-hover hover:text-[var(--oz-on-dark)] dark:text-[#0d1715] max-[47.9375rem]:mt-3"
               size="sm"
             >
               <a href="/#contact">{t("publicContactCta")}</a>
             </Button>
           </nav>
-          <div className="ml-2 flex items-center gap-2.5 max-[767px]:ml-0">
+          <div className="ml-2 flex items-center gap-2.5 max-[47.9375rem]:ml-0">
             <button
               type="button"
               className="inline-flex size-10 cursor-pointer items-center justify-center rounded-md border border-border bg-surface text-foreground"
@@ -157,10 +157,10 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                 <Moon aria-hidden="true" size={16} />
               )}
             </button>
-            <label className="max-[767px]:order-3">
+            <label className="max-[47.9375rem]:order-3">
               <span className="sr-only">{t("language")}</span>
               <select
-                className="min-h-[42px] min-w-14 rounded-md border border-border bg-surface px-[9px] py-[7px] text-[13px] text-foreground"
+                className="min-h-[2.625rem] min-w-14 rounded-md border border-border bg-surface px-[0.5625rem] py-[0.4375rem] text-[0.8125rem] text-foreground"
                 value={i18n.language.slice(0, 2)}
                 onChange={(event) =>
                   void handleLanguageChange(
@@ -189,8 +189,8 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      <footer className="bg-[#1f2937] text-[#f9fafb] [&_h2]:mt-0.5 [&_h2]:mb-[17px] [&_h2]:text-[17px] [&_h2]:font-bold [&_h2]:text-white [&_ul]:m-0 [&_ul]:grid [&_ul]:list-none [&_ul]:gap-[11px] [&_ul]:p-0 [&_li]:text-[13px] [&_li]:text-[#e5e7eb] [&_a]:text-[#e5e7eb] [&_a]:underline [&_a]:decoration-transparent [&_a]:underline-offset-4 [&_a:hover]:text-white [&_a:hover]:decoration-current [&_p]:text-[#e5e7eb]">
-        <div className="mx-auto grid w-[min(1200px,calc(100%-48px))] grid-cols-[1.45fr_0.8fr_0.9fr_0.9fr] gap-[42px] py-14 pb-11 max-[767px]:w-[min(100%-32px,600px)] max-[767px]:grid-cols-2 max-[767px]:gap-[30px_22px] max-[767px]:py-[42px] max-[767px]:pb-[34px] max-[767px]:[&>section:first-child]:col-span-full max-[480px]:w-[min(100%-28px,440px)] max-[480px]:grid-cols-1 max-[480px]:[&>section:first-child]:col-auto">
+      <footer className="bg-[#1f2937] text-[#f9fafb] [&_h2]:mt-0.5 [&_h2]:mb-[1.0625rem] [&_h2]:text-[1.0625rem] [&_h2]:font-bold [&_h2]:text-white [&_ul]:m-0 [&_ul]:grid [&_ul]:list-none [&_ul]:gap-[0.6875rem] [&_ul]:p-0 [&_li]:text-[0.8125rem] [&_li]:text-[#e5e7eb] [&_a]:text-[#e5e7eb] [&_a]:underline [&_a]:decoration-transparent [&_a]:underline-offset-4 [&_a:hover]:text-white [&_a:hover]:decoration-current [&_p]:text-[#e5e7eb]">
+        <div className="mx-auto grid w-[min(75rem,calc(100%-3rem))] grid-cols-[1.45fr_0.8fr_0.9fr_0.9fr] gap-[2.625rem] py-14 pb-11 max-[47.9375rem]:w-[min(100%-2rem,37.5rem)] max-[47.9375rem]:grid-cols-2 max-[47.9375rem]:gap-[1.875rem_1.375rem] max-[47.9375rem]:py-[2.625rem] max-[47.9375rem]:pb-[2.125rem] max-[47.9375rem]:[&>section:first-child]:col-span-full max-[3rem]:w-[min(100%-1.75rem,27.5rem)] max-[3rem]:grid-cols-1 max-[3rem]:[&>section:first-child]:col-auto">
           <section aria-labelledby="footer-brand-title">
             <a
               className="inline-flex shrink-0 items-center no-underline"
@@ -198,7 +198,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               aria-label={t("publicBrandHome")}
             >
               <img
-                className="block h-[54px] w-[145px] rounded-md bg-white px-[7px] py-1 object-contain"
+                className="block h-[3.375rem] w-[9.0625rem] rounded-md bg-white px-[0.4375rem] py-1 object-contain"
                 src={logo}
                 alt=""
               />
@@ -206,10 +206,10 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             <h2 id="footer-brand-title" className="sr-only">
               Ocazbike
             </h2>
-            <p className="mt-3.5 mb-[19px] max-w-[340px] text-sm leading-[1.65] text-[#e5e7eb]">
+            <p className="mt-3.5 mb-[1.1875rem] max-w-[21.25rem] text-sm leading-[1.65] text-[#e5e7eb]">
               {t("publicFooterIntro")}
             </p>
-            <ul className="gap-2 [&>li]:flex [&>li]:items-start [&>li]:gap-[9px] [&_svg]:mt-0.5 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-[#bfdbca]">
+            <ul className="gap-2 [&>li]:flex [&>li]:items-start [&>li]:gap-[0.5625rem] [&_svg]:mt-0.5 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-[#bfdbca]">
               <li>
                 <MapPin aria-hidden="true" />
                 <span>{t("publicFooterAddress")}</span>
@@ -262,7 +262,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             <p>{t("publicFooterHoursPending")}</p>
           </section>
         </div>
-        <div className="mx-auto flex min-h-16 w-[min(1200px,calc(100%-48px))] items-center justify-between gap-5 border-t border-[#4b5563] max-[767px]:w-[min(100%-32px,600px)] max-[480px]:w-[min(100%-28px,440px)] max-[480px]:flex-col max-[480px]:items-start max-[480px]:justify-center max-[480px]:gap-[5px] max-[480px]:py-[14px] [&>p]:m-0 [&>p]:text-xs [&>p]:text-[#e5e7eb] [&>a]:text-xs">
+        <div className="mx-auto flex min-h-16 w-[min(75rem,calc(100%-3rem))] items-center justify-between gap-5 border-t border-[#4b5563] max-[47.9375rem]:w-[min(100%-2rem,37.5rem)] max-[3rem]:w-[min(100%-1.75rem,27.5rem)] max-[3rem]:flex-col max-[3rem]:items-start max-[3rem]:justify-center max-[3rem]:gap-[0.3125rem] max-[3rem]:py-[0.875rem] [&>p]:m-0 [&>p]:text-xs [&>p]:text-[#e5e7eb] [&>a]:text-xs">
           <p>{t("publicCopyright", { year: new Date().getFullYear() })}</p>
           <a href="#main-content">{t("publicBackToTop")}</a>
         </div>
