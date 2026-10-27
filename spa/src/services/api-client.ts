@@ -27,6 +27,7 @@ export function clearSession() {
 }
 
 let refreshInFlight: Promise<AuthTokens> | null = null;
+const inFlightGetRequests = new Map<string, Promise<unknown>>();
 
 // Concurrent 401s share one refresh call: rotation invalidates the token after first use.
 function refreshSession(): Promise<AuthTokens> {
@@ -45,10 +46,52 @@ function refreshSession(): Promise<AuthTokens> {
   return refreshInFlight;
 }
 
-export async function request<T>(
+export function request<T>(
   path: string,
   options: RequestInit = {},
   canRefresh = true,
+): Promise<T> {
+  const method = (options.method ?? "GET").toUpperCase();
+  if (method !== "GET" || options.signal || options.body) {
+    return performRequest<T>(path, options, canRefresh);
+  }
+
+  const token = localStorage.getItem("accessToken");
+  const headers = [...new Headers(options.headers).entries()].sort(
+    ([left], [right]) => left.localeCompare(right),
+  );
+  // Coalesce identical concurrent GETs without caching settled responses.
+  const key = JSON.stringify([
+    path,
+    token,
+    canRefresh,
+    headers,
+    options.credentials,
+    options.cache,
+    options.mode,
+    options.redirect,
+    options.referrer,
+    options.referrerPolicy,
+    options.integrity,
+    options.keepalive,
+  ]);
+  const existingRequest = inFlightGetRequests.get(key);
+  if (existingRequest) return existingRequest as Promise<T>;
+
+  let sharedRequest: Promise<T>;
+  sharedRequest = performRequest<T>(path, options, canRefresh).finally(() => {
+    if (inFlightGetRequests.get(key) === sharedRequest) {
+      inFlightGetRequests.delete(key);
+    }
+  });
+  inFlightGetRequests.set(key, sharedRequest);
+  return sharedRequest;
+}
+
+async function performRequest<T>(
+  path: string,
+  options: RequestInit,
+  canRefresh: boolean,
 ): Promise<T> {
   const token = localStorage.getItem("accessToken");
   const response = await fetch(`${apiBaseUrl}${path}`, {

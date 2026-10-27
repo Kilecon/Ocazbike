@@ -11,10 +11,16 @@
     />
     <script>
       (() => {
+        const browserLanguage = (navigator.languages.length
+          ? navigator.languages
+          : [navigator.language])
+          .map((language) => language.toLowerCase().split("-")[0])
+          .find((language) => language === "fr" || language === "en") || "en";
         const storedLanguage = localStorage.getItem("language");
-        const language = storedLanguage === "fr" || storedLanguage === "en"
+        const isAdminPage = window.location.pathname.startsWith("/admin");
+        const language = !isAdminPage && (storedLanguage === "fr" || storedLanguage === "en")
           ? storedLanguage
-          : navigator.language.toLowerCase().startsWith("fr") ? "fr" : "en";
+          : browserLanguage;
         document.documentElement.lang = language;
 
         const storedTheme = localStorage.getItem("theme");

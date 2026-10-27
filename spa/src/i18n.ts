@@ -43,13 +43,29 @@ function syncDocumentMetadata(language: SupportedLanguage) {
   description.content = translation[`${page}MetaDescription`];
 }
 
+function getBrowserLanguage(): SupportedLanguage {
+  const preferredLanguages = navigator.languages.length
+    ? navigator.languages
+    : [navigator.language];
+  for (const language of preferredLanguages) {
+    const supportedLanguage = language.toLowerCase().split("-")[0];
+    if (supportedLanguage === "fr" || supportedLanguage === "en") {
+      return supportedLanguage;
+    }
+  }
+  return "en";
+}
+
 function getInitialLanguage(): SupportedLanguage {
+  const isAdminPage = window.location.pathname.startsWith("/admin");
+  if (isAdminPage) return getBrowserLanguage();
+
   const storedLanguage = localStorage.getItem("language");
   if (storedLanguage === "fr" || storedLanguage === "en") {
     return storedLanguage;
   }
 
-  return navigator.language.toLowerCase().startsWith("fr") ? "fr" : "en";
+  return getBrowserLanguage();
 }
 
 const initialLanguage = getInitialLanguage();

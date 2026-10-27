@@ -1,8 +1,8 @@
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useAdminToast } from "../../components/admin/AdminToast";
-import { Button } from "../../components/ui/button";
-import { changeInitialPassword } from "../../services/auth.api";
+import { useAdminToast } from "../../../components/admin/AdminToast";
+import { Button } from "../../../components/ui/button";
+import { changeInitialPassword } from "../../../services/auth.api";
 
 export function InitialPasswordChangePage({
   onComplete,

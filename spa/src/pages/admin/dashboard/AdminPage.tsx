@@ -1,7 +1,7 @@
-import { ActivityPanel } from "../../components/admin/ActivityPanel";
-import { AdminHeader } from "../../components/admin/AdminHeader";
-import { AdminWelcome } from "../../components/admin/AdminWelcome";
-import { AdminLayout } from "../../layouts/AdminLayout";
+import { ActivityPanel } from "../../../components/admin/ActivityPanel";
+import { AdminHeader } from "../../../components/admin/AdminHeader";
+import { AdminWelcome } from "../../../components/admin/AdminWelcome";
+import { AdminLayout } from "../../../layouts/AdminLayout";
 
 export function AdminPage() {
   return (

@@ -1,10 +1,10 @@
 import { Moon, SunMedium } from "lucide-react";
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "../../components/ui/button";
-import { ApiError } from "../../services/api-client";
-import { login } from "../../services/auth.api";
-import { applyTheme, getPreferredTheme } from "../../theme";
+import { Button } from "../../../components/ui/button";
+import { ApiError } from "../../../services/api-client";
+import { login } from "../../../services/auth.api";
+import { applyTheme, getPreferredTheme } from "../../../theme";
 
 export function LoginPage() {
   const { t } = useTranslation();

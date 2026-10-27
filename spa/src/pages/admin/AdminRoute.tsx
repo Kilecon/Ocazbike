@@ -5,13 +5,14 @@ import i18n from "../../i18n";
 import { ApiError } from "../../services/api-client";
 import { clearSession, getCurrentUser } from "../../services/auth.api";
 import type { CurrentUser } from "../../services/types";
-import { AdminPage } from "./AdminPage";
-import { Client360Page } from "./Client360Page";
-import { InitialPasswordChangePage } from "./InitialPasswordChangePage";
-import { LoginPage } from "./LoginPage";
-import { RepairsPage } from "./RepairsPage";
-import { SupportPage } from "./SupportPage";
-import { UsersPage } from "./UsersPage";
+import { Client360Page } from "./clients/Client360Page";
+import { ClientDetailPage } from "./clients/ClientDetailPage";
+import { AdminPage } from "./dashboard/AdminPage";
+import { LoginPage } from "./login/LoginPage";
+import { InitialPasswordChangePage } from "./password-change/InitialPasswordChangePage";
+import { RepairsPage } from "./repairs/RepairsPage";
+import { SupportPage } from "./support/SupportPage";
+import { UsersPage } from "./users/UsersPage";
 
 export function AdminRoute() {
   const { showToast, showErrorToast } = useAdminToast();
@@ -26,8 +27,10 @@ export function AdminRoute() {
       return;
     }
 
+    let active = true;
     void getCurrentUser()
       .then((currentUser) => {
+        if (!active) return;
         if (currentUser.role !== "Admin" && currentUser.role !== "Subadmin") {
           showToast("error", i18n.t("toastError"), i18n.t("FORBIDDEN"));
           clearSession();
@@ -39,6 +42,7 @@ export function AdminRoute() {
         }
       })
       .catch((error: unknown) => {
+        if (!active) return;
         if (
           error instanceof ApiError &&
           error.code === "PASSWORD_CHANGE_REQUIRED"
@@ -50,8 +54,12 @@ export function AdminRoute() {
         clearSession();
       })
       .finally(() => {
-        setSessionChecked(true);
+        if (active) setSessionChecked(true);
       });
+
+    return () => {
+      active = false;
+    };
   }, [showErrorToast, showToast]);
 
   if (!sessionChecked)
@@ -85,11 +93,20 @@ function renderPage(user: CurrentUser) {
       return <RepairsPage />;
     case "/admin/clients":
       return <Client360Page />;
+    case "/admin/clients/new":
+      return <Client360Page openCreate />;
     case "/admin/support":
       return <SupportPage />;
     case "/admin/users":
       return user.role === "Admin" ? <UsersPage /> : <AdminPage />;
-    default:
+    default: {
+      const clientMatch = window.location.pathname
+        .replace(/\/+$/, "")
+        .match(/^\/admin\/clients\/(\d+)$/);
+      if (clientMatch) {
+        return <ClientDetailPage clientId={Number(clientMatch[1])} />;
+      }
       return <AdminPage />;
+    }
   }
 }
