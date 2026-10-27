@@ -35,6 +35,7 @@ import { createRepairRoutes } from "./features/billing/routes/repairs";
 import type { ClientDataProtector } from "./features/clients/crypto/ClientDataProtector";
 import type { IClientRepository } from "./features/clients/IClientRepository";
 import { createClientRoutes } from "./features/clients/routes";
+import { ClientService } from "./features/clients/service";
 import type {
   ISupportRequestRepository,
   SupportNotifier,
@@ -163,7 +164,8 @@ export function createApp(
       if (
         (error instanceof ValidationError || error instanceof ParseError) &&
         (new URL(request.url).pathname.startsWith("/auth/") ||
-          new URL(request.url).pathname.startsWith("/users"))
+          new URL(request.url).pathname.startsWith("/users") ||
+          new URL(request.url).pathname.startsWith("/clients"))
       ) {
         return jsonError(400, "BAD_REQUEST", "Invalid request data");
       }
@@ -202,7 +204,9 @@ export function createApp(
       .use(createRepairRoutes(dependencies.billingDocuments, jwt, users));
   }
   if (dependencies.clients) {
-    app.use(createClientRoutes(dependencies.clients, jwt, users));
+    app.use(
+      createClientRoutes(new ClientService(dependencies.clients), jwt, users),
+    );
   }
   if (dependencies.supportRequests || dependencies.billingDocuments) {
     app.use(

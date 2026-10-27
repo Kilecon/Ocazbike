@@ -4,9 +4,9 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { drizzle } from "drizzle-orm/bun-sqlite";
 import { migrate } from "drizzle-orm/bun-sqlite/migrator";
-import * as authSchema from "../../../../shared/database/schema/auth";
-import * as billingSchema from "../../../../shared/database/schema/billing";
-import * as supportSchema from "../../../../shared/database/schema/support";
+import * as authSchema from "./schema/auth";
+import * as billingSchema from "./schema/billing";
+import * as supportSchema from "./schema/support";
 
 export function createTestDatabase(name: string) {
   const directory = mkdtempSync(join(tmpdir(), `${name}-`));
@@ -21,7 +21,7 @@ export function createTestDatabase(name: string) {
   });
   try {
     migrate(database, {
-      migrationsFolder: resolve(import.meta.dir, "../../../../../drizzle"),
+      migrationsFolder: resolve(import.meta.dir, "../../../drizzle"),
     });
   } catch (error) {
     sqlite.close();

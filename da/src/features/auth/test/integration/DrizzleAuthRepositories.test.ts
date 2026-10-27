@@ -6,8 +6,8 @@ import {
   expect,
   it,
 } from "bun:test";
+import { createTestDatabase } from "../../../../shared/database/testDatabase";
 import { ClientDataProtector } from "../../../clients/crypto/ClientDataProtector";
-import { createTestDatabase } from "./testDatabase";
 import {
   DrizzleRefreshSessionRepository,
   DrizzleUserRepository,

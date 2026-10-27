@@ -3,12 +3,10 @@
 # temporary files
 drizzle/*
 README.md
-src/features/auth/migrate*
 src/shared/documentation/*
-src/features/clients/*
 src/features/support/*
 src/features/billing/*
-
+src/features/clients/changes.md
 docs.old/*
 .env
 # dependencies

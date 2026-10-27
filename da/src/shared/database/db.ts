@@ -1,13 +1,20 @@
 import { Database } from "bun:sqlite";
-import { mkdirSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
 import { drizzle } from "drizzle-orm/bun-sqlite";
 import { migrate } from "drizzle-orm/bun-sqlite/migrator";
 import * as authSchema from "./schema/auth";
 import * as billingSchema from "./schema/billing";
 import * as supportSchema from "./schema/support";
 
-const databasePath = process.env.SQLITE_DB_PATH ?? "./data/elysia.sqlite";
+const testDirectory =
+  process.env.NODE_ENV === "test"
+    ? mkdtempSync(join(tmpdir(), "elysia-test-"))
+    : null;
+const databasePath = testDirectory
+  ? join(testDirectory, "elysia.sqlite")
+  : (process.env.SQLITE_DB_PATH ?? "./data/elysia.sqlite");
 
 if (databasePath !== ":memory:") {
   const absolutePath = resolve(databasePath);
@@ -15,6 +22,12 @@ if (databasePath !== ":memory:") {
 }
 
 export const sqlite = new Database(databasePath);
+if (testDirectory) {
+  process.once("exit", () => {
+    sqlite.close();
+    rmSync(testDirectory, { recursive: true, force: true });
+  });
+}
 sqlite.run("PRAGMA journal_mode = WAL");
 sqlite.run("PRAGMA busy_timeout = 1000");
 sqlite.run("PRAGMA foreign_keys = ON");

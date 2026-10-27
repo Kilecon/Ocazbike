@@ -7,6 +7,7 @@ import {
   text,
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
+import { users } from "./auth";
 
 export const clients = sqliteTable(
   "clients",
@@ -17,11 +18,31 @@ export const clients = sqliteTable(
     email: text("email").notNull(),
     phonenumber: text("phonenumber").notNull(),
     address: text("address"),
+    addressComplement: text("address_complement"),
+    identityCardNumber: text("identity_card_number"),
     privatenote: text("privatenote"),
+    isProfessional: integer("is_professional", { mode: "boolean" })
+      .notNull()
+      .default(false),
+    siret: text("siret"),
+    companyName: text("company_name"),
     encryptionSalt: text("encryption_salt"),
+    modifiedByUserId: integer("modified_by_user_id").references(
+      () => users.id,
+      {
+        onDelete: "set null",
+      },
+    ),
+    lastModificationMs: integer("last_modification_ms")
+      .notNull()
+      .default(sql`(cast((julianday('now') - 2440587.5)*86400000 as integer))`),
+    createdAtMs: integer("created_at_ms")
+      .notNull()
+      .default(sql`(cast((julianday('now') - 2440587.5)*86400000 as integer))`),
   },
   (table) => [
     uniqueIndex("clients_encryption_salt_unique").on(table.encryptionSalt),
+    index("clients_last_modification_ms_idx").on(table.lastModificationMs),
   ],
 );
 
@@ -57,9 +78,7 @@ export const billingDocuments = sqliteTable(
     comment: text("comment"),
     status: text("status").notNull(),
   },
-  (table) => [
-    index("billing_documents_date_ms_idx").on(table.dateMs),
-  ],
+  (table) => [index("billing_documents_date_ms_idx").on(table.dateMs)],
 );
 
 export const billingLines = sqliteTable("billing_lines", {

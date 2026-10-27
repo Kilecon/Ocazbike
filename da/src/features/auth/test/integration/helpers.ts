@@ -1,5 +1,6 @@
 import { expect } from "bun:test";
 import { createApp } from "../../../../appFactory";
+import { createTestDatabase } from "../../../../shared/database/testDatabase";
 import { ClientDataProtector } from "../../../clients/crypto/ClientDataProtector";
 import { loadAuthConfig } from "../../config";
 import {
@@ -7,7 +8,6 @@ import {
   DrizzleUserRepository,
 } from "../../infrastructure/DrizzleAuthRepositories";
 import { BcryptPasswordHasher } from "../../password";
-import { createTestDatabase } from "./testDatabase";
 import type { User } from "../../types";
 
 export const config = loadAuthConfig({

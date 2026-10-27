@@ -1,4 +1,5 @@
 import { expect } from "bun:test";
+import { createTestDatabase } from "../../../../shared/database/testDatabase";
 import { ClientDataProtector } from "../../../clients/crypto/ClientDataProtector";
 import {
   DrizzleRefreshSessionRepository,
@@ -6,7 +7,6 @@ import {
 } from "../../infrastructure/DrizzleAuthRepositories";
 import type { RefreshSession } from "../../repositories";
 import type { User } from "../../types";
-import { createTestDatabase } from "../integration/testDatabase";
 
 export const SAMPLES = 100;
 export const OPERATIONS_PER_SAMPLE = 10;
