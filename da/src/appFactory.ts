@@ -32,7 +32,7 @@ import { AuthService } from "./features/auth/service";
 import type { IBillingDocumentRepository } from "./features/billing/IBillingDocumentRepository";
 import { createBillingDocumentRoutes } from "./features/billing/routes/billingDocuments";
 import { createRepairRoutes } from "./features/billing/routes/repairs";
-import type { ClientDataProtector } from "./features/clients/crypto/ClientDataProtector";
+import { ClientDataProtector } from "./features/clients/crypto/ClientDataProtector";
 import type { IClientRepository } from "./features/clients/IClientRepository";
 import { createClientRoutes } from "./features/clients/routes";
 import { ClientService } from "./features/clients/service";
@@ -43,6 +43,7 @@ import type {
 import { DiscordSupportNotifier } from "./features/support/infrastructure/DiscordSupportNotifier";
 import { DrizzleSupportRequestRepository } from "./features/support/infrastructure/DrizzleSupportRequestRepository";
 import { createSupportRoutes } from "./features/support/routes";
+import { db } from "./shared/database/db";
 import { API_DOCUMENTATION } from "./shared/documentation/api-documentation";
 import { RequestEncodingError } from "./shared/encoding/utf8";
 import { logger } from "./shared/observability/logger";
@@ -208,10 +209,19 @@ export function createApp(
       createClientRoutes(new ClientService(dependencies.clients), jwt, users),
     );
   }
-  if (dependencies.supportRequests || dependencies.billingDocuments) {
+  const supportRequests =
+    dependencies.supportRequests ??
+    (dependencies.billingDocuments
+      ? new DrizzleSupportRequestRepository(
+          db,
+          dependencies.clientDataProtector ??
+            ClientDataProtector.fromEnvironment(),
+        )
+      : undefined);
+  if (supportRequests) {
     app.use(
       createSupportRoutes(
-        dependencies.supportRequests ?? new DrizzleSupportRequestRepository(),
+        supportRequests,
         dependencies.supportNotifier ?? new DiscordSupportNotifier(),
         jwt,
         users,

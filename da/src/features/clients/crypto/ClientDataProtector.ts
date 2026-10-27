@@ -79,7 +79,7 @@ export class ClientDataProtector {
 
   constructor(masterKey: Buffer) {
     if (masterKey.length !== 32) {
-      throw new Error("CLIENT_ENCRYPTION_KEY must be exactly 32 bytes");
+      throw new Error("ENCRYPTION_KEY must be exactly 32 bytes");
     }
 
     this.masterKey = Buffer.from(masterKey);
@@ -104,11 +104,11 @@ export class ClientDataProtector {
   }
 
   static fromEnvironment(
-    value = process.env.CLIENT_ENCRYPTION_KEY,
+    value = process.env.ENCRYPTION_KEY,
   ): ClientDataProtector {
     if (!value || !ENCRYPTION_KEY_PATTERN.test(value)) {
       throw new Error(
-        "CLIENT_ENCRYPTION_KEY must be set to 64 hexadecimal characters (32 random bytes)",
+        "ENCRYPTION_KEY must be set to 64 hexadecimal characters (32 random bytes)",
       );
     }
 

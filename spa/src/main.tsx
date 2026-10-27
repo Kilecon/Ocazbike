@@ -10,9 +10,11 @@ import { createRoot } from "react-dom/client";
 import "./styles/tailwind.generated.css";
 import { App } from "./App";
 import "./i18n";
+import { installNativeFormValidationMessages } from "./lib/nativeFormValidation";
 
 const elem = document.getElementById("root");
 if (!elem) throw new Error("Missing application root element");
+installNativeFormValidationMessages();
 const app = (
   <StrictMode>
     <App />

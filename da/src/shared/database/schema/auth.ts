@@ -45,9 +45,6 @@ export const users = sqliteTable(
   (table) => [
     uniqueIndex("users_encryption_salt_unique").on(table.encryptionSalt),
     uniqueIndex("users_email_lookup_hash_unique").on(table.emailLookupHash),
-    index("users_created_at_ms_idx").on(table.createdAtEpochMs),
-    index("users_updated_at_ms_idx").on(table.updatedAtEpochMs),
-    index("users_last_login_at_ms_idx").on(table.lastLoginAtEpochMs),
   ],
 );
 

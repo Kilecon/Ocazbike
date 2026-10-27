@@ -1,13 +1,13 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # temporary files
-drizzle/*
-README.md
+!/README.md
 src/shared/documentation/*
-src/features/support/*
 src/features/billing/*
 src/features/clients/changes.md
+src/features/support/README.md
 docs.old/*
+drizzle/*
 .env
 # dependencies
 /node_modules

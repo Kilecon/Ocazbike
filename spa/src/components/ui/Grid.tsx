@@ -97,6 +97,7 @@ export interface GridColumn<T> {
   key: string;
   title: ReactNode;
   filter?: ReactNode;
+  width?: string;
   render: (row: T) => ReactNode;
 }
 
@@ -124,6 +125,7 @@ interface GridProps<T> {
   emptyMessage?: string;
   busy?: boolean;
   onRowClick?: (row: T) => void;
+  fixedColumnLayout?: boolean;
 }
 
 export function Grid<T>({
@@ -143,6 +145,7 @@ export function Grid<T>({
   emptyMessage,
   busy = false,
   onRowClick,
+  fixedColumnLayout = false,
 }: GridProps<T>) {
   return (
     <section
@@ -200,7 +203,9 @@ export function Grid<T>({
         </fieldset>
       )}
       <section className="overflow-x-auto" aria-label={title}>
-        <table className="w-full min-w-[58rem] border-collapse text-left text-sm text-foreground [&_td:first-child]:pl-4 [&_td:last-child]:pr-2 [&_th:first-child]:pl-4 [&_th:last-child]:pr-2">
+        <table
+          className={`w-full min-w-[58rem] border-collapse text-left text-sm text-foreground [&_td:first-child]:pl-4 [&_td:last-child]:pr-2 [&_th:first-child]:pl-4 [&_th:last-child]:pr-2 ${fixedColumnLayout ? "table-fixed" : ""}`}
+        >
           <thead>
             <tr className="border-b border-border text-muted">
               {columns.map((column) => (
@@ -208,6 +213,7 @@ export function Grid<T>({
                   className="p-3 last:w-[10rem] last:whitespace-nowrap"
                   key={column.key}
                   scope="col"
+                  style={column.width ? { width: column.width } : undefined}
                 >
                   {column.filter ? (
                     <div className="flex items-center gap-2">
@@ -243,6 +249,9 @@ export function Grid<T>({
                       <td
                         className="p-3 last:w-[10rem] last:whitespace-nowrap"
                         key={column.key}
+                        style={
+                          column.width ? { width: column.width } : undefined
+                        }
                       >
                         {column.render(row)}
                       </td>

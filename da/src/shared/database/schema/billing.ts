@@ -78,18 +78,27 @@ export const billingDocuments = sqliteTable(
     comment: text("comment"),
     status: text("status").notNull(),
   },
-  (table) => [index("billing_documents_date_ms_idx").on(table.dateMs)],
+  (table) => [
+    index("billing_documents_date_ms_idx").on(table.dateMs),
+    index("billing_documents_client_id_idx").on(table.clientId),
+  ],
 );
 
-export const billingLines = sqliteTable("billing_lines", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  billingDocumentId: integer("billing_document_id")
-    .notNull()
-    .references(() => billingDocuments.id, { onDelete: "cascade" }),
-  description: text("description").notNull(),
-  quantity: text("quantity").notNull(),
-  unitPrice: text("unit_price").notNull(),
-  vatRate: text("vat_rate").notNull(),
-  discount: text("discount").notNull().default("0"),
-  total: text("total").notNull(),
-});
+export const billingLines = sqliteTable(
+  "billing_lines",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    billingDocumentId: integer("billing_document_id")
+      .notNull()
+      .references(() => billingDocuments.id, { onDelete: "cascade" }),
+    description: text("description").notNull(),
+    quantity: text("quantity").notNull(),
+    unitPrice: text("unit_price").notNull(),
+    vatRate: text("vat_rate").notNull(),
+    discount: text("discount").notNull().default("0"),
+    total: text("total").notNull(),
+  },
+  (table) => [
+    index("billing_lines_billing_document_id_idx").on(table.billingDocumentId),
+  ],
+);

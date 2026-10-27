@@ -1,44 +1,86 @@
-import { type FormEvent, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAdminToast } from "../../../components/admin/AdminToast";
 import { Badge } from "../../../components/ui/badge";
-import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
-import { createSupportRequest } from "../../../services/support.api";
+import {
+  createSupportRequest,
+  listSupportRequests,
+  resendSupportNotification,
+} from "../../../services/support.api";
 import type {
+  CreatedSupportRequestDTO,
   SupportRequestDTO,
+  SupportRequestStatus,
   SupportRequestType,
 } from "../../../services/types";
 import { AdminPageShell } from "../common/AdminPageShell";
+import {
+  CreateSupportDialog,
+  type SupportRequestForm,
+} from "./CreateSupportDialog";
+import { SupportGrid } from "./SupportGrid";
+
+const DEFAULT_PAGE_SIZE = 10;
 
 export function SupportPage() {
   const { t } = useTranslation();
   const { showToast, showErrorToast } = useAdminToast();
-  const [type, setType] = useState<SupportRequestType>("SR");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [requests, setRequests] = useState<SupportRequestDTO[]>([]);
+  const [created, setCreated] = useState<CreatedSupportRequestDTO | null>(null);
   const [saving, setSaving] = useState(false);
-  const [created, setCreated] = useState<SupportRequestDTO | null>(null);
+  const [resendingRequestId, setResendingRequestId] = useState<number | null>(
+    null,
+  );
+  const [loading, setLoading] = useState(true);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [typeFilter, setTypeFilter] = useState<
+    SupportRequestType | undefined
+  >();
+  const [statusFilter, setStatusFilter] = useState<
+    SupportRequestStatus | undefined
+  >();
 
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSaving(true);
-    setCreated(null);
+  const refresh = useCallback(async () => {
+    setLoading(true);
     try {
-      const createdRequest = await createSupportRequest({
-        type,
-        title,
-        description,
+      const result = await listSupportRequests({
+        page,
+        limit: pageSize,
+        type: typeFilter,
+        status: statusFilter,
       });
+      setRequests(result.requests);
+      setHasNextPage(page * pageSize < result.total);
+    } catch (loadError) {
+      setRequests([]);
+      setHasNextPage(false);
+      showErrorToast(loadError, t("supportLoadError"));
+    } finally {
+      setLoading(false);
+    }
+  }, [page, pageSize, showErrorToast, statusFilter, t, typeFilter]);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  const submit = async (form: SupportRequestForm) => {
+    setSaving(true);
+    try {
+      const createdRequest = await createSupportRequest(form);
       setCreated(createdRequest);
-      setTitle("");
-      setDescription("");
+      setCreateDialogOpen(false);
       showToast("success", t("toastSuccess"), t("supportCreated"));
       if (createdRequest.discordNotification === "sent") {
         showToast("info", t("toastInfo"), t("supportDiscordSent"));
       } else {
         showToast("warning", t("toastWarning"), t("supportDiscordFailed"));
       }
+      setPage(1);
+      if (page === 1) await refresh();
     } catch (submitError) {
       showErrorToast(submitError, t("supportCreateError"));
     } finally {
@@ -46,28 +88,62 @@ export function SupportPage() {
     }
   };
 
+  const resendNotification = async (supportRequest: SupportRequestDTO) => {
+    setResendingRequestId(supportRequest.id);
+    try {
+      const result = await resendSupportNotification(supportRequest.id);
+      setRequests((current) =>
+        current.map((request) => (request.id === result.id ? result : request)),
+      );
+      if (result.discordNotification === "sent") {
+        showToast("success", t("toastSuccess"), t("supportNotificationResent"));
+      } else {
+        showToast("warning", t("toastWarning"), t("supportDiscordFailed"));
+      }
+    } catch (resendError) {
+      showErrorToast(resendError, t("supportNotificationRetryError"));
+      await refresh();
+    } finally {
+      setResendingRequestId(null);
+    }
+  };
+
+  const changeTypeFilter = (type: SupportRequestType | undefined) => {
+    setTypeFilter(type);
+    setPage(1);
+  };
+
+  const changeStatusFilter = (status: SupportRequestStatus | undefined) => {
+    setStatusFilter(status);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setTypeFilter(undefined);
+    setStatusFilter(undefined);
+    setPage(1);
+  };
+
   return (
     <AdminPageShell labelledBy="support-title">
-      <header className="mx-auto mb-6 flex max-w-[77.5rem] items-start justify-between gap-6 max-[35rem]:grid max-[35rem]:gap-4">
-        <div>
-          <span className="text-[0.72rem] font-bold text-muted">
-            {t("adminSupport")}
-          </span>
-          <h1
-            className="mt-1 mb-0 font-[var(--font-display)] text-2xl leading-[1.2] font-bold text-foreground max-[35rem]:text-[1.6rem]"
-            id="support-title"
-          >
-            {t("supportTitle")}
-          </h1>
-          <p className="mt-0 max-w-[38.75rem] mb-0 leading-6 text-muted">
-            {t("supportIntro")}
-          </p>
-        </div>
+      <header className="mx-auto mb-6">
+        <span className="text-[0.72rem] font-bold text-muted">
+          {t("adminSupport")}
+        </span>
+        <h1
+          className="mt-1 mb-0 font-[var(--font-display)] text-2xl leading-[1.2] font-bold text-foreground"
+          id="support-title"
+        >
+          {t("supportTitle")}
+        </h1>
+        <p className="mt-1 mb-0 max-w-[38.75rem] leading-6 text-muted">
+          {t("supportIntro")}
+        </p>
       </header>
 
       {created && (
         <section
-          className="mx-auto mb-4 max-w-[77.5rem] rounded-[0.3125rem] border border-border bg-surface px-4 py-3"
+          className="mx-auto mb-4 rounded-[0.3125rem] border border-border bg-surface px-4 py-3"
           role="status"
         >
           <div className="flex items-center gap-2.5 text-foreground">
@@ -82,65 +158,33 @@ export function SupportPage() {
         </section>
       )}
 
-      <form
-        className="mx-auto mb-[1.125rem] grid max-w-[53.125rem] gap-3.5 rounded-md border border-border bg-surface p-5 [&>label]:grid [&>label]:gap-1.5 [&>label]:text-sm [&>label]:font-semibold [&>label]:text-foreground"
-        onSubmit={submit}
-      >
-        <h2 className="m-0 text-[1.05rem] text-foreground">
-          {t("supportNewRequest")}
-        </h2>
-        <fieldset className="grid grid-cols-3 gap-2.5 m-0 p-0 border-0 max-[35rem]:grid-cols-1">
-          <legend className="mb-2 text-sm font-semibold text-foreground">
-            {t("supportType")}
-          </legend>
-          {(["SR", "INC", "BUG"] as const).map((requestType) => (
-            <label
-              key={requestType}
-              className="flex min-h-[4.625rem] cursor-pointer items-center gap-2.5 rounded-[0.3125rem] border border-border bg-surface-muted p-3"
-            >
-              <input
-                className="accent-primary"
-                type="radio"
-                name="support-type"
-                value={requestType}
-                checked={type === requestType}
-                onChange={() => setType(requestType)}
-              />
-              <span className="grid gap-1 text-foreground">
-                <strong>{t(`supportType_${requestType}`)}</strong>
-                <small className="text-muted">{requestType}</small>
-              </span>
-            </label>
-          ))}
-        </fieldset>
-        <label htmlFor="support-title-input">
-          {t("supportRequestTitle")}
-          <Input
-            id="support-title-input"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            maxLength={200}
-            required
-          />
-        </label>
-        <label htmlFor="support-description">
-          {t("supportDescription")}
-          <textarea
-            id="support-description"
-            className="min-h-[9.375rem] w-full resize-y rounded-[0.3125rem] border border-control-border bg-surface px-3 py-2.5 text-foreground"
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            rows={7}
-            maxLength={5000}
-            required
-          />
-        </label>
-        <div className="mt-1 flex items-center justify-end gap-3 max-[35rem]:items-stretch max-[35rem]:flex-col [&_[data-slot=button]]:max-[35rem]:w-full">
-          <Button type="submit" disabled={saving}>
-            {saving ? t("saving") : t("supportSubmit")}
-          </Button>
-        </div>
-      </form>
+      <SupportGrid
+        requests={requests}
+        loading={loading}
+        typeFilter={typeFilter}
+        statusFilter={statusFilter}
+        onTypeFilterChange={changeTypeFilter}
+        onStatusFilterChange={changeStatusFilter}
+        onCreate={() => setCreateDialogOpen(true)}
+        onResendNotification={(request) => void resendNotification(request)}
+        resendingRequestId={resendingRequestId}
+        page={page}
+        pageSize={pageSize}
+        hasNextPage={hasNextPage}
+        onPageChange={setPage}
+        onPageSizeChange={(nextPageSize) => {
+          setPageSize(nextPageSize);
+          setPage(1);
+        }}
+        onClearFilters={clearFilters}
+      />
+
+      <CreateSupportDialog
+        open={createDialogOpen}
+        saving={saving}
+        onClose={() => setCreateDialogOpen(false)}
+        onSubmit={(form) => void submit(form)}
+      />
     </AdminPageShell>
   );
 }

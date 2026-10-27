@@ -21,14 +21,24 @@ export const supportRequests = sqliteTable(
     type: text("type").notNull(),
     title: text("title").notNull(),
     description: text("description").notNull(),
+    encryptionSalt: text("encryption_salt"),
     status: text("status").notNull().default("created"),
-    createdByLegacy: text("created_by_legacy"),
     createdByUserId: integer("created_by_user_id").references(() => users.id, {
       onDelete: "set null",
     }),
     createdAt: integer("created_at", { mode: "timestamp_ms" })
       .notNull()
       .default(sql`(unixepoch() * 1000)`),
+    discordNotificationStatus: text("discord_notification_status")
+      .notNull()
+      .default("pending"),
+    discordNotifiedAt: integer("discord_notified_at_ms", {
+      mode: "timestamp_ms",
+    }),
+    discordNotificationAttemptAt: integer(
+      "discord_notification_attempt_at_ms",
+      { mode: "timestamp_ms" },
+    ),
   },
   (table) => [
     uniqueIndex("support_requests_reference_idx").on(table.reference),

@@ -19,13 +19,25 @@ export function createTestDatabase(name: string) {
   const database = drizzle(sqlite, {
     schema: { ...authSchema, ...billingSchema, ...supportSchema },
   });
+  const cleanup = () => {
+    try {
+      sqlite.close();
+    } finally {
+      rmSync(directory, {
+        recursive: true,
+        force: true,
+        maxRetries: 5,
+        retryDelay: 100,
+      });
+    }
+  };
+
   try {
     migrate(database, {
       migrationsFolder: resolve(import.meta.dir, "../../../drizzle"),
     });
   } catch (error) {
-    sqlite.close();
-    rmSync(directory, { recursive: true, force: true });
+    cleanup();
     throw error;
   }
 
@@ -33,12 +45,6 @@ export function createTestDatabase(name: string) {
     database,
     sqlite,
     path,
-    cleanup() {
-      try {
-        sqlite.close();
-      } finally {
-        rmSync(directory, { recursive: true, force: true });
-      }
-    },
+    cleanup,
   };
 }

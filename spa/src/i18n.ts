@@ -43,7 +43,7 @@ function syncDocumentMetadata(language: SupportedLanguage) {
   description.content = translation[`${page}MetaDescription`];
 }
 
-function getBrowserLanguage(): SupportedLanguage {
+export function getBrowserLanguage(): SupportedLanguage {
   const preferredLanguages = navigator.languages.length
     ? navigator.languages
     : [navigator.language];

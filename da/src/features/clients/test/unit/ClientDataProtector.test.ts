@@ -32,7 +32,7 @@ describe("ClientDataProtector", () => {
 
   it("validates the required 256-bit hexadecimal environment key", () => {
     expect(() => ClientDataProtector.fromEnvironment("not-a-key")).toThrow(
-      "CLIENT_ENCRYPTION_KEY",
+      "ENCRYPTION_KEY",
     );
     expect(ClientDataProtector.fromEnvironment("ab".repeat(32))).toBeInstanceOf(
       ClientDataProtector,

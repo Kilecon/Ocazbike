@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { createTestDatabase } from "./testDatabase";
 
 describe("test database isolation", () => {
@@ -64,6 +64,9 @@ describe("test database isolation", () => {
       const second = createTestDatabase("database-isolation-second");
       try {
         expect(first.path).not.toBe(second.path);
+        expect(first.sqlite.query("PRAGMA journal_mode").get()).toEqual({
+          journal_mode: "wal",
+        });
         first.sqlite.exec("CREATE TABLE isolation_marker (id INTEGER)");
         expect(
           second.sqlite
@@ -81,9 +84,35 @@ describe("test database isolation", () => {
         second.cleanup();
       }
       expect(existsSync(second.path)).toBe(false);
+      expect(existsSync(dirname(second.path))).toBe(false);
     } finally {
       first.cleanup();
     }
     expect(existsSync(first.path)).toBe(false);
+    expect(existsSync(dirname(first.path))).toBe(false);
+  });
+
+  it("keeps query and foreign-key indexes while omitting unused user date indexes", () => {
+    const database = createTestDatabase("database-indexes");
+    try {
+      const indexNames = (table: string) =>
+        (
+          database.sqlite.query(`PRAGMA index_list('${table}')`).all() as {
+            name: string;
+          }[]
+        ).map(({ name }) => name);
+
+      expect(indexNames("billing_documents")).toContain(
+        "billing_documents_client_id_idx",
+      );
+      expect(indexNames("billing_lines")).toContain(
+        "billing_lines_billing_document_id_idx",
+      );
+      expect(indexNames("users")).not.toContain("users_created_at_ms_idx");
+      expect(indexNames("users")).not.toContain("users_updated_at_ms_idx");
+      expect(indexNames("users")).not.toContain("users_last_login_at_ms_idx");
+    } finally {
+      database.cleanup();
+    }
   });
 });

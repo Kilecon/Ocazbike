@@ -11,6 +11,8 @@ import { DrizzleBillingDocumentRepository } from "./features/billing/infrastruct
 import { ClientDataProtector } from "./features/clients/crypto/ClientDataProtector";
 import { migrateClientData } from "./features/clients/crypto/migrateClientData";
 import { DrizzleClientRepository } from "./features/clients/infrastructure/DrizzleClientRepository";
+import { migrateSupportRequestData } from "./features/support/crypto/migrateSupportRequestData";
+import { DrizzleSupportRequestRepository } from "./features/support/infrastructure/DrizzleSupportRequestRepository";
 import { db, sqlite } from "./shared/database/db";
 import { logger } from "./shared/observability/logger";
 
@@ -18,6 +20,7 @@ const config = loadAuthConfig();
 const clientDataProtector = ClientDataProtector.fromEnvironment();
 migrateClientData(sqlite, clientDataProtector);
 migrateUserData(sqlite, clientDataProtector);
+migrateSupportRequestData(sqlite, clientDataProtector);
 const users = new DrizzleUserRepository(db, clientDataProtector);
 await ensureBootstrapAdmin(users);
 
@@ -37,5 +40,6 @@ export const app = createApp(config, {
     clientDataProtector,
   ),
   clients: new DrizzleClientRepository(db, clientDataProtector),
+  supportRequests: new DrizzleSupportRequestRepository(db, clientDataProtector),
   clientDataProtector,
 });

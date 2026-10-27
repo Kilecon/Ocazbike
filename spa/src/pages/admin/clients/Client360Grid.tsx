@@ -1,5 +1,6 @@
 import { Plus, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { Grid } from "../../../components/ui/Grid";
 import { Input } from "../../../components/ui/input";
@@ -130,10 +131,22 @@ export function Client360Grid({
         {
           key: "category",
           title: t("clientCategory"),
-          render: (client: ClientListItemDTO) =>
-            t(
-              client.isProfessional ? "professionalClient" : "individualClient",
-            ),
+          render: (client: ClientListItemDTO) => (
+            <Badge
+              variant="secondary"
+              className={
+                client.isProfessional
+                  ? "border-green-300 bg-green-100 text-green-900 dark:border-green-700 dark:bg-green-950 dark:text-green-100"
+                  : undefined
+              }
+            >
+              {t(
+                client.isProfessional
+                  ? "professionalClient"
+                  : "individualClient",
+              )}
+            </Badge>
+          ),
         },
       ]}
       rows={clients}

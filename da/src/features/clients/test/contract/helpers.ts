@@ -8,6 +8,7 @@ import type {
 } from "../../../auth/repositories";
 import type { User, UserRole } from "../../../auth/types";
 import type { IBillingDocumentRepository } from "../../../billing/IBillingDocumentRepository";
+import { ClientDataProtector } from "../../crypto/ClientDataProtector";
 import type {
   ClientRecord,
   CreateClientInput,
@@ -192,6 +193,7 @@ export function createHarness() {
     },
     clients,
     billingDocuments,
+    clientDataProtector: new ClientDataProtector(Buffer.alloc(32, 46)),
   });
 
   const request = (path: string, init: RequestInit = {}) => {
