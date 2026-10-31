@@ -19,7 +19,7 @@ describe("GET /clients contract", () => {
     );
 
     const response = await request("/clients?page=1&limit=1", {
-      headers: { Authorization: authorization() },
+      headers: { Cookie: authorization() },
     });
     const body = await response.json();
 
@@ -61,7 +61,7 @@ describe("GET /clients contract", () => {
     }
 
     const defaults = await request("/clients", {
-      headers: { Authorization: authorization() },
+      headers: { Cookie: authorization() },
     });
     expect(await defaults.json()).toMatchObject({
       page: 1,
@@ -70,7 +70,7 @@ describe("GET /clients contract", () => {
     });
 
     const search = await request("/clients?search=grace", {
-      headers: { Authorization: authorization(2) },
+      headers: { Cookie: authorization(2) },
     });
     expect((await search.json()).clients).toHaveLength(1);
 
@@ -82,7 +82,7 @@ describe("GET /clients contract", () => {
       `search=${"x".repeat(51)}`,
     ]) {
       const invalid = await request(`/clients?${query}`, {
-        headers: { Authorization: authorization() },
+        headers: { Cookie: authorization() },
       });
       expect(invalid.status).toBe(400);
     }
@@ -94,21 +94,21 @@ describe("GET /clients contract", () => {
     expect(
       (
         await request("/clients", {
-          headers: { Authorization: "Bearer invalid" },
+          headers: { Cookie: "access_token=invalid" },
         })
       ).status,
     ).toBe(401);
     expect(
       (
         await request("/clients", {
-          headers: { Authorization: authorization(), "X-App-Id": "wrong-spa" },
+          headers: { Cookie: authorization(), "X-App-Id": "wrong-spa" },
         })
       ).status,
     ).toBe(403);
     expect(
       (
         await request("/clients", {
-          headers: { Authorization: authorization(3) },
+          headers: { Cookie: authorization(3) },
         })
       ).status,
     ).toBe(401);

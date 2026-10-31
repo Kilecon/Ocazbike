@@ -47,7 +47,9 @@ describe("AuthService.login", () => {
       1,
       fixture.config.maxSessionsPerUser,
     );
-    expect(fixture.jwt.verifyAccessToken(tokens.accessToken).sub).toBe("1");
+    expect((await fixture.jwt.verifyAccessToken(tokens.accessToken)).sub).toBe(
+      "1",
+    );
   });
 
   it("returns the same credential error for unknown, inactive, or wrong-password users", async () => {
@@ -99,7 +101,7 @@ describe("AuthService.refresh and logout", () => {
       "admin@example.com",
       "valid-password",
     );
-    const oldClaims = fixture.jwt.verifyRefreshToken(login.refreshToken);
+    const oldClaims = await fixture.jwt.verifyRefreshToken(login.refreshToken);
     const refreshed = await fixture.service.refresh(login.refreshToken, {
       userAgent: "new-agent",
     });
@@ -114,7 +116,7 @@ describe("AuthService.refresh and logout", () => {
 
   it("rejects missing sessions, expired sessions, hash mismatches, and inactive users", async () => {
     const missing = createAuthFixture();
-    const missingToken = missing.jwt.signRefreshToken(1, 60);
+    const { token: missingToken } = await missing.jwt.signRefreshToken(1, 60);
     await expect(missing.service.refresh(missingToken)).rejects.toBeInstanceOf(
       InvalidAuthTokenError,
     );
@@ -124,8 +126,8 @@ describe("AuthService.refresh and logout", () => {
       "admin@example.com",
       "valid-password",
     );
-    const expiredId = expired.jwt.verifyRefreshToken(
-      expiredLogin.refreshToken,
+    const expiredId = (
+      await expired.jwt.verifyRefreshToken(expiredLogin.refreshToken)
     ).jti;
     requireTestValue(expired.sessionRecords.get(expiredId)).expiresAt =
       new Date(0);
@@ -138,8 +140,8 @@ describe("AuthService.refresh and logout", () => {
       "admin@example.com",
       "valid-password",
     );
-    const mismatchId = hashMismatch.jwt.verifyRefreshToken(
-      mismatchLogin.refreshToken,
+    const mismatchId = (
+      await hashMismatch.jwt.verifyRefreshToken(mismatchLogin.refreshToken)
     ).jti;
     requireTestValue(hashMismatch.sessionRecords.get(mismatchId)).tokenHash =
       "wrong";
@@ -164,7 +166,7 @@ describe("AuthService.refresh and logout", () => {
       "admin@example.com",
       "valid-password",
     );
-    const id = fixture.jwt.verifyRefreshToken(login.refreshToken).jti;
+    const id = (await fixture.jwt.verifyRefreshToken(login.refreshToken)).jti;
     requireTestValue(fixture.sessionRecords.get(id)).revokedAt = new Date(
       Date.now() - 11_000,
     );
@@ -181,7 +183,7 @@ describe("AuthService.refresh and logout", () => {
       "admin@example.com",
       "valid-password",
     );
-    const id = fixture.jwt.verifyRefreshToken(login.refreshToken).jti;
+    const id = (await fixture.jwt.verifyRefreshToken(login.refreshToken)).jti;
     requireTestValue(fixture.sessionRecords.get(id)).revokedAt = new Date();
 
     await expect(
@@ -196,7 +198,7 @@ describe("AuthService.refresh and logout", () => {
       "admin@example.com",
       "valid-password",
     );
-    const claims = fixture.jwt.verifyRefreshToken(login.refreshToken);
+    const claims = await fixture.jwt.verifyRefreshToken(login.refreshToken);
 
     await fixture.service.logout(login.refreshToken);
     expect(fixture.sessions.delete).toHaveBeenCalledWith(claims.jti);

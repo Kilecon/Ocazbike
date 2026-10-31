@@ -1,11 +1,11 @@
 import { expect } from "bun:test";
-import { createTestDatabase } from "../../../../shared/database/testDatabase";
-import { ClientDataProtector } from "../../../clients/crypto/ClientDataProtector";
+import { DataProtector } from "../../../../shared/crypto/DataProtector";
+import { createTestDatabase } from "../../../../test-support/testDatabase";
+import type { RefreshSession } from "../../IAuthRepositories";
 import {
   DrizzleRefreshSessionRepository,
   DrizzleUserRepository,
 } from "../../infrastructure/DrizzleAuthRepositories";
-import type { RefreshSession } from "../../repositories";
 import type { User } from "../../types";
 
 export const SAMPLES = 100;
@@ -62,7 +62,7 @@ export async function createPerformanceContext(): Promise<PerformanceContext> {
   expect(database.sqlite.query("PRAGMA journal_mode").get()).toEqual({
     journal_mode: "wal",
   });
-  const protector = new ClientDataProtector(Buffer.alloc(32, 24));
+  const protector = new DataProtector(Buffer.alloc(32, 24));
   const users = new DrizzleUserRepository(database.database, protector);
   const sessions = new DrizzleRefreshSessionRepository(database.database);
   const now = Date.now();

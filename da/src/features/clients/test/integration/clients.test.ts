@@ -7,6 +7,7 @@ import {
   it,
 } from "bun:test";
 import { billingDocuments as billingDocumentsSchema } from "../../../../shared/database/schema/billing";
+import { accessTokenFrom } from "../../../../test-support/authCookies";
 import {
   type ClientIntegrationFixture,
   createClientIntegrationFixture,
@@ -25,8 +26,7 @@ afterAll(() => fixture?.cleanup());
 async function authorization(user = fixture.admin) {
   const response = await fixture.login(user);
   expect(response.status).toBe(200);
-  const body = await response.json();
-  return `Bearer ${body.accessToken}`;
+  return `access_token=${accessTokenFrom(response)}`;
 }
 
 describe("clients HTTP integration", () => {
@@ -34,7 +34,7 @@ describe("clients HTTP integration", () => {
     const token = await authorization();
     const created = await fixture.request("/clients", {
       method: "POST",
-      headers: { Authorization: token },
+      headers: { Cookie: token },
       body: JSON.stringify({
         firstname: "Ada",
         lastname: "Lovelace",
@@ -72,7 +72,7 @@ describe("clients HTTP integration", () => {
     expect(stored.encryption_salt).toBeTruthy();
 
     const list = await fixture.request("/clients", {
-      headers: { Authorization: token },
+      headers: { Cookie: token },
     });
     const listBody = await list.json();
     expect(list.status).toBe(200);
@@ -93,7 +93,7 @@ describe("clients HTTP integration", () => {
     }
 
     const detail = await fixture.request(`/clients/${clientId}`, {
-      headers: { Authorization: token },
+      headers: { Cookie: token },
     });
     expect(detail.status).toBe(200);
     expect(await detail.json()).toMatchObject({
@@ -109,7 +109,7 @@ describe("clients HTTP integration", () => {
     const token = await authorization();
     const created = await fixture.request("/clients", {
       method: "POST",
-      headers: { Authorization: token },
+      headers: { Cookie: token },
       body: JSON.stringify({
         firstname: "Zoé",
         lastname: "Martin",
@@ -121,13 +121,13 @@ describe("clients HTTP integration", () => {
     const { id } = await created.json();
 
     const accentSearch = await fixture.request("/clients?search=zoe", {
-      headers: { Authorization: token },
+      headers: { Cookie: token },
     });
     expect((await accentSearch.json()).clients[0].id).toBe(id);
 
     const update = await fixture.request(`/clients/${id}`, {
       method: "PUT",
-      headers: { Authorization: token },
+      headers: { Cookie: token },
       body: JSON.stringify({
         firstname: "Zoé",
         lastname: "Martin",
@@ -140,14 +140,97 @@ describe("clients HTTP integration", () => {
 
     const oldSearch = await fixture.request(
       "/clients?search=Atelier%20Ancien",
-      { headers: { Authorization: token } },
+      { headers: { Cookie: token } },
     );
     const newSearch = await fixture.request(
       "/clients?search=Atelier%20Nouveau",
-      { headers: { Authorization: token } },
+      { headers: { Cookie: token } },
     );
     expect((await oldSearch.json()).total).toBe(0);
     expect((await newSearch.json()).clients[0].id).toBe(id);
+  });
+
+  it("searches full names in both orders using existing indexes and paginates exact matches", async () => {
+    const token = await authorization();
+    const zoe = await fixture.clients.create(
+      { firstname: "Zoé", lastname: "Martin", email: "zoe@example.com" },
+      fixture.admin.id,
+    );
+    const duplicate = await fixture.clients.create(
+      { firstname: "Zoé", lastname: "Martin", email: "other@example.com" },
+      fixture.admin.id,
+    );
+    await fixture.clients.create(
+      { firstname: "Zoé", lastname: "Dupont", email: "martin@example.com" },
+      fixture.admin.id,
+    );
+    const compound = await fixture.clients.create(
+      {
+        firstname: "Jean-Pierre",
+        lastname: "Le Guen",
+        email: "jean@example.com",
+      },
+      fixture.admin.id,
+    );
+    const short = await fixture.clients.create(
+      { firstname: "Al", lastname: "Li", email: "al@example.com" },
+      fixture.admin.id,
+    );
+
+    for (const [search, ids] of [
+      ["Zoé Martin", [zoe.id, duplicate.id]],
+      ["Martin Zoé", [zoe.id, duplicate.id]],
+      ["  ZOE   MARTIN  ", [zoe.id, duplicate.id]],
+      ["Jean-Pierre Le Guen", [compound.id]],
+      ["le guen jean-pierre", [compound.id]],
+      ["Al Li", [short.id]],
+      ["Li Al", [short.id]],
+    ] as const) {
+      const response = await fixture.request(
+        `/clients?search=${encodeURIComponent(search)}`,
+        { headers: { Cookie: token } },
+      );
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body.total).toBe(ids.length);
+      expect(
+        body.clients.map((client: { id: number }) => client.id).sort(),
+      ).toEqual([...ids].sort());
+    }
+
+    const pageIds: number[] = [];
+    for (const page of [1, 2]) {
+      const response = await fixture.request(
+        `/clients?search=Martin%20Zoe&limit=1&page=${page}`,
+        { headers: { Cookie: token } },
+      );
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body.total).toBe(2);
+      expect(body.clients).toHaveLength(1);
+      pageIds.push(body.clients[0].id);
+    }
+    expect(new Set(pageIds).size).toBe(2);
+
+    await fixture.clients.update(
+      zoe.id,
+      { firstname: "Élise", lastname: "Durand", email: "zoe@example.com" },
+      fixture.admin.id,
+    );
+    for (const [search, id] of [
+      ["Zoé Martin", duplicate.id],
+      ["Durand Elise", zoe.id],
+    ] as const) {
+      const response = await fixture.request(
+        `/clients?search=${encodeURIComponent(search)}`,
+        { headers: { Cookie: token } },
+      );
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({
+        total: 1,
+        clients: [{ id }],
+      });
+    }
   });
 
   it("keeps billing documents separate from client details", async () => {
@@ -171,15 +254,15 @@ describe("clients HTTP integration", () => {
       .returning();
 
     const detail = await fixture.request(`/clients/${created.id}`, {
-      headers: { Authorization: token },
+      headers: { Cookie: token },
     });
-    const documents = await fixture.request(
-      `/clients/${created.id}/documents`,
-      { headers: { Authorization: token } },
+    const operations = await fixture.request(
+      `/operations?clientId=${created.id}`,
+      { headers: { Cookie: token } },
     );
 
     expect(await detail.json()).not.toHaveProperty("operations");
-    expect(await documents.json()).toMatchObject([
+    expect((await operations.json()).operations).toMatchObject([
       { id: document.id, clientId: created.id, type: "repair" },
     ]);
   });
@@ -188,7 +271,7 @@ describe("clients HTTP integration", () => {
     const subadminToken = await authorization(fixture.subadmin);
     const created = await fixture.request("/clients", {
       method: "POST",
-      headers: { Authorization: subadminToken },
+      headers: { Cookie: subadminToken },
       body: JSON.stringify({
         firstname: "Katherine",
         lastname: "Johnson",
@@ -199,12 +282,12 @@ describe("clients HTTP integration", () => {
     const { id } = await created.json();
 
     const read = await fixture.request(`/clients/${id}`, {
-      headers: { Authorization: subadminToken },
+      headers: { Cookie: subadminToken },
     });
     expect(read.status).toBe(200);
     const update = await fixture.request(`/clients/${id}`, {
       method: "PUT",
-      headers: { Authorization: subadminToken },
+      headers: { Cookie: subadminToken },
       body: JSON.stringify({
         firstname: "Katherine",
         lastname: "Johnson",

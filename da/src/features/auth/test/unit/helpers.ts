@@ -1,13 +1,13 @@
 import { mock } from "bun:test";
 import type { AuthConfig } from "../../config";
+import type {
+  IRefreshSessionRepository,
+  IUserRepository,
+  RefreshSession,
+} from "../../IAuthRepositories";
 import { JwtService } from "../../jwt";
 import type { LoginRateLimiter } from "../../loginRateLimiter";
 import type { PasswordHasher } from "../../password";
-import type {
-  RefreshSession,
-  RefreshSessionRepository,
-  UserRepository,
-} from "../../repositories";
 import { AuthService } from "../../service";
 import type { User } from "../../types";
 
@@ -101,7 +101,7 @@ export function createAuthFixture(
       if (user) user.lastLoginAtEpochMs = timestamp;
     }),
     recordLogout: mock(async () => {}),
-  } satisfies UserRepository;
+  } satisfies IUserRepository;
 
   const sessions = {
     create: mock(async (session: RefreshSession) => {
@@ -121,7 +121,7 @@ export function createAuthFixture(
       sessionRecords.delete(id);
     }),
     limitActiveSessions: mock(async () => {}),
-  } satisfies RefreshSessionRepository;
+  } satisfies IRefreshSessionRepository;
 
   const passwords = {
     hash: mock(async (password: string) => `hash:${password}`),

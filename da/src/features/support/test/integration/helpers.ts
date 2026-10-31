@@ -1,6 +1,7 @@
 import { expect } from "bun:test";
 import { createApp } from "../../../../appFactory";
-import { createTestDatabase } from "../../../../shared/database/testDatabase";
+import { DataProtector } from "../../../../shared/crypto/DataProtector";
+import { createTestDatabase } from "../../../../test-support/testDatabase";
 import { loadAuthConfig } from "../../../auth/config";
 import {
   DrizzleRefreshSessionRepository,
@@ -8,8 +9,6 @@ import {
 } from "../../../auth/infrastructure/DrizzleAuthRepositories";
 import { BcryptPasswordHasher } from "../../../auth/password";
 import type { User } from "../../../auth/types";
-import { ClientDataProtector } from "../../../clients/crypto/ClientDataProtector";
-import { migrateSupportRequestData } from "../../crypto/migrateSupportRequestData";
 import type {
   SupportNotifier,
   SupportRequestRecord,
@@ -27,8 +26,7 @@ export function createSupportIntegrationFixture(name: string) {
   expect(database.sqlite.query("PRAGMA journal_mode").get()).toEqual({
     journal_mode: "wal",
   });
-  const protector = new ClientDataProtector(Buffer.alloc(32, 42));
-  migrateSupportRequestData(database.sqlite, protector);
+  const protector = new DataProtector(Buffer.alloc(32, 42));
   const users = new DrizzleUserRepository(database.database, protector);
   const sessions = new DrizzleRefreshSessionRepository(database.database);
   const supportRequests = new DrizzleSupportRequestRepository(
@@ -98,7 +96,7 @@ export function createSupportIntegrationFixture(name: string) {
       });
     },
     async reset() {
-      database.sqlite.exec(
+      database.sqlite.run(
         `DELETE FROM support_requests;
          DELETE FROM support_daily_sequences;
          DELETE FROM refresh_sessions;

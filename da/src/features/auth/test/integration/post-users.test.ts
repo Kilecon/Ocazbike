@@ -6,6 +6,7 @@ import {
   expect,
   it,
 } from "bun:test";
+import { accessTokenFrom } from "../../../../test-support/authCookies";
 import {
   type AuthIntegrationFixture,
   createAuthIntegrationFixture,
@@ -34,12 +35,11 @@ afterAll(() => fixture?.cleanup());
 describe("auth HTTP integration — post-users", () => {
   it("persists users created through the HTTP route", async () => {
     const loginResponse = await login();
-    const tokens = await loginResponse.json();
     const response = await app.handle(
       new Request("http://localhost/users", {
         method: "POST",
         headers: headers({
-          Authorization: `Bearer ${tokens.accessToken}`,
+          Cookie: `access_token=${accessTokenFrom(loginResponse)}`,
           "Content-Type": "application/json",
         }),
         body: JSON.stringify({

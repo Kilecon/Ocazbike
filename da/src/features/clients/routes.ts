@@ -4,8 +4,8 @@ import {
   requireAdmin,
   requireAuth,
 } from "../auth/authorization";
+import type { IUserRepository } from "../auth/IAuthRepositories";
 import type { JwtService } from "../auth/jwt";
-import type { UserRepository } from "../auth/repositories";
 import type { ClientService } from "./service";
 
 const clientFields = {
@@ -48,7 +48,7 @@ const clientBody = t.Union([
 export function createClientRoutes(
   service: ClientService,
   jwt: JwtService,
-  users: UserRepository,
+  users: IUserRepository,
 ) {
   return new Elysia({ prefix: "/clients" })
     .post(
@@ -56,16 +56,18 @@ export function createClientRoutes(
       async ({ body, request, set }) => {
         const client = await service.createClient(
           body,
-          readAuthUserId(request, jwt),
+          readAuthUserId(request),
         );
         set.status = 201;
         return client;
       },
       {
-        summary: "Créer un client",
-        description:
-          "Crée une fiche client. Réservé aux administrateurs et sous-administrateurs authentifiés.",
-        tags: ["Clients"],
+        detail: {
+          summary: "Créer un client",
+          description:
+            "Crée une fiche client. Réservé aux administrateurs et sous-administrateurs authentifiés.",
+          tags: ["Clients"],
+        },
         beforeHandle: requireAuth(jwt, users),
         body: clientBody,
       },
@@ -76,7 +78,7 @@ export function createClientRoutes(
         const client = await service.updateClient(
           params.clientId,
           body,
-          readAuthUserId(request, jwt),
+          readAuthUserId(request),
         );
         if (!client) {
           set.status = 404;
@@ -101,10 +103,12 @@ export function createClientRoutes(
         return client;
       },
       {
-        summary: "Récupérer un client",
-        description:
-          "Retourne les informations d'un client. Réservé aux utilisateurs authentifiés.",
-        tags: ["Clients"],
+        detail: {
+          summary: "Récupérer un client",
+          description:
+            "Retourne les informations d'un client. Réservé aux utilisateurs authentifiés.",
+          tags: ["Clients"],
+        },
         beforeHandle: requireAuth(jwt, users),
         params: t.Object({ clientId: t.Numeric({ minimum: 1 }) }),
       },
@@ -119,10 +123,12 @@ export function createClientRoutes(
         });
       },
       {
-        summary: "Lister les clients",
-        description:
-          "Liste les clients avec pagination (10 par page par défaut, 50 maximum) et recherche trigramme.",
-        tags: ["Clients"],
+        detail: {
+          summary: "Lister les clients",
+          description:
+            "Liste les clients avec pagination (10 par page par défaut, 50 maximum) et recherche trigramme. La recherche accepte le prénom et le nom ensemble, dans les deux ordres, sans distinction de casse ni d'accents.",
+          tags: ["Clients"],
+        },
         beforeHandle: requireAuth(jwt, users),
         query: t.Object({
           page: t.Integer({ minimum: 1, default: 1 }),

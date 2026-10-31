@@ -1,0 +1,1281 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "c3a3b4c5-d2c7-439c-9957-084d41e3d0e3",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "refresh_sessions": {
+      "name": "refresh_sessions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at_ms": {
+          "name": "expires_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revoked_at_ms": {
+          "name": "revoked_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at_ms": {
+          "name": "created_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "generated": {
+            "as": "(CASE WHEN expires_at_ms IS NULL THEN NULL ELSE strftime('%Y-%m-%dT%H:%M:%SZ', expires_at_ms / 1000, 'unixepoch') END)",
+            "type": "virtual"
+          }
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "generated": {
+            "as": "(CASE WHEN revoked_at_ms IS NULL THEN NULL ELSE strftime('%Y-%m-%dT%H:%M:%SZ', revoked_at_ms / 1000, 'unixepoch') END)",
+            "type": "virtual"
+          }
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "generated": {
+            "as": "(CASE WHEN created_at_ms IS NULL THEN NULL ELSE strftime('%Y-%m-%dT%H:%M:%SZ', created_at_ms / 1000, 'unixepoch') END)",
+            "type": "virtual"
+          }
+        }
+      },
+      "indexes": {
+        "refresh_sessions_token_hash_unique": {
+          "name": "refresh_sessions_token_hash_unique",
+          "columns": [
+            "token_hash"
+          ],
+          "isUnique": true
+        },
+        "refresh_sessions_user_id_idx": {
+          "name": "refresh_sessions_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "refresh_sessions_expires_at_ms_idx": {
+          "name": "refresh_sessions_expires_at_ms_idx",
+          "columns": [
+            "expires_at_ms"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "refresh_sessions_user_id_users_id_fk": {
+          "name": "refresh_sessions_user_id_users_id_fk",
+          "tableFrom": "refresh_sessions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "users": {
+      "name": "users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email_lookup_hash": {
+          "name": "email_lookup_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "firstname": {
+          "name": "firstname",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "lastname": {
+          "name": "lastname",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "encryption_salt": {
+          "name": "encryption_salt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "password_hash": {
+          "name": "password_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'Subadmin'"
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "must_change_password": {
+          "name": "must_change_password",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "last_login_at_ms": {
+          "name": "last_login_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at_ms": {
+          "name": "created_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "updated_at_ms": {
+          "name": "updated_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "last_login_at": {
+          "name": "last_login_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "generated": {
+            "as": "(CASE WHEN last_login_at_ms IS NULL THEN NULL ELSE strftime('%Y/%m/%d : %H:%M:%S', last_login_at_ms / 1000, 'unixepoch') END)",
+            "type": "virtual"
+          }
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "generated": {
+            "as": "(strftime('%Y/%m/%d : %H:%M:%S', created_at_ms / 1000, 'unixepoch'))",
+            "type": "virtual"
+          }
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "generated": {
+            "as": "(strftime('%Y/%m/%d : %H:%M:%S', updated_at_ms / 1000, 'unixepoch'))",
+            "type": "virtual"
+          }
+        }
+      },
+      "indexes": {
+        "users_encryption_salt_unique": {
+          "name": "users_encryption_salt_unique",
+          "columns": [
+            "encryption_salt"
+          ],
+          "isUnique": true
+        },
+        "users_email_lookup_hash_unique": {
+          "name": "users_email_lookup_hash_unique",
+          "columns": [
+            "email_lookup_hash"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "billing_document_snapshots": {
+      "name": "billing_document_snapshots",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "billing_document_id": {
+          "name": "billing_document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encrypted_payload": {
+          "name": "encrypted_payload",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encryption_salt": {
+          "name": "encryption_salt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at_ms": {
+          "name": "created_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "updated_at_ms": {
+          "name": "updated_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        }
+      },
+      "indexes": {
+        "billing_document_snapshots_document_kind_unique": {
+          "name": "billing_document_snapshots_document_kind_unique",
+          "columns": [
+            "billing_document_id",
+            "kind"
+          ],
+          "isUnique": true
+        },
+        "billing_document_snapshots_status_idx": {
+          "name": "billing_document_snapshots_status_idx",
+          "columns": [
+            "status"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "billing_document_snapshots_billing_document_id_billing_documents_id_fk": {
+          "name": "billing_document_snapshots_billing_document_id_billing_documents_id_fk",
+          "tableFrom": "billing_document_snapshots",
+          "tableTo": "billing_documents",
+          "columnsFrom": [
+            "billing_document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "billing_documents": {
+      "name": "billing_documents",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "date": {
+          "name": "date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "generated": {
+            "as": "(strftime('%Y-%m-%dT%H:%M:%SZ', date_ms / 1000, 'unixepoch'))",
+            "type": "virtual"
+          }
+        },
+        "date_ms": {
+          "name": "date_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "service_start_at_ms": {
+          "name": "service_start_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "service_end_at_ms": {
+          "name": "service_end_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "payment_method": {
+          "name": "payment_method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "paid_at_ms": {
+          "name": "paid_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "billing_documents_date_ms_idx": {
+          "name": "billing_documents_date_ms_idx",
+          "columns": [
+            "date_ms"
+          ],
+          "isUnique": false
+        },
+        "billing_documents_client_type_date_ms_idx": {
+          "name": "billing_documents_client_type_date_ms_idx",
+          "columns": [
+            "client_id",
+            "type",
+            "date_ms",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "billing_documents_status_type_idx": {
+          "name": "billing_documents_status_type_idx",
+          "columns": [
+            "status",
+            "type"
+          ],
+          "isUnique": false
+        },
+        "billing_documents_type_date_ms_idx": {
+          "name": "billing_documents_type_date_ms_idx",
+          "columns": [
+            "type",
+            "date_ms",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "billing_documents_status_date_ms_idx": {
+          "name": "billing_documents_status_date_ms_idx",
+          "columns": [
+            "status",
+            "date_ms",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "billing_documents_type_status_date_ms_idx": {
+          "name": "billing_documents_type_status_date_ms_idx",
+          "columns": [
+            "type",
+            "status",
+            "date_ms",
+            "id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "billing_documents_client_id_clients_id_fk": {
+          "name": "billing_documents_client_id_clients_id_fk",
+          "tableFrom": "billing_documents",
+          "tableTo": "clients",
+          "columnsFrom": [
+            "client_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "billing_invoices": {
+      "name": "billing_invoices",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "billing_document_id": {
+          "name": "billing_document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encrypted_payload": {
+          "name": "encrypted_payload",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encryption_salt": {
+          "name": "encryption_salt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "payment_method": {
+          "name": "payment_method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "paid_at_ms": {
+          "name": "paid_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "issued_at_ms": {
+          "name": "issued_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "billing_invoices_document_unique": {
+          "name": "billing_invoices_document_unique",
+          "columns": [
+            "billing_document_id"
+          ],
+          "isUnique": true
+        },
+        "billing_invoices_status_issued_idx": {
+          "name": "billing_invoices_status_issued_idx",
+          "columns": [
+            "status",
+            "issued_at_ms"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "billing_invoices_billing_document_id_billing_documents_id_fk": {
+          "name": "billing_invoices_billing_document_id_billing_documents_id_fk",
+          "tableFrom": "billing_invoices",
+          "tableTo": "billing_documents",
+          "columnsFrom": [
+            "billing_document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "billing_invoices_status_check": {
+          "name": "billing_invoices_status_check",
+          "value": "\"billing_invoices\".\"status\" IN ('paid', 'unpaid')"
+        },
+        "billing_invoices_payment_method_check": {
+          "name": "billing_invoices_payment_method_check",
+          "value": "\"billing_invoices\".\"payment_method\" IS NULL OR \"billing_invoices\".\"payment_method\" IN ('card', 'cheque', 'bank_transfer', 'cash', 'free')"
+        },
+        "billing_invoices_payment_check": {
+          "name": "billing_invoices_payment_check",
+          "value": "(\"billing_invoices\".\"status\" = 'unpaid' AND \"billing_invoices\".\"payment_method\" IS NULL AND \"billing_invoices\".\"paid_at_ms\" IS NULL) OR (\"billing_invoices\".\"status\" = 'paid' AND \"billing_invoices\".\"payment_method\" IS NOT NULL AND \"billing_invoices\".\"paid_at_ms\" IS NOT NULL AND \"billing_invoices\".\"paid_at_ms\" >= \"billing_invoices\".\"issued_at_ms\")"
+        },
+        "billing_invoices_issued_check": {
+          "name": "billing_invoices_issued_check",
+          "value": "\"billing_invoices\".\"issued_at_ms\" >= 0"
+        }
+      }
+    },
+    "billing_lines": {
+      "name": "billing_lines",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "billing_document_id": {
+          "name": "billing_document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit_price": {
+          "name": "unit_price",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "vat_rate": {
+          "name": "vat_rate",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "discount": {
+          "name": "discount",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'0'"
+        },
+        "total": {
+          "name": "total",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "billing_lines_billing_document_id_idx": {
+          "name": "billing_lines_billing_document_id_idx",
+          "columns": [
+            "billing_document_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "billing_lines_billing_document_id_billing_documents_id_fk": {
+          "name": "billing_lines_billing_document_id_billing_documents_id_fk",
+          "tableFrom": "billing_lines",
+          "tableTo": "billing_documents",
+          "columnsFrom": [
+            "billing_document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "billing_quotes": {
+      "name": "billing_quotes",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "billing_document_id": {
+          "name": "billing_document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encrypted_payload": {
+          "name": "encrypted_payload",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encryption_salt": {
+          "name": "encryption_salt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "issued_at_ms": {
+          "name": "issued_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status_changed_at_ms": {
+          "name": "status_changed_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "billing_quotes_document_unique": {
+          "name": "billing_quotes_document_unique",
+          "columns": [
+            "billing_document_id"
+          ],
+          "isUnique": true
+        },
+        "billing_quotes_status_issued_idx": {
+          "name": "billing_quotes_status_issued_idx",
+          "columns": [
+            "status",
+            "issued_at_ms"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "billing_quotes_billing_document_id_billing_documents_id_fk": {
+          "name": "billing_quotes_billing_document_id_billing_documents_id_fk",
+          "tableFrom": "billing_quotes",
+          "tableTo": "billing_documents",
+          "columnsFrom": [
+            "billing_document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "billing_quotes_status_check": {
+          "name": "billing_quotes_status_check",
+          "value": "\"billing_quotes\".\"status\" IN ('accepted', 'pending', 'rejected')"
+        },
+        "billing_quotes_dates_check": {
+          "name": "billing_quotes_dates_check",
+          "value": "\"billing_quotes\".\"issued_at_ms\" >= 0 AND \"billing_quotes\".\"status_changed_at_ms\" >= \"billing_quotes\".\"issued_at_ms\""
+        }
+      }
+    },
+    "client_search_trigrams": {
+      "name": "client_search_trigrams",
+      "columns": {
+        "client_id": {
+          "name": "client_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "trigram": {
+          "name": "trigram",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "client_search_trigrams_trigram_idx": {
+          "name": "client_search_trigrams_trigram_idx",
+          "columns": [
+            "trigram"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "client_search_trigrams_client_id_clients_id_fk": {
+          "name": "client_search_trigrams_client_id_clients_id_fk",
+          "tableFrom": "client_search_trigrams",
+          "tableTo": "clients",
+          "columnsFrom": [
+            "client_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "client_search_trigrams_client_id_trigram_pk": {
+          "columns": [
+            "client_id",
+            "trigram"
+          ],
+          "name": "client_search_trigrams_client_id_trigram_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "clients": {
+      "name": "clients",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "firstname": {
+          "name": "firstname",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lastname": {
+          "name": "lastname",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "phonenumber": {
+          "name": "phonenumber",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "address": {
+          "name": "address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "address_complement": {
+          "name": "address_complement",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "identity_card_number": {
+          "name": "identity_card_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "privatenote": {
+          "name": "privatenote",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_professional": {
+          "name": "is_professional",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "siret": {
+          "name": "siret",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "company_name": {
+          "name": "company_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "encryption_salt": {
+          "name": "encryption_salt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "modified_by_user_id": {
+          "name": "modified_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "last_modification_ms": {
+          "name": "last_modification_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        },
+        "created_at_ms": {
+          "name": "created_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+        }
+      },
+      "indexes": {
+        "clients_encryption_salt_unique": {
+          "name": "clients_encryption_salt_unique",
+          "columns": [
+            "encryption_salt"
+          ],
+          "isUnique": true
+        },
+        "clients_last_modification_ms_idx": {
+          "name": "clients_last_modification_ms_idx",
+          "columns": [
+            "last_modification_ms"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "clients_modified_by_user_id_users_id_fk": {
+          "name": "clients_modified_by_user_id_users_id_fk",
+          "tableFrom": "clients",
+          "tableTo": "users",
+          "columnsFrom": [
+            "modified_by_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "store_information": {
+      "name": "store_information",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encrypted_payload": {
+          "name": "encrypted_payload",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encryption_salt": {
+          "name": "encryption_salt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "support_daily_sequences": {
+      "name": "support_daily_sequences",
+      "columns": {
+        "date": {
+          "name": "date",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "last_number": {
+          "name": "last_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "support_requests": {
+      "name": "support_requests",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "reference": {
+          "name": "reference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "encryption_salt": {
+          "name": "encryption_salt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'created'"
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch() * 1000)"
+        },
+        "discord_notification_status": {
+          "name": "discord_notification_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "discord_notified_at_ms": {
+          "name": "discord_notified_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "discord_notification_attempt_at_ms": {
+          "name": "discord_notification_attempt_at_ms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "support_requests_reference_idx": {
+          "name": "support_requests_reference_idx",
+          "columns": [
+            "reference"
+          ],
+          "isUnique": true
+        },
+        "support_requests_created_at_idx": {
+          "name": "support_requests_created_at_idx",
+          "columns": [
+            "created_at",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "support_requests_status_created_at_idx": {
+          "name": "support_requests_status_created_at_idx",
+          "columns": [
+            "status",
+            "created_at",
+            "id"
+          ],
+          "isUnique": false
+        },
+        "support_requests_type_created_at_idx": {
+          "name": "support_requests_type_created_at_idx",
+          "columns": [
+            "type",
+            "created_at",
+            "id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "support_requests_created_by_user_id_users_id_fk": {
+          "name": "support_requests_created_by_user_id_users_id_fk",
+          "tableFrom": "support_requests",
+          "tableTo": "users",
+          "columnsFrom": [
+            "created_by_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "support_requests_type_check": {
+          "name": "support_requests_type_check",
+          "value": "\"support_requests\".\"type\" IN ('SR', 'INC', 'BUG')"
+        }
+      }
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

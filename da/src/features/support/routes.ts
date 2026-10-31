@@ -1,8 +1,8 @@
 import { Elysia, t } from "elysia";
 import { logger } from "../../shared/observability/logger";
 import { readAuthUserId, requireAdmin } from "../auth/authorization";
+import type { IUserRepository } from "../auth/IAuthRepositories";
 import type { JwtService } from "../auth/jwt";
-import type { UserRepository } from "../auth/repositories";
 import type {
   ISupportRequestRepository,
   SupportNotifier,
@@ -47,7 +47,7 @@ export function createSupportRoutes(
   repository: ISupportRequestRepository,
   notifier: SupportNotifier,
   jwt: JwtService,
-  users: UserRepository,
+  users: IUserRepository,
 ) {
   return new Elysia({ prefix: "/support" })
     .get(
@@ -60,10 +60,12 @@ export function createSupportRoutes(
           status: query.status,
         }),
       {
-        summary: "Lister les demandes de support",
-        description:
-          "Liste les demandes de support avec pagination et filtres facultatifs par type et statut (Admin seulement).",
-        tags: ["Support", "Admin"],
+        detail: {
+          summary: "Lister les demandes de support",
+          description:
+            "Liste les demandes de support avec pagination et filtres facultatifs par type et statut (Admin seulement).",
+          tags: ["Support", "Admin"],
+        },
         query: t.Object({
           page: t.Integer({ minimum: 1, default: 1 }),
           limit: t.Integer({ minimum: 1, maximum: 50, default: 10 }),
@@ -84,7 +86,7 @@ export function createSupportRoutes(
     .post(
       "/",
       async ({ body, request, set }) => {
-        const userId = readAuthUserId(request, jwt);
+        const userId = readAuthUserId(request);
         const supportRequest = await repository.create({
           ...body,
           createdByUserId: userId,
@@ -157,10 +159,12 @@ export function createSupportRoutes(
         return sendNotification(repository, notifier, claim.request);
       },
       {
-        summary: "Renvoyer une notification de support",
-        description:
-          "Réessaie après un échec ou renvoie une notification si la précédente date d'au moins 24 heures (Admin seulement).",
-        tags: ["Support", "Admin"],
+        detail: {
+          summary: "Renvoyer une notification de support",
+          description:
+            "Réessaie après un échec ou renvoie une notification si la précédente date d'au moins 24 heures (Admin seulement).",
+          tags: ["Support", "Admin"],
+        },
         params: t.Object({ id: t.Integer({ minimum: 1 }) }),
         beforeHandle: requireAdmin(jwt, users),
       },

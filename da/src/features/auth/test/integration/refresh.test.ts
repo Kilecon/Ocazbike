@@ -39,8 +39,13 @@ describe("auth HTTP integration — refresh", () => {
     const loginResponse = await login();
     const loginBody = await loginResponse.json();
     expectAuthResponse(loginBody, expectedPublicUser(user));
-    const first = loginResponse.headers.get("set-cookie") ?? "";
-    const cookie = first.split(";")[0];
+    const refreshCookieOf = (response: Response) =>
+      response.headers
+        .getSetCookie()
+        .find((value) => value.startsWith("refresh_token="))
+        ?.split(";")[0] ?? "";
+    const cookie = refreshCookieOf(loginResponse);
+    expect(cookie).toStartWith("refresh_token=");
     const refresh = () =>
       app.handle(
         new Request("http://localhost/auth/refresh", {
@@ -54,7 +59,8 @@ describe("auth HTTP integration — refresh", () => {
     const refreshedBody = await refreshed.json();
     expectAuthResponse(refreshedBody, expectedPublicUser(user));
     expect(refreshed.headers.get("set-cookie")).toContain("HttpOnly");
-    expect(refreshed.headers.get("set-cookie")?.split(";")[0]).not.toBe(cookie);
+    expect(refreshed.headers.get("set-cookie")).toContain("access_token=");
+    expect(refreshCookieOf(refreshed)).not.toBe(cookie);
     expect((await refresh()).status).toBe(401);
   });
 });

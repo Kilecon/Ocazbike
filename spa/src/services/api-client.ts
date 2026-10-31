@@ -1,8 +1,20 @@
-import type { AuthTokens } from "./types";
+import type { AuthSession } from "./types";
 
-const apiBaseUrl =
-  import.meta.env?.BUN_PUBLIC_API_URL ?? "http://localhost:3000";
-const appId = import.meta.env?.BUN_PUBLIC_APP_ID ?? "my-spa";
+// Bun inlines `process.env.BUN_PUBLIC_*` at bundle time only when the variable
+// is defined; otherwise `process` does not exist in the browser.
+function publicEnv(read: () => string | undefined, fallback: string): string {
+  try {
+    return read() || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+const apiBaseUrl = publicEnv(
+  () => process.env.BUN_PUBLIC_API_URL,
+  "http://localhost:3000",
+);
+const appId = publicEnv(() => process.env.BUN_PUBLIC_APP_ID, "my-spa");
 
 export class ApiError extends Error {
   constructor(
@@ -15,34 +27,29 @@ export class ApiError extends Error {
   }
 }
 
-// The refresh token lives in an HttpOnly cookie and is never readable from JS.
-function setTokens(tokens: Pick<AuthTokens, "accessToken">) {
-  localStorage.setItem("accessToken", tokens.accessToken);
-  localStorage.removeItem("refreshToken");
+// Auth tokens live in HttpOnly cookies; only remove keys left by older builds.
+const legacyTokenStorageKeys = ["accessToken", "refreshToken"] as const;
+
+export function removeLegacyStoredTokens() {
+  try {
+    for (const key of legacyTokenStorageKeys) localStorage.removeItem(key);
+  } catch {
+    // Storage may be unavailable (privacy mode); nothing to clean up then.
+  }
 }
 
-export function clearSession() {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
-}
-
-let refreshInFlight: Promise<AuthTokens> | null = null;
+let refreshInFlight: Promise<AuthSession> | null = null;
 const inFlightGetRequests = new Map<string, Promise<unknown>>();
 
 // Concurrent 401s share one refresh call: rotation invalidates the token after first use.
-function refreshSession(): Promise<AuthTokens> {
-  refreshInFlight ??= request<AuthTokens>(
+function refreshSession(): Promise<AuthSession> {
+  refreshInFlight ??= request<AuthSession>(
     "/auth/refresh",
     { method: "POST" },
     false,
-  )
-    .then((tokens) => {
-      setTokens(tokens);
-      return tokens;
-    })
-    .finally(() => {
-      refreshInFlight = null;
-    });
+  ).finally(() => {
+    refreshInFlight = null;
+  });
   return refreshInFlight;
 }
 
@@ -56,14 +63,12 @@ export function request<T>(
     return performRequest<T>(path, options, canRefresh);
   }
 
-  const token = localStorage.getItem("accessToken");
   const headers = [...new Headers(options.headers).entries()].sort(
     ([left], [right]) => left.localeCompare(right),
   );
   // Coalesce identical concurrent GETs without caching settled responses.
   const key = JSON.stringify([
     path,
-    token,
     canRefresh,
     headers,
     options.credentials,
@@ -93,14 +98,12 @@ async function performRequest<T>(
   options: RequestInit,
   canRefresh: boolean,
 ): Promise<T> {
-  const token = localStorage.getItem("accessToken");
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...options,
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
       "X-App-Id": appId,
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
   });
@@ -115,7 +118,7 @@ async function performRequest<T>(
       await refreshSession();
       return request<T>(path, options, false);
     } catch {
-      clearSession();
+      // Refresh failed: surface the original 401 so callers treat it as logged out.
     }
   }
 
@@ -133,8 +136,4 @@ async function performRequest<T>(
 
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
-}
-
-export function storeSession(tokens: AuthTokens) {
-  setTokens(tokens);
 }

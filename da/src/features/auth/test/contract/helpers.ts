@@ -1,12 +1,13 @@
 import { expect } from "bun:test";
 import { createApp } from "../../../../appFactory";
+import { accessTokenFrom } from "../../../../test-support/authCookies";
 import { loadAuthConfig } from "../../config";
-import type { PasswordHasher } from "../../password";
 import type {
+  IRefreshSessionRepository,
+  IUserRepository,
   RefreshSession,
-  RefreshSessionRepository,
-  UserRepository,
-} from "../../repositories";
+} from "../../IAuthRepositories";
+import type { PasswordHasher } from "../../password";
 import type { User, UserRole } from "../../types";
 
 const config = loadAuthConfig({
@@ -21,7 +22,7 @@ const passwords: PasswordHasher = {
   compare: async (password, hash) => hash === `hashed:${password}`,
 };
 
-class ContractUsers implements UserRepository {
+class ContractUsers implements IUserRepository {
   constructor(readonly values: User[]) {}
 
   async findByEmail(email: string) {
@@ -74,7 +75,7 @@ class ContractUsers implements UserRepository {
   async recordLogout() {}
 }
 
-class ContractSessions implements RefreshSessionRepository {
+class ContractSessions implements IRefreshSessionRepository {
   private readonly values = new Map<string, RefreshSession>();
 
   async create(session: RefreshSession) {
@@ -157,8 +158,7 @@ export function createHarness() {
 
   const adminAuthorization = async () => {
     const response = await login();
-    const body = await response.json();
-    return `Bearer ${body.accessToken}`;
+    return `access_token=${accessTokenFrom(response)}`;
   };
 
   return { app, login, request, users, adminAuthorization };
@@ -169,8 +169,9 @@ export const json = (body: unknown) => ({
   body: JSON.stringify(body),
 });
 
+/** Returns the "refresh_token=..." pair from a (possibly joined) Set-Cookie header. */
 export const cookieValue = (setCookie: string | null) =>
-  setCookie?.split(";")[0] ?? "";
+  setCookie?.match(/refresh_token=[^;,]*/)?.[0] ?? "";
 
 export async function expectError(
   response: Response,
@@ -187,18 +188,12 @@ export function expectAuthResponse(
   expectedUser: Record<string, unknown>,
 ) {
   expect(body).toEqual({
-    accessToken: expect.any(String),
     expiresIn: expect.any(Number),
     user: expectedUser,
   });
   expect(typeof body.expiresIn).toBe("number");
   if (typeof body.expiresIn === "number") {
     expect(body.expiresIn).toBe(config.accessTokenTtlSeconds);
-  }
-  expect(typeof body.accessToken).toBe("string");
-  if (typeof body.accessToken === "string") {
-    expect(body.accessToken.length).toBeGreaterThan(0);
-    expect(body.accessToken.split(".")).toHaveLength(3);
   }
 }
 

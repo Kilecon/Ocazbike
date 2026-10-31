@@ -1,5 +1,5 @@
 import { ArrowLeft, X } from "lucide-react";
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { type SubmitEvent, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAdminToast } from "../../../components/admin/AdminToast";
 import { Button } from "../../../components/ui/button";
@@ -13,14 +13,9 @@ import { formatLocalDate } from "../../../lib/date";
 import {
   createClient,
   getClient,
-  getClientOperations,
   updateClient,
 } from "../../../services/clients.api";
-import type {
-  ClientDetailDTO,
-  ClientInputDTO,
-  ClientOperationDTO,
-} from "../../../services/types";
+import type { ClientDetailDTO, ClientInputDTO } from "../../../services/types";
 import { AdminPageShell } from "../common/AdminPageShell";
 import {
   type ClientForm,
@@ -94,7 +89,6 @@ export function ClientDetailPage({
   const { showToast, showErrorToast } = useAdminToast();
   const currentUser = useCurrentUser();
   const [client, setClient] = useState<ClientDetailDTO | null>(null);
-  const [operations, setOperations] = useState<ClientOperationDTO[]>([]);
   const [form, setForm] = useState<ClientForm>(emptyForm);
   const [loading, setLoading] = useState(!createMode);
   const [editing, setEditing] = useState(createMode);
@@ -122,13 +116,6 @@ export function ClientDetailPage({
       .finally(() => {
         if (active) setLoading(false);
       });
-    void getClientOperations(clientId)
-      .then((clientOperations) => {
-        if (active) setOperations(clientOperations);
-      })
-      .catch((loadError: unknown) => {
-        if (active) showErrorToast(loadError, t("clientOperationsLoadError"));
-      });
     return () => {
       active = false;
     };
@@ -144,7 +131,7 @@ export function ClientDetailPage({
     setForm((current) => ({ ...current, [field]: value }));
   };
 
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!createMode && !hasChanges) return;
     setSaving(true);
@@ -320,7 +307,7 @@ export function ClientDetailPage({
           />
         </dialog>
       )}
-      {!loading && client && <ClientOperations operations={operations} />}
+      {!loading && client && <ClientOperations clientId={client.id} />}
     </>
   );
 

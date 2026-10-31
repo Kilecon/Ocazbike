@@ -1,6 +1,7 @@
 import { serve } from "bun";
 import index from "./index.html";
 
+// Development server only; production serves the built dist/ through server.ts.
 const server = serve({
   port: 3111,
 
@@ -9,13 +10,10 @@ const server = serve({
     "/*": index,
   },
 
-  development:
-    process.env.NODE_ENV !== "production"
-      ? {
-          hmr: true,
-          console: true,
-        }
-      : undefined,
+  development: {
+    hmr: true,
+    console: true,
+  },
 });
 
 console.log(`🚀 Front disponible sur ${server.url}`);

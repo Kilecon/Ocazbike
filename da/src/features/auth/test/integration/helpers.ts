@@ -1,7 +1,7 @@
 import { expect } from "bun:test";
 import { createApp } from "../../../../appFactory";
-import { createTestDatabase } from "../../../../shared/database/testDatabase";
-import { ClientDataProtector } from "../../../clients/crypto/ClientDataProtector";
+import { DataProtector } from "../../../../shared/crypto/DataProtector";
+import { createTestDatabase } from "../../../../test-support/testDatabase";
 import { loadAuthConfig } from "../../config";
 import {
   DrizzleRefreshSessionRepository,
@@ -18,7 +18,7 @@ export const config = loadAuthConfig({
 });
 
 const passwordHasher = new BcryptPasswordHasher(config.bcryptRounds);
-const protector = new ClientDataProtector(Buffer.alloc(32, 12));
+const protector = new DataProtector(Buffer.alloc(32, 12));
 
 export function createAuthIntegrationFixture(name: string) {
   const testDatabase = createTestDatabase(name);
@@ -84,7 +84,7 @@ export function createAuthIntegrationFixture(name: string) {
       );
     },
     async reset() {
-      testDatabase.sqlite.exec(
+      testDatabase.sqlite.run(
         "DELETE FROM refresh_sessions; DELETE FROM users; DELETE FROM sqlite_sequence WHERE name = 'users';",
       );
       const now = Date.now();
@@ -141,10 +141,7 @@ export function expectAuthResponse(
   responseBody: Record<string, unknown>,
   expectedUser: ReturnType<typeof expectedPublicUser>,
 ) {
-  expect(Object.keys(responseBody).sort()).toEqual(
-    ["accessToken", "expiresIn", "user"].sort(),
-  );
-  expect(typeof responseBody.accessToken).toBe("string");
+  expect(Object.keys(responseBody).sort()).toEqual(["expiresIn", "user"]);
   expect(responseBody.expiresIn).toBe(config.accessTokenTtlSeconds);
   expect(responseBody.user).toEqual(expectedUser);
 }

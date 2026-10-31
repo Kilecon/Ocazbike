@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { accessTokenFrom } from "../../../../test-support/authCookies";
 import { cookieValue, createHarness, expectError } from "./helpers";
 
 describe("POST /auth/logout", () => {
@@ -6,13 +7,10 @@ describe("POST /auth/logout", () => {
     const { login, request } = createHarness();
     const loggedIn = await login();
     const cookie = cookieValue(loggedIn.headers.get("set-cookie"));
-    const { accessToken } = await loggedIn.json();
+    const accessToken = accessTokenFrom(loggedIn);
     const response = await request("/auth/logout", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Cookie: cookie,
-      },
+      headers: { Cookie: `access_token=${accessToken}; ${cookie}` },
     });
 
     expect(response.status).toBe(204);

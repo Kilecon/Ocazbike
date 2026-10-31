@@ -1,13 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { DataProtector } from "../../../../shared/crypto/DataProtector";
 import { users } from "../../../../shared/database/schema/auth";
-import { createTestDatabase } from "../../../../shared/database/testDatabase";
-import { ClientDataProtector } from "../../crypto/ClientDataProtector";
+import { createTestDatabase } from "../../../../test-support/testDatabase";
 import type { CreateClientInput } from "../../IClientRepository";
 import { DrizzleClientRepository } from "../../infrastructure/DrizzleClientRepository";
 
 const SAMPLE_COUNT = 25;
 const OPERATIONS_PER_SAMPLE = 10;
-const protector = new ClientDataProtector(Buffer.alloc(32, 43));
+const protector = new DataProtector(Buffer.alloc(32, 43));
 
 interface Measurement {
   operation: string;

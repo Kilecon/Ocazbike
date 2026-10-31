@@ -1,11 +1,11 @@
-import type { UserRepository } from "./repositories";
+import type { IUserRepository } from "./IAuthRepositories";
 
 const ADMIN_EMAIL = "admin@example.com";
 const ADMIN_PASSWORD_HASH =
   "$2b$12$XJ/nC2KeJfh4vSSUQmrPiOOdYv1g5kyCFV3hHgB207.pBtWMEh1zi";
 
 export async function ensureBootstrapAdmin(
-  users: UserRepository,
+  users: IUserRepository,
 ): Promise<void> {
   const timestampMs = Date.now();
   const existing = await users.findByEmail(ADMIN_EMAIL);

@@ -1,13 +1,20 @@
 import { desc, eq, inArray, sql } from "drizzle-orm";
-import type { db } from "../../../shared/database/db";
+import type {
+  DataProtector,
+  FieldProtector,
+} from "../../../shared/crypto/DataProtector";
+import type { AppDatabase } from "../../../shared/database/db";
 import {
   clientSearchTrigrams,
   clients,
 } from "../../../shared/database/schema/billing";
 import {
-  type ClientDataProtector,
+  decryptClient,
   normalizeClientSearch,
-} from "../crypto/ClientDataProtector";
+  searchableValues,
+  searchTokensForSearch,
+  searchTokensForValues,
+} from "../crypto/clientCrypto";
 import type {
   ClientRecord,
   CreateClientInput,
@@ -16,8 +23,8 @@ import type {
 
 export class DrizzleClientRepository implements IClientRepository {
   constructor(
-    private readonly database: typeof db,
-    private readonly protector: ClientDataProtector,
+    private readonly database: AppDatabase,
+    private readonly protector: DataProtector,
   ) {}
 
   async create(input: CreateClientInput, actorUserId: number) {
@@ -53,7 +60,7 @@ export class DrizzleClientRepository implements IClientRepository {
 
       const salt = Buffer.from(existing.encryptionSalt ?? "", "base64url");
       const fieldProtector = this.protector.createFieldProtector(salt);
-      this.protector.decryptClient(existing, fieldProtector);
+      decryptClient(this.protector, existing, fieldProtector);
       const timestampMs = Math.max(Date.now(), existing.lastModificationMs + 1);
       const [row] = transaction
         .update(clients)
@@ -81,40 +88,12 @@ export class DrizzleClientRepository implements IClientRepository {
   }
 
   async listPage(input: { page: number; limit: number; search?: string }) {
-    const normalizedSearch = input.search
-      ? normalizeClientSearch(input.search)
-      : "";
-    if (input.search && !normalizedSearch) {
-      return {
-        clients: [],
-        page: input.page,
-        limit: input.limit,
-        total: 0,
-      };
-    }
-    const searchTerms = normalizedSearch
-      ? this.protector.searchTokensForSearch(input.search ?? "")
-      : [];
-    if (searchTerms.length > 0) {
-      const matchingIds = this.database
-        .select({ clientId: clientSearchTrigrams.clientId })
-        .from(clientSearchTrigrams)
-        .where(inArray(clientSearchTrigrams.trigram, searchTerms))
-        .groupBy(clientSearchTrigrams.clientId)
-        .having(sql`count(*) = ${searchTerms.length}`);
-
-      const candidates = await this.database
-        .select()
-        .from(clients)
-        .where(inArray(clients.id, matchingIds));
+    if (input.search) {
       return this.buildPage(
-        candidates
-          .map((row) => this.toClientRecord(row))
-          .filter((client) => this.matchesSearch(client, normalizedSearch)),
+        await this.findMatchingClients(input.search),
         input,
       );
     }
-
     const [{ total }] = await this.database
       .select({ total: sql<number>`count(*)` })
       .from(clients);
@@ -130,6 +109,24 @@ export class DrizzleClientRepository implements IClientRepository {
       total,
       true,
     );
+  }
+
+  async findMatchingClients(search: string): Promise<ClientRecord[]> {
+    const searchTerms = searchTokensForSearch(this.protector, search);
+    if (searchTerms.length === 0) return [];
+    const matchingIds = this.database
+      .select({ clientId: clientSearchTrigrams.clientId })
+      .from(clientSearchTrigrams)
+      .where(inArray(clientSearchTrigrams.trigram, searchTerms))
+      .groupBy(clientSearchTrigrams.clientId)
+      .having(sql`count(*) = ${searchTerms.length}`);
+    const candidates = await this.database
+      .select()
+      .from(clients)
+      .where(inArray(clients.id, matchingIds));
+    return candidates
+      .map((row) => this.toClientRecord(row))
+      .filter((client) => this.matchesSearch(client, search));
   }
 
   private buildPage(
@@ -161,33 +158,33 @@ export class DrizzleClientRepository implements IClientRepository {
 
   private toClientRecord(
     row: typeof clients.$inferSelect,
-    fieldProtector?: ReturnType<ClientDataProtector["createFieldProtector"]>,
+    fieldProtector?: FieldProtector,
   ): ClientRecord {
     return {
-      ...this.protector.decryptClient(row, fieldProtector),
+      ...decryptClient(this.protector, row, fieldProtector),
       modifiedByUserId: row.modifiedByUserId,
       lastModificationMs: row.lastModificationMs,
       createdAtMs: row.createdAtMs,
     };
   }
 
-  private matchesSearch(
-    client: ClientRecord,
-    normalizedSearch: string,
-  ): boolean {
-    return this.protector
-      .searchableValues({
-        ...client,
-        address: client.address,
-        addressComplement: client.addressComplement,
-        privatenote: client.privatenote,
-      })
-      .some((value) => normalizeClientSearch(value).includes(normalizedSearch));
+  private matchesSearch(client: ClientRecord, search: string): boolean {
+    const normalizedSearch = normalizeClientSearch(search);
+    const values = searchableValues(client);
+    if (/\s/u.test(search.trim())) {
+      values.push(
+        `${client.firstname} ${client.lastname}`,
+        `${client.lastname} ${client.firstname}`,
+      );
+    }
+    return values.some((value) =>
+      normalizeClientSearch(value).includes(normalizedSearch),
+    );
   }
 
   private encryptInput(
     input: CreateClientInput,
-    fieldProtector: ReturnType<ClientDataProtector["createFieldProtector"]>,
+    fieldProtector: FieldProtector,
   ) {
     const professional = input.isProfessional === true ? input : undefined;
     return {
@@ -225,8 +222,9 @@ export class DrizzleClientRepository implements IClientRepository {
     }
 
     const professional = input.isProfessional === true ? input : undefined;
-    const searchTerms = this.protector.searchTokensForValues(
-      this.protector.searchableValues({
+    const searchTerms = searchTokensForValues(
+      this.protector,
+      searchableValues({
         firstname: input.firstname,
         lastname: input.lastname,
         email: input.email?.trim() ?? "",

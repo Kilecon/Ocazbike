@@ -6,6 +6,7 @@ import {
   expect,
   it,
 } from "bun:test";
+import { accessTokenFrom } from "../../../../test-support/authCookies";
 import type { SupportIntegrationFixture } from "./helpers";
 import { createSupportIntegrationFixture } from "./helpers";
 
@@ -22,10 +23,10 @@ afterAll(() => fixture?.cleanup());
 describe("support HTTP integration with SQLite", () => {
   it("persists created support requests and successful notification status", async () => {
     const login = await fixture.login();
-    const { accessToken } = await login.json();
+    const accessToken = accessTokenFrom(login);
     const response = await fixture.request("/support", {
       method: "POST",
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: { Cookie: `access_token=${accessToken}` },
       body: JSON.stringify({
         type: "SR",
         title: "Checkout fails",
@@ -55,11 +56,11 @@ describe("support HTTP integration with SQLite", () => {
 
   it("persists notification failures and retries them without losing the request", async () => {
     const login = await fixture.login();
-    const { accessToken } = await login.json();
+    const accessToken = accessTokenFrom(login);
     fixture.setNotificationFailure(true);
     const created = await fixture.request("/support", {
       method: "POST",
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: { Cookie: `access_token=${accessToken}` },
       body: JSON.stringify({
         type: "BUG",
         title: "Broken filter",
@@ -79,7 +80,7 @@ describe("support HTTP integration with SQLite", () => {
       `/support/${failed.id}/notification`,
       {
         method: "POST",
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: { Cookie: `access_token=${accessToken}` },
       },
     );
     expect(retried.status).toBe(200);
@@ -93,7 +94,7 @@ describe("support HTTP integration with SQLite", () => {
       `/support/${failed.id}/notification`,
       {
         method: "POST",
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: { Cookie: `access_token=${accessToken}` },
       },
     );
     expect(cooldown.status).toBe(429);
@@ -101,7 +102,7 @@ describe("support HTTP integration with SQLite", () => {
 
   it("permanently blocks notification resend for closed requests", async () => {
     const login = await fixture.login();
-    const { accessToken } = await login.json();
+    const accessToken = accessTokenFrom(login);
     const created = await fixture.supportRequests.create({
       type: "INC",
       title: "Closed request",
@@ -117,7 +118,7 @@ describe("support HTTP integration with SQLite", () => {
       `/support/${created.id}/notification`,
       {
         method: "POST",
-        headers: { Authorization: ["Bearer", accessToken].join(" ") },
+        headers: { Cookie: ["access_token", accessToken].join("=") },
       },
     );
 
@@ -157,10 +158,10 @@ describe("support HTTP integration with SQLite", () => {
       .run(closedRequest.id);
 
     const login = await fixture.login();
-    const { accessToken } = await login.json();
+    const accessToken = accessTokenFrom(login);
     const response = await fixture.request(
       "/support?page=1&limit=1&type=BUG&status=pending",
-      { headers: { Authorization: `Bearer ${accessToken}` } },
+      { headers: { Cookie: `access_token=${accessToken}` } },
     );
     const body = await response.json();
     expect(response.status).toBe(200);
@@ -174,7 +175,7 @@ describe("support HTTP integration with SQLite", () => {
 
     const closed = await fixture.request(
       "/support?page=1&limit=10&status=closed",
-      { headers: { Authorization: `Bearer ${accessToken}` } },
+      { headers: { Cookie: `access_token=${accessToken}` } },
     );
     expect(closed.status).toBe(200);
     expect(await closed.json()).toMatchObject({

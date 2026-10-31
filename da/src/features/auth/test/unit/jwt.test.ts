@@ -20,22 +20,21 @@ function signedToken(
 }
 
 describe("JwtService", () => {
-  it("signs and verifies access-token claims", () => {
-    const token = jwt.signAccessToken(42, 60, 1000);
-    expect(jwt.verifyAccessToken(token, 1000)).toEqual({
+  it("signs and verifies access-token claims", async () => {
+    const token = await jwt.signAccessToken(42, 60, 1000);
+    expect(await jwt.verifyAccessToken(token, 1000)).toEqual({
       sub: "42",
       type: "access",
       exp: 1060,
     });
   });
 
-  it("signs refresh tokens with a unique session id", () => {
-    const first = jwt.verifyRefreshToken(
-      jwt.signRefreshToken(42, 60, 1000),
-      1000,
-    );
-    const second = jwt.verifyRefreshToken(
-      jwt.signRefreshToken(42, 60, 1000),
+  it("signs refresh tokens with a unique session id", async () => {
+    const issued = await jwt.signRefreshToken(42, 60, 1000);
+    const first = await jwt.verifyRefreshToken(issued.token, 1000);
+    expect(first).toEqual(issued.claims);
+    const second = await jwt.verifyRefreshToken(
+      (await jwt.signRefreshToken(42, 60, 1000)).token,
       1000,
     );
     expect(first).toMatchObject({ sub: "42", type: "refresh", exp: 1060 });
@@ -44,53 +43,72 @@ describe("JwtService", () => {
     expect(second.jti).not.toBe(first.jti);
   });
 
-  it("rejects expired tokens, including tokens expiring at the current second", () => {
-    const token = jwt.signAccessToken(1, 10, 100);
-    expect(() => jwt.verifyAccessToken(token, 110)).toThrow(
+  it("rejects expired tokens, including tokens expiring at the current second", async () => {
+    const token = await jwt.signAccessToken(1, 10, 100);
+    await expect(jwt.verifyAccessToken(token, 110)).rejects.toThrow(
       InvalidAuthTokenError,
     );
   });
 
-  it("rejects malformed tokens, unsupported headers, and changed signatures", () => {
-    expect(() => jwt.verifyAccessToken("not.a.jwt")).toThrow(
+  it("rejects malformed tokens, unsupported headers, and changed signatures", async () => {
+    await expect(jwt.verifyAccessToken("not.a.jwt")).rejects.toThrow(
       InvalidAuthTokenError,
     );
-    expect(() =>
+    await expect(
       jwt.verifyAccessToken(
         signedToken({ sub: "1", type: "access", exp: 200 }, { alg: "none" }),
         100,
       ),
-    ).toThrow(InvalidAuthTokenError);
-    const token = jwt.signAccessToken(1, 100, 100);
-    const changed = `${token.slice(0, -1)}${token.endsWith("a") ? "b" : "a"}`;
-    expect(() => jwt.verifyAccessToken(changed, 100)).toThrow(
+    ).rejects.toThrow(InvalidAuthTokenError);
+    await expect(
+      jwt.verifyAccessToken(
+        signedToken({ sub: "1", type: "access", exp: 200 }, { alg: "HS512" }),
+        100,
+      ),
+    ).rejects.toThrow(InvalidAuthTokenError);
+    const token = await jwt.signAccessToken(1, 100, 100);
+    const [header, payload, signature] = token.split(".");
+    const changed = `${header}.${payload}.${signature.startsWith("A") ? "B" : "A"}${signature.slice(1)}`;
+    await expect(jwt.verifyAccessToken(changed, 100)).rejects.toThrow(
       InvalidAuthTokenError,
     );
   });
 
-  it("rejects wrong token types and invalid subjects", () => {
-    expect(() =>
-      jwt.verifyAccessToken(jwt.signRefreshToken(1, 100, 100), 100),
-    ).toThrow(InvalidAuthTokenError);
-    expect(() =>
-      jwt.verifyRefreshToken(jwt.signAccessToken(1, 100, 100), 100),
-    ).toThrow(InvalidAuthTokenError);
+  it("rejects wrong token types and invalid subjects", async () => {
+    await expect(
+      jwt.verifyAccessToken(
+        (await jwt.signRefreshToken(1, 100, 100)).token,
+        100,
+      ),
+    ).rejects.toThrow(InvalidAuthTokenError);
+    await expect(
+      jwt.verifyRefreshToken(await jwt.signAccessToken(1, 100, 100), 100),
+    ).rejects.toThrow(InvalidAuthTokenError);
     for (const subject of ["0", "-1", "1.5", "01", "9007199254740992"]) {
-      expect(() =>
+      await expect(
         jwt.verifyAccessToken(
           signedToken({ sub: subject, type: "access", exp: 200 }),
           100,
         ),
-      ).toThrow(InvalidAuthTokenError);
+      ).rejects.toThrow(InvalidAuthTokenError);
     }
   });
 
-  it("rejects malformed refresh claims", () => {
-    expect(() =>
+  it("accepts tokens signed by the previous in-house implementation", async () => {
+    expect(
+      await jwt.verifyAccessToken(
+        signedToken({ sub: "7", type: "access", exp: 200 }),
+        100,
+      ),
+    ).toEqual({ sub: "7", type: "access", exp: 200 });
+  });
+
+  it("rejects malformed refresh claims", async () => {
+    await expect(
       jwt.verifyRefreshToken(
         signedToken({ sub: "1", type: "refresh", jti: "", exp: 200 }),
         100,
       ),
-    ).toThrow(InvalidAuthTokenError);
+    ).rejects.toThrow(InvalidAuthTokenError);
   });
 });

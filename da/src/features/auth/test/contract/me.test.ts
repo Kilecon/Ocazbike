@@ -1,13 +1,14 @@
 import { describe, expect, it } from "bun:test";
+import { accessTokenFrom } from "../../../../test-support/authCookies";
 import { createHarness, expectError } from "./helpers";
 
 describe("GET /auth/me", () => {
   it("returns the documented /me fields and millisecond timestamp", async () => {
     const { login, request } = createHarness();
     const loggedIn = await login();
-    const { accessToken } = await loggedIn.json();
+    const accessToken = accessTokenFrom(loggedIn);
     const response = await request("/auth/me", {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: { Cookie: `access_token=${accessToken}` },
     });
     const body = await response.json();
 
@@ -25,11 +26,11 @@ describe("GET /auth/me", () => {
   it("returns when the user must change their password", async () => {
     const { login, request, users } = createHarness();
     const loggedIn = await login();
-    const { accessToken } = await loggedIn.json();
+    const accessToken = accessTokenFrom(loggedIn);
     users.values[0].mustChangePassword = true;
 
     const response = await request("/auth/me", {
-      headers: { Authorization: ["Bear", "er ", accessToken].join("") },
+      headers: { Cookie: ["access_", "token=", accessToken].join("") },
     });
 
     expect(response.status).toBe(200);
@@ -46,11 +47,11 @@ describe("GET /auth/me", () => {
   it("returns null when /me has no previous login timestamp", async () => {
     const { login, request, users } = createHarness();
     const loggedIn = await login();
-    const { accessToken } = await loggedIn.json();
+    const accessToken = accessTokenFrom(loggedIn);
     users.values[0].lastLoginAtEpochMs = null;
 
     const response = await request("/auth/me", {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: { Cookie: `access_token=${accessToken}` },
     });
 
     expect(response.status).toBe(200);
@@ -78,7 +79,7 @@ describe("GET /auth/me", () => {
     const { request } = createHarness();
     await expectError(
       await request("/auth/me", {
-        headers: { Authorization: "Bearer invalid" },
+        headers: { Cookie: "access_token=invalid" },
       }),
       401,
       "INVALID_AUTH_TOKEN",

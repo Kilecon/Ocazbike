@@ -1,10 +1,10 @@
 import { and, desc, eq, isNull, lte, ne, or, sql } from "drizzle-orm";
-import type { db } from "../../../shared/database/db";
+import type { DataProtector } from "../../../shared/crypto/DataProtector";
+import type { AppDatabase } from "../../../shared/database/db";
 import {
   supportDailySequences,
   supportRequests,
 } from "../../../shared/database/schema/support";
-import type { ClientDataProtector } from "../../clients/crypto/ClientDataProtector";
 import type {
   CreateSupportRequestInput,
   ISupportRequestRepository,
@@ -21,8 +21,8 @@ export class DrizzleSupportRequestRepository
   implements ISupportRequestRepository
 {
   constructor(
-    private readonly database: typeof db,
-    private readonly protector: ClientDataProtector,
+    private readonly database: AppDatabase,
+    private readonly protector: DataProtector,
   ) {}
 
   async create(

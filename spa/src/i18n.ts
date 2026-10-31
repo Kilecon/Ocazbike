@@ -24,12 +24,7 @@ const resources = {
 function syncDocumentMetadata(language: SupportedLanguage) {
   const translation = resources[language].translation;
   const pathname = window.location.pathname.replace(/\/+$/, "") || "/";
-  const page =
-    pathname === "/velo"
-      ? "catalog"
-      : pathname.startsWith("/admin")
-        ? "admin"
-        : "home";
+  const page = pathname.startsWith("/admin") ? "admin" : "home";
   const description = document.querySelector<HTMLMetaElement>(
     'meta[name="description"]',
   );
@@ -56,25 +51,7 @@ export function getBrowserLanguage(): SupportedLanguage {
   return "en";
 }
 
-function getInitialLanguage(): SupportedLanguage {
-  const isAdminPage = window.location.pathname.startsWith("/admin");
-  if (isAdminPage) return getBrowserLanguage();
-
-  const storedLanguage = localStorage.getItem("language");
-  if (storedLanguage === "fr" || storedLanguage === "en") {
-    return storedLanguage;
-  }
-
-  return getBrowserLanguage();
-}
-
-const initialLanguage = getInitialLanguage();
-
-export async function changeLanguage(language: SupportedLanguage) {
-  await i18n.changeLanguage(language);
-  syncDocumentMetadata(language);
-  localStorage.setItem("language", language);
-}
+const initialLanguage = getBrowserLanguage();
 
 void i18n.use(initReactI18next).init({
   resources,
@@ -85,9 +62,5 @@ void i18n.use(initReactI18next).init({
   },
 });
 syncDocumentMetadata(initialLanguage);
-
-export function translate(key: TranslationKey): string {
-  return i18n.t(key);
-}
 
 export default i18n;

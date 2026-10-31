@@ -6,7 +6,7 @@ describe("support HTTP contract", () => {
     const { request, authorization, notifications } = createHarness();
     const response = await request("/support", {
       method: "POST",
-      headers: { Authorization: authorization() },
+      headers: { Cookie: authorization() },
       ...json({
         type: "BUG",
         title: "Checkout fails",
@@ -42,10 +42,14 @@ describe("support HTTP contract", () => {
     for (const body of invalidRequests) {
       const response = await request("/support", {
         method: "POST",
-        headers: { Authorization: authorization() },
+        headers: { Cookie: authorization() },
         ...json(body),
       });
-      expect(response.status).toBe(422);
+      expect(response.status).toBe(400);
+      expect(await response.json()).toEqual({
+        code: "BAD_REQUEST",
+        message: "Invalid request data",
+      });
     }
   });
 
@@ -55,21 +59,21 @@ describe("support HTTP contract", () => {
     expect(
       (
         await request("/support", {
-          headers: { Authorization: "Bearer invalid" },
+          headers: { Cookie: "access_token=invalid" },
         })
       ).status,
     ).toBe(401);
     expect(
       (
         await request("/support", {
-          headers: { Authorization: authorization(2) },
+          headers: { Cookie: authorization(2) },
         })
       ).status,
     ).toBe(403);
     expect(
       (
         await request("/support", {
-          headers: { Authorization: authorization(3) },
+          headers: { Cookie: authorization(3) },
         })
       ).status,
     ).toBe(401);
@@ -77,7 +81,7 @@ describe("support HTTP contract", () => {
       (
         await request("/support/1/notification", {
           method: "POST",
-          headers: { Authorization: authorization(2) },
+          headers: { Cookie: authorization(2) },
         })
       ).status,
     ).toBe(403);
@@ -107,7 +111,7 @@ describe("support HTTP contract", () => {
     });
 
     const page = await request("/support?page=1&limit=2", {
-      headers: { Authorization: authorization() },
+      headers: { Cookie: authorization() },
     });
     expect(await page.json()).toMatchObject({
       page: 1,
@@ -118,7 +122,7 @@ describe("support HTTP contract", () => {
 
     const filtered = await request(
       "/support?page=1&limit=10&type=BUG&status=pending",
-      { headers: { Authorization: authorization() } },
+      { headers: { Cookie: authorization() } },
     );
     expect(await filtered.json()).toMatchObject({
       total: 1,
@@ -127,7 +131,7 @@ describe("support HTTP contract", () => {
 
     const created = await request(
       "/support?page=1&limit=10&type=SR&status=created",
-      { headers: { Authorization: authorization() } },
+      { headers: { Cookie: authorization() } },
     );
     expect(await created.json()).toMatchObject({
       total: 1,
@@ -140,7 +144,7 @@ describe("support HTTP contract", () => {
     setNotificationFailure(true);
     const failed = await request("/support", {
       method: "POST",
-      headers: { Authorization: authorization() },
+      headers: { Cookie: authorization() },
       ...json({ type: "INC", title: "Failure", description: "Retry me." }),
     });
     const failedBody = await failed.json();
@@ -153,7 +157,7 @@ describe("support HTTP contract", () => {
     setNotificationFailure(false);
     const retried = await request(`/support/${failedBody.id}/notification`, {
       method: "POST",
-      headers: { Authorization: authorization() },
+      headers: { Cookie: authorization() },
     });
     expect(await retried.json()).toMatchObject({
       status: "pending",
@@ -163,7 +167,7 @@ describe("support HTTP contract", () => {
 
     const cooldown = await request(`/support/${failedBody.id}/notification`, {
       method: "POST",
-      headers: { Authorization: authorization() },
+      headers: { Cookie: authorization() },
     });
     expect(cooldown.status).toBe(429);
   });
@@ -187,7 +191,7 @@ describe("support HTTP contract", () => {
 
     const response = await request(`/support/${created.id}/notification`, {
       method: "POST",
-      headers: { Authorization: authorization() },
+      headers: { Cookie: authorization() },
     });
 
     expect(response.status).toBe(409);
@@ -208,9 +212,13 @@ describe("support HTTP contract", () => {
       "status=unknown",
     ]) {
       const response = await request(`/support?${query}`, {
-        headers: { Authorization: authorization() },
+        headers: { Cookie: authorization() },
       });
-      expect(response.status).toBe(422);
+      expect(response.status).toBe(400);
+      expect(await response.json()).toEqual({
+        code: "BAD_REQUEST",
+        message: "Invalid request data",
+      });
     }
   });
 });

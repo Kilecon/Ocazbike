@@ -1,13 +1,11 @@
 import { afterAll, beforeEach, describe, expect, it } from "bun:test";
+import { DataProtector } from "../../../../shared/crypto/DataProtector";
 import { users } from "../../../../shared/database/schema/auth";
-import { createTestDatabase } from "../../../../shared/database/testDatabase";
-import { ClientDataProtector } from "../../../clients/crypto/ClientDataProtector";
-import { migrateSupportRequestData } from "../../crypto/migrateSupportRequestData";
+import { createTestDatabase } from "../../../../test-support/testDatabase";
 import { DrizzleSupportRequestRepository } from "../../infrastructure/DrizzleSupportRequestRepository";
 
 const testDatabase = createTestDatabase("support-repository-test");
-const protector = new ClientDataProtector(Buffer.alloc(32, 44));
-migrateSupportRequestData(testDatabase.sqlite, protector);
+const protector = new DataProtector(Buffer.alloc(32, 44));
 const repository = new DrizzleSupportRequestRepository(
   testDatabase.database,
   protector,
@@ -21,7 +19,7 @@ testDatabase.database
   .run();
 
 beforeEach(() => {
-  testDatabase.sqlite.exec(
+  testDatabase.sqlite.run(
     "DELETE FROM support_requests; DELETE FROM sqlite_sequence WHERE name = 'support_requests';",
   );
 });
@@ -74,66 +72,6 @@ describe("support database schema", () => {
         { title: first.title, description: first.description },
       ],
     });
-  });
-
-  it("encrypts existing support titles and descriptions using a per-row salt", async () => {
-    testDatabase.sqlite
-      .prepare(
-        `INSERT INTO support_requests
-          (reference, type, title, description, status)
-         VALUES (?, ?, ?, ?, ?)`,
-      )
-      .run(
-        "SR-2026-10-27-001",
-        "SR",
-        "Legacy title",
-        "Legacy description",
-        "created",
-      );
-    testDatabase.sqlite
-      .prepare(
-        `INSERT INTO support_requests
-          (reference, type, title, description, status)
-         VALUES (?, ?, ?, ?, ?)`,
-      )
-      .run(
-        "BUG-2026-10-27-001",
-        "BUG",
-        "Second legacy title",
-        "Second legacy description",
-        "created",
-      );
-
-    migrateSupportRequestData(testDatabase.sqlite, protector);
-
-    const stored = testDatabase.sqlite
-      .query(
-        `SELECT title, description, encryption_salt
-         FROM support_requests WHERE reference = ?`,
-      )
-      .get("SR-2026-10-27-001") as {
-      title: string;
-      description: string;
-      encryption_salt: string;
-    };
-    expect(stored.title).not.toBe("Legacy title");
-    expect(stored.description).not.toBe("Legacy description");
-    expect(stored.title.startsWith("v1.")).toBe(true);
-    expect(stored.description.startsWith("v1.")).toBe(true);
-    expect(stored.encryption_salt).toBeTruthy();
-    const secondSalt = testDatabase.sqlite
-      .query("SELECT encryption_salt FROM support_requests WHERE reference = ?")
-      .get("BUG-2026-10-27-001") as { encryption_salt: string };
-    expect(secondSalt.encryption_salt).not.toBe(stored.encryption_salt);
-
-    const page = await repository.listPage({ page: 1, limit: 10 });
-    expect(page.requests).toMatchObject([
-      {
-        title: "Second legacy title",
-        description: "Second legacy description",
-      },
-      { title: "Legacy title", description: "Legacy description" },
-    ]);
   });
 });
 

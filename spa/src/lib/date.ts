@@ -18,9 +18,10 @@ export function formatDateTime(timestamp: number, language: string): string {
   return dateTimeFormatters[locale].format(timestamp);
 }
 
-export function formatLocalDate(timestamp: number): string {
+export function formatLocalDate(timestamp: number, language?: string): string {
   const locale =
-    typeof navigator === "undefined" ? undefined : navigator.language;
+    language ??
+    (typeof navigator === "undefined" ? undefined : navigator.language);
   return new Intl.DateTimeFormat(locale, {
     day: "2-digit",
     month: "2-digit",

@@ -1,9 +1,9 @@
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
+import { ClientSearchInput } from "../../../components/ui/ClientSearchInput";
 import { Grid } from "../../../components/ui/Grid";
-import { Input } from "../../../components/ui/input";
 import { formatClientName } from "../../../lib/client";
 import type { ClientListItemDTO } from "../../../services/types";
 
@@ -37,22 +37,11 @@ export function Client360Grid({
       title={t("clientRecords")}
       subtitle={t("clientGridSubtitle")}
       headerContent={
-        <div className="mx-auto flex w-full max-w-[30rem] min-w-0 items-center gap-[0.5rem]">
-          <Search
-            className="size-[1.25rem] shrink-0 text-muted"
-            aria-hidden="true"
-          />
-          <Input
-            className="min-w-0"
-            id="client360-search"
-            type="search"
-            aria-label={t("searchClient")}
-            maxLength={50}
-            value={search}
-            onChange={(event) => onSearchChange(event.target.value)}
-            placeholder={t("clientSearchPlaceholder")}
-          />
-        </div>
+        <ClientSearchInput
+          id="client360-search"
+          value={search}
+          onChange={onSearchChange}
+        />
       }
       actions={[
         <Button key="add-client" type="button" onClick={onCreate}>

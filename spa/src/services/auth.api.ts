@@ -1,15 +1,15 @@
-import { clearSession, request, storeSession } from "./api-client";
-import type { AuthTokens, CurrentUser, ManagedUser, PublicUser } from "./types";
+import { request } from "./api-client";
+import type {
+  AuthSession,
+  CurrentUser,
+  ManagedUser,
+  PublicUser,
+} from "./types";
 
-export { clearSession };
-
-export function login(email: string, password: string): Promise<AuthTokens> {
-  return request<AuthTokens>("/auth/login", {
+export function login(email: string, password: string): Promise<AuthSession> {
+  return request<AuthSession>("/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
-  }).then((tokens) => {
-    storeSession(tokens);
-    return tokens;
   });
 }
 

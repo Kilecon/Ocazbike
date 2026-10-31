@@ -21,7 +21,7 @@ describe("client detail contract", () => {
     );
 
     const response = await request("/clients/1", {
-      headers: { Authorization: authorization(2) },
+      headers: { Cookie: authorization(2) },
     });
     const body = await response.json();
 
@@ -44,10 +44,10 @@ describe("client detail contract", () => {
     const { request, authorization } = createHarness();
 
     const malformed = await request("/clients/not-an-id", {
-      headers: { Authorization: authorization() },
+      headers: { Cookie: authorization() },
     });
     const missing = await request("/clients/99", {
-      headers: { Authorization: authorization() },
+      headers: { Cookie: authorization() },
     });
     expect(malformed.status).toBe(400);
     expect(missing.status).toBe(404);

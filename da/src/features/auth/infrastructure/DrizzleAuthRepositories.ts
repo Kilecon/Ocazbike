@@ -10,14 +10,14 @@ import {
   lte,
   or,
 } from "drizzle-orm";
+import type { DataProtector } from "../../../shared/crypto/DataProtector";
 import type { AppDatabase } from "../../../shared/database/db";
 import { refreshSessions, users } from "../../../shared/database/schema/auth";
-import type { ClientDataProtector } from "../../clients/crypto/ClientDataProtector";
 import type {
+  IRefreshSessionRepository,
+  IUserRepository,
   RefreshSession,
-  RefreshSessionRepository,
-  UserRepository,
-} from "../repositories";
+} from "../IAuthRepositories";
 import type { User, UserRole } from "../types";
 
 const userStorageColumns = {
@@ -51,10 +51,10 @@ type UserStorageRow = Pick<
   | "updatedAtEpochMs"
 >;
 
-export class DrizzleUserRepository implements UserRepository {
+export class DrizzleUserRepository implements IUserRepository {
   constructor(
     private readonly db: AppDatabase,
-    private readonly protector: ClientDataProtector,
+    private readonly protector: DataProtector,
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
@@ -198,7 +198,7 @@ export class DrizzleUserRepository implements UserRepository {
 }
 
 export class DrizzleRefreshSessionRepository
-  implements RefreshSessionRepository
+  implements IRefreshSessionRepository
 {
   constructor(private readonly db: AppDatabase) {}
 

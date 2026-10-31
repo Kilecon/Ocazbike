@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { type SubmitEvent, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
@@ -40,7 +40,7 @@ export function CreateSupportDialog({
 
   if (!open) return null;
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     onSubmit({ type, title, description });
   };

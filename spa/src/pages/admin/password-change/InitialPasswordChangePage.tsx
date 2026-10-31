@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAdminToast } from "../../../components/admin/AdminToast";
 import { Button } from "../../../components/ui/button";
@@ -16,7 +16,7 @@ export function InitialPasswordChangePage({
   const [confirmation, setConfirmation] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const submit = async (event: FormEvent) => {
+  const submit = async (event: SubmitEvent) => {
     event.preventDefault();
     if (password !== confirmation) {
       showToast("error", t("toastError"), t("passwordsDoNotMatch"));

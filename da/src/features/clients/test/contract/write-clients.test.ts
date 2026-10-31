@@ -4,7 +4,7 @@ import { createHarness } from "./helpers";
 describe("client write contract", () => {
   it("allows either contact and returns normalized personal and professional fields", async () => {
     const { request, authorization, json } = createHarness();
-    const admin = { Authorization: authorization() };
+    const admin = { Cookie: authorization() };
 
     const individual = await request("/clients", {
       method: "POST",
@@ -24,7 +24,7 @@ describe("client write contract", () => {
 
     const professional = await request("/clients", {
       method: "POST",
-      headers: { Authorization: authorization(2) },
+      headers: { Cookie: authorization(2) },
       ...json({
         firstname: "Grace",
         lastname: "Hopper",
@@ -65,7 +65,7 @@ describe("client write contract", () => {
     for (const body of invalidInputs) {
       const response = await request("/clients", {
         method: "POST",
-        headers: { Authorization: authorization() },
+        headers: { Cookie: authorization() },
         ...json(body),
       });
       expect(response.status).toBe(400);
@@ -97,7 +97,7 @@ describe("client write contract", () => {
     for (const body of invalidInputs) {
       const response = await request("/clients/1", {
         method: "PUT",
-        headers: { Authorization: authorization() },
+        headers: { Cookie: authorization() },
         ...json(body),
       });
       expect(response.status).toBe(400);
@@ -120,14 +120,14 @@ describe("client write contract", () => {
 
     const denied = await request("/clients/1", {
       method: "PUT",
-      headers: { Authorization: authorization(2) },
+      headers: { Cookie: authorization(2) },
       ...json(body),
     });
     expect(denied.status).toBe(403);
 
     const updated = await request("/clients/1", {
       method: "PUT",
-      headers: { Authorization: authorization() },
+      headers: { Cookie: authorization() },
       ...json(body),
     });
     const result = await updated.json();

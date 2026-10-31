@@ -1,14 +1,14 @@
 import { createApp } from "../../../../appFactory";
+import { signTestAccessToken } from "../../../../test-support/authCookies";
 import { loadAuthConfig } from "../../../auth/config";
-import { JwtService } from "../../../auth/jwt";
 import type {
+  IRefreshSessionRepository,
+  IUserRepository,
   RefreshSession,
-  RefreshSessionRepository,
-  UserRepository,
-} from "../../../auth/repositories";
+} from "../../../auth/IAuthRepositories";
 import type { User, UserRole } from "../../../auth/types";
 import type { IBillingDocumentRepository } from "../../../billing/IBillingDocumentRepository";
-import { ClientDataProtector } from "../../crypto/ClientDataProtector";
+import { emptyOperationCounts } from "../../../billing/IBillingDocumentRepository";
 import type {
   ClientRecord,
   CreateClientInput,
@@ -20,9 +20,8 @@ const config = loadAuthConfig({
   SPA_APP_ID: "clients-contract-spa",
   BCRYPT_ROUNDS: "4",
 });
-const jwt = new JwtService(config.jwtSecret);
 
-class ContractUsers implements UserRepository {
+class ContractUsers implements IUserRepository {
   readonly values: User[] = [
     makeUser(1, "Admin"),
     makeUser(2, "Subadmin"),
@@ -69,7 +68,7 @@ class ContractUsers implements UserRepository {
   async recordLogout() {}
 }
 
-class ContractSessions implements RefreshSessionRepository {
+class ContractSessions implements IRefreshSessionRepository {
   async create(_session: RefreshSession) {}
   async findById(_id: string) {
     return null;
@@ -174,13 +173,28 @@ export function createHarness() {
   const users = new ContractUsers();
   const clients = new ContractClients();
   const billingDocuments: IBillingDocumentRepository = {
-    async listForClient() {
-      return [];
+    async countOperations() {
+      return emptyOperationCounts();
     },
-    async listActiveRepairs() {
-      return [];
+    async listOperations() {
+      return { operations: [], page: 1, limit: 20, total: 0 };
     },
-    async createForClient() {
+    async getOperation() {
+      return null;
+    },
+    async createOperation() {
+      return null;
+    },
+    async acceptQuote() {
+      return null;
+    },
+    async rejectQuote() {
+      return null;
+    },
+    async completeOperation() {
+      return null;
+    },
+    async payOperation() {
       return null;
     },
   };
@@ -193,7 +207,6 @@ export function createHarness() {
     },
     clients,
     billingDocuments,
-    clientDataProtector: new ClientDataProtector(Buffer.alloc(32, 46)),
   });
 
   const request = (path: string, init: RequestInit = {}) => {
@@ -210,7 +223,7 @@ export function createHarness() {
   };
 
   const authorization = (userId = 1) =>
-    `Bearer ${jwt.signAccessToken(userId, config.accessTokenTtlSeconds)}`;
+    `access_token=${signTestAccessToken(config.jwtSecret, userId, config.accessTokenTtlSeconds)}`;
   const json = (body: unknown) => ({
     "Content-Type": "application/json",
     body: JSON.stringify(body),

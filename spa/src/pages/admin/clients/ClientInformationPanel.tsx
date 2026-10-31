@@ -1,5 +1,5 @@
 import { Pencil } from "lucide-react";
-import type { FormEvent } from "react";
+import type { SubmitEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../../components/ui/button";
 import {
@@ -45,7 +45,7 @@ export function ClientInformationPanel({
   onEdit: () => void;
   onChange: (field: keyof ClientForm, value: string | boolean) => void;
   onCancel: () => void;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onSubmit: (event: SubmitEvent<HTMLFormElement>) => void;
 }) {
   const { t } = useTranslation();
   const contactFields = [

@@ -1,19 +1,18 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { eq } from "drizzle-orm";
+import { DataProtector } from "../../../../shared/crypto/DataProtector";
 import { users } from "../../../../shared/database/schema/auth";
 import {
   billingDocuments,
   clientSearchTrigrams,
   clients,
 } from "../../../../shared/database/schema/billing";
-import { createTestDatabase } from "../../../../shared/database/testDatabase";
-import { iso8601ToUtcTimestamp } from "../../../auth/date";
+import { iso8601ToUtcTimestamp } from "../../../../shared/date/iso8601";
+import { createTestDatabase } from "../../../../test-support/testDatabase";
 import { DrizzleBillingDocumentRepository } from "../../../billing/infrastructure/DrizzleBillingDocumentRepository";
-import { ClientDataProtector } from "../../crypto/ClientDataProtector";
-import { migrateClientData } from "../../crypto/migrateClientData";
 import { DrizzleClientRepository } from "../../infrastructure/DrizzleClientRepository";
 
-const protector = new ClientDataProtector(Buffer.alloc(32, 7));
+const protector = new DataProtector(Buffer.alloc(32, 7));
 let testDatabase: ReturnType<typeof createTestDatabase>;
 let db: ReturnType<typeof createTestDatabase>["database"];
 let sqlite: ReturnType<typeof createTestDatabase>["sqlite"];
@@ -228,18 +227,16 @@ describe("DrizzleClientRepository integration", () => {
       expect(matchingClients.clients.map(({ id }) => id).sort()).toEqual(
         [ada.id, splitMatch.id].sort(),
       );
-      const repairOverview = await new DrizzleBillingDocumentRepository(
+      const billingList = await new DrizzleBillingDocumentRepository(
         db,
         protector,
-      ).listActiveRepairs();
-      expect(repairOverview[0]).toMatchObject({
-        clientId: ada.id,
-        clientFirstname: "Ada",
-        clientLastname: "Lovelace",
-        clientEmail: `ada-${suffix}@example.com`,
-        clientPhoneNumber: "+33 (0)6 12 34 56 78",
+        repository,
+      ).listOperations({ clientId: ada.id, page: 1, limit: 10 });
+      expect(billingList.operations[0]?.client).toEqual({
+        firstname: "Ada",
+        lastname: "Lovelace",
+        email: `ada-${suffix}@example.com`,
       });
-      expect(repairOverview[0]).not.toHaveProperty("clientEncryptionSalt");
 
       const falsePositive = await repository.listPage({
         page: 1,
@@ -259,60 +256,6 @@ describe("DrizzleClientRepository integration", () => {
       sqlite
         .prepare("DELETE FROM clients WHERE id IN (?, ?)")
         .run(ada.id, splitMatch.id);
-    }
-  });
-
-  it("encrypts legacy plaintext rows and creates their search index", async () => {
-    const suffix = crypto.randomUUID();
-    const [legacy] = await db
-      .insert(clients)
-      .values({
-        firstname: `Zoé-${suffix}`,
-        lastname: "Legacy",
-        email: `legacy-${suffix}@example.com`,
-        phonenumber: "1234567890",
-        address: "2 rue du Test",
-        addressComplement: "Entrée 2",
-        privatenote: "Legacy note",
-      })
-      .returning();
-
-    try {
-      migrateClientData(sqlite, protector);
-      const stored = sqlite
-        .query(
-          "SELECT firstname, address_complement, identity_card_number, encryption_salt FROM clients WHERE id = ?",
-        )
-        .get(legacy.id) as {
-        firstname: string;
-        address_complement: string | null;
-        identity_card_number: string | null;
-        encryption_salt: string | null;
-      };
-      expect(stored.firstname).not.toContain(`Zoé-${suffix}`);
-      expect(stored.address_complement).not.toContain("Entrée 2");
-      expect(stored.identity_card_number).toBeNull();
-      expect(stored.encryption_salt).toBeTruthy();
-
-      const result = await repository.listPage({
-        page: 1,
-        limit: 20,
-        search: `legacy-${suffix}`,
-      });
-      expect(result.clients).toHaveLength(1);
-      expect(result.clients[0]).toMatchObject({
-        id: legacy.id,
-        firstname: `Zoé-${suffix}`,
-        address: "2 rue du Test",
-        addressComplement: "Entrée 2",
-        identityCardNumber: null,
-        privatenote: "Legacy note",
-      });
-    } finally {
-      await db
-        .delete(clientSearchTrigrams)
-        .where(eq(clientSearchTrigrams.clientId, legacy.id));
-      await db.delete(clients).where(eq(clients.id, legacy.id));
     }
   });
 
@@ -428,29 +371,6 @@ describe("DrizzleClientRepository integration", () => {
         .run(client.id);
       sqlite.prepare("DELETE FROM clients WHERE id = ?").run(client.id);
       sqlite.prepare("DELETE FROM clients WHERE id = ?").run(unchanged.id);
-    }
-  });
-
-  it("refuses to start when an encrypted row cannot be authenticated", async () => {
-    const client = await repository.create(
-      {
-        firstname: "Key",
-        lastname: "Mismatch",
-        email: `key-mismatch-${crypto.randomUUID()}@example.com`,
-        phonenumber: "1234567890",
-      },
-      actorUserId,
-    );
-
-    try {
-      expect(() =>
-        migrateClientData(sqlite, new ClientDataProtector(Buffer.alloc(32, 8))),
-      ).toThrow();
-    } finally {
-      sqlite
-        .prepare("DELETE FROM client_search_trigrams WHERE client_id = ?")
-        .run(client.id);
-      sqlite.prepare("DELETE FROM clients WHERE id = ?").run(client.id);
     }
   });
 });

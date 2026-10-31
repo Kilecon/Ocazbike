@@ -1,7 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import {
   AuthenticationError,
-  ContractError,
   DuplicateUserError,
   ForbiddenAppError,
   ForbiddenRoleError,
@@ -46,13 +45,7 @@ describe("auth errors", () => {
     }
   });
 
-  it("preserves custom contract errors and rate-limit retry information", () => {
-    const contract = new ContractError(422, "INVALID", "Invalid input");
-    expect(contract.name).toBe("ContractError");
-    expect(contract.statusCode).toBe(422);
-    expect(contract.code).toBe("INVALID");
-    expect(contract.message).toBe("Invalid input");
-
+  it("preserves rate-limit retry information", () => {
     const limited = new TooManyAttemptsError(12);
     expect(limited.name).toBe("TooManyAttemptsError");
     expect(limited.statusCode).toBe(429);

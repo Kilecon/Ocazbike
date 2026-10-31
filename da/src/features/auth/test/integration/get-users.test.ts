@@ -6,6 +6,7 @@ import {
   expect,
   it,
 } from "bun:test";
+import { accessTokenFrom } from "../../../../test-support/authCookies";
 import type { User } from "../../types";
 import {
   type AuthIntegrationFixture,
@@ -39,16 +40,15 @@ afterAll(() => fixture?.cleanup());
 describe("auth HTTP integration — get-users", () => {
   it("filters user listing to active accounts by default", async () => {
     const loginResponse = await login();
-    const tokens = await loginResponse.json();
-    const authorization = `Bearer ${tokens.accessToken}`;
+    const authorization = `access_token=${accessTokenFrom(loginResponse)}`;
     const defaultResponse = await app.handle(
       new Request("http://localhost/users", {
-        headers: headers({ Authorization: authorization }),
+        headers: headers({ Cookie: authorization }),
       }),
     );
     const allResponse = await app.handle(
       new Request("http://localhost/users?activeOnly=false", {
-        headers: headers({ Authorization: authorization }),
+        headers: headers({ Cookie: authorization }),
       }),
     );
 
@@ -89,16 +89,15 @@ describe("auth HTTP integration — get-users", () => {
     }
 
     const loginResponse = await login();
-    const tokens = await loginResponse.json();
-    const authorization = `Bearer ${tokens.accessToken}`;
+    const authorization = `access_token=${accessTokenFrom(loginResponse)}`;
     const firstPage = await app.handle(
       new Request("http://localhost/users?activeOnly=false&page=1&limit=10", {
-        headers: headers({ Authorization: authorization }),
+        headers: headers({ Cookie: authorization }),
       }),
     );
     const secondPage = await app.handle(
       new Request("http://localhost/users?activeOnly=false&page=2&limit=10", {
-        headers: headers({ Authorization: authorization }),
+        headers: headers({ Cookie: authorization }),
       }),
     );
     expect(firstPage.status).toBe(200);

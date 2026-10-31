@@ -1,5 +1,5 @@
 import { cors } from "@elysiajs/cors";
-import { swagger } from "@elysiajs/swagger";
+import { openapi } from "@elysiajs/openapi";
 import { trace } from "@opentelemetry/api";
 import { Elysia, ParseError, ValidationError } from "elysia";
 import type { AuthConfig } from "./features/auth/config";
@@ -20,30 +20,28 @@ import {
   UserAlreadyDeactivatedError,
   UserNotFoundError,
 } from "./features/auth/errors";
+import type {
+  IRefreshSessionRepository,
+  IUserRepository,
+} from "./features/auth/IAuthRepositories";
 import { JwtService } from "./features/auth/jwt";
 import { LoginRateLimiter } from "./features/auth/loginRateLimiter";
 import type { PasswordHasher } from "./features/auth/password";
-import type {
-  RefreshSessionRepository,
-  UserRepository,
-} from "./features/auth/repositories";
 import { authRoutes } from "./features/auth/routes";
 import { AuthService } from "./features/auth/service";
 import type { IBillingDocumentRepository } from "./features/billing/IBillingDocumentRepository";
-import { createBillingDocumentRoutes } from "./features/billing/routes/billingDocuments";
-import { createRepairRoutes } from "./features/billing/routes/repairs";
-import { ClientDataProtector } from "./features/clients/crypto/ClientDataProtector";
+import { createBillingOperationRoutes } from "./features/billing/routes/operations";
 import type { IClientRepository } from "./features/clients/IClientRepository";
 import { createClientRoutes } from "./features/clients/routes";
 import { ClientService } from "./features/clients/service";
+import type { IStoreInformationRepository } from "./features/store-information/IStoreInformationRepository";
+import { createStoreInformationRoutes } from "./features/store-information/routes";
 import type {
   ISupportRequestRepository,
   SupportNotifier,
 } from "./features/support/ISupportRequestRepository";
 import { DiscordSupportNotifier } from "./features/support/infrastructure/DiscordSupportNotifier";
-import { DrizzleSupportRequestRepository } from "./features/support/infrastructure/DrizzleSupportRequestRepository";
 import { createSupportRoutes } from "./features/support/routes";
-import { db } from "./shared/database/db";
 import { API_DOCUMENTATION } from "./shared/documentation/api-documentation";
 import { RequestEncodingError } from "./shared/encoding/utf8";
 import { logger } from "./shared/observability/logger";
@@ -55,23 +53,31 @@ import {
   RateLimitExceededError,
   RequestRateLimiter,
 } from "./shared/rate-limiting/RequestRateLimiter";
-import { emptyRoutes } from "./shared/routes/empty";
 import { healthRoutes } from "./shared/routes/health";
 
 export interface AuthDependencies {
-  users: UserRepository;
-  sessions: RefreshSessionRepository;
+  users: IUserRepository;
+  sessions: IRefreshSessionRepository;
   passwords: PasswordHasher;
   billingDocuments?: IBillingDocumentRepository;
   clients?: IClientRepository;
-  clientDataProtector?: ClientDataProtector;
   supportRequests?: ISupportRequestRepository;
   supportNotifier?: SupportNotifier;
+  storeInformation?: IStoreInformationRepository;
 }
 
 export interface AppOptions {
   requestRateLimiter?: RequestRateLimiter;
 }
+
+const BAD_REQUEST_PREFIXES = [
+  "/auth/",
+  "/users",
+  "/clients",
+  "/operations",
+  "/store-information",
+  "/support",
+];
 
 const jsonError = (
   status: number,
@@ -113,7 +119,7 @@ export function createApp(
           .split(",")
           .map((origin) => origin.trim())
           .filter(Boolean),
-        allowedHeaders: ["Content-Type", "X-App-Id", "Authorization"],
+        allowedHeaders: ["Content-Type", "X-App-Id"],
         credentials: true,
       }),
     )
@@ -164,9 +170,9 @@ export function createApp(
       }
       if (
         (error instanceof ValidationError || error instanceof ParseError) &&
-        (new URL(request.url).pathname.startsWith("/auth/") ||
-          new URL(request.url).pathname.startsWith("/users") ||
-          new URL(request.url).pathname.startsWith("/clients"))
+        BAD_REQUEST_PREFIXES.some((prefix) =>
+          new URL(request.url).pathname.startsWith(prefix),
+        )
       ) {
         return jsonError(400, "BAD_REQUEST", "Invalid request data");
       }
@@ -182,52 +188,46 @@ export function createApp(
       });
     })
     .use(
-      swagger({
-        path: API_DOCUMENTATION.swagger.path,
-        exclude: API_DOCUMENTATION.swagger.exclude,
-        scalarConfig: API_DOCUMENTATION.swagger.scalarConfig,
+      openapi({
+        path: API_DOCUMENTATION.openapi.path,
+        exclude: { paths: API_DOCUMENTATION.openapi.excludedPaths },
+        scalar: API_DOCUMENTATION.openapi.scalar,
         documentation: {
           info: API_DOCUMENTATION.info,
           tags: API_DOCUMENTATION.tags,
+          components: API_DOCUMENTATION.components,
         },
-      } as never),
+      } as Parameters<typeof openapi>[0]),
     )
     .use(spaGuard(config))
     .use(healthRoutes)
-    .use(authRoutes(service, jwt, users, config))
-    .use(emptyRoutes(jwt, users));
+    .use(authRoutes(service, jwt, users, config));
 
   if (dependencies.billingDocuments) {
-    app
-      .use(
-        createBillingDocumentRoutes(dependencies.billingDocuments, jwt, users),
-      )
-      .use(createRepairRoutes(dependencies.billingDocuments, jwt, users));
+    app.use(
+      createBillingOperationRoutes(dependencies.billingDocuments, jwt, users),
+    );
   }
   if (dependencies.clients) {
     app.use(
       createClientRoutes(new ClientService(dependencies.clients), jwt, users),
     );
   }
-  const supportRequests =
-    dependencies.supportRequests ??
-    (dependencies.billingDocuments
-      ? new DrizzleSupportRequestRepository(
-          db,
-          dependencies.clientDataProtector ??
-            ClientDataProtector.fromEnvironment(),
-        )
-      : undefined);
-  if (supportRequests) {
+  if (dependencies.supportRequests) {
     app.use(
       createSupportRoutes(
-        supportRequests,
+        dependencies.supportRequests,
         dependencies.supportNotifier ?? new DiscordSupportNotifier(),
         jwt,
         users,
       ),
     );
   }
+  if (dependencies.storeInformation) {
+    app.use(
+      createStoreInformationRoutes(dependencies.storeInformation, jwt, users),
+    );
+  }
 
-  return app.get("/", () => "Hello Elysia");
+  return app;
 }

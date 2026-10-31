@@ -1,12 +1,12 @@
 import { describe, expect, it } from "bun:test";
 import { createApp } from "./appFactory";
 import { loadAuthConfig } from "./features/auth/config";
-import { BcryptPasswordHasher } from "./features/auth/password";
 import type {
+  IRefreshSessionRepository,
+  IUserRepository,
   RefreshSession,
-  RefreshSessionRepository,
-  UserRepository,
-} from "./features/auth/repositories";
+} from "./features/auth/IAuthRepositories";
+import { BcryptPasswordHasher } from "./features/auth/password";
 import type { User } from "./features/auth/types";
 import { RequestRateLimiter } from "./shared/rate-limiting/RequestRateLimiter";
 
@@ -19,20 +19,20 @@ const notUsed = async (): Promise<never> => {
   throw new Error("Repository should not be called by the CORS preflight");
 };
 
-const users: UserRepository = {
+const users: IUserRepository = {
   findByEmail: (_email: string): Promise<User | null> => notUsed(),
   findById: (_id: number): Promise<User | null> => notUsed(),
   create: (_user: Omit<User, "id">): Promise<User> => notUsed(),
   updatePassword: (_id: number, _hash: string): Promise<void> => notUsed(),
   setRole: (_id, _role, _timestamp): Promise<void> => notUsed(),
   setActive: (_id, _active, _timestamp): Promise<void> => notUsed(),
-  list: (_activeOnly, _limit, _offset): ReturnType<UserRepository["list"]> =>
+  list: (_activeOnly, _limit, _offset): ReturnType<IUserRepository["list"]> =>
     notUsed(),
   recordLogin: (_id, _timestamp): Promise<void> => notUsed(),
   recordLogout: (_id, _timestamp): Promise<void> => notUsed(),
 };
 
-const sessions: RefreshSessionRepository = {
+const sessions: IRefreshSessionRepository = {
   create: (_session: RefreshSession): Promise<void> => notUsed(),
   findById: (_id: string): Promise<RefreshSession | null> => notUsed(),
   revoke: (_id, _revokedAt): Promise<void> => notUsed(),
@@ -86,7 +86,7 @@ describe("application rate limiting", () => {
     );
 
     const firstResponse = await limitedApp.handle(
-      new Request("http://localhost/", {
+      new Request("http://localhost/health", {
         headers: { "X-App-Id": config.appId },
       }),
     );

@@ -1,11 +1,11 @@
 import { createApp } from "../../../../appFactory";
+import { signTestAccessToken } from "../../../../test-support/authCookies";
 import { loadAuthConfig } from "../../../auth/config";
-import { JwtService } from "../../../auth/jwt";
 import type {
+  IRefreshSessionRepository,
+  IUserRepository,
   RefreshSession,
-  RefreshSessionRepository,
-  UserRepository,
-} from "../../../auth/repositories";
+} from "../../../auth/IAuthRepositories";
 import type { User, UserRole } from "../../../auth/types";
 import type {
   CreateSupportRequestInput,
@@ -21,9 +21,8 @@ const config = loadAuthConfig({
   SPA_APP_ID: "support-contract-spa",
   BCRYPT_ROUNDS: "4",
 });
-const jwt = new JwtService(config.jwtSecret);
 
-class ContractUsers implements UserRepository {
+class ContractUsers implements IUserRepository {
   readonly values: User[] = [
     makeUser(1, "Admin"),
     makeUser(2, "Subadmin"),
@@ -67,7 +66,7 @@ class ContractUsers implements UserRepository {
   async recordLogout() {}
 }
 
-class ContractSessions implements RefreshSessionRepository {
+class ContractSessions implements IRefreshSessionRepository {
   async create(_session: RefreshSession) {}
   async findById(_id: string) {
     return null;
@@ -216,7 +215,7 @@ export function createHarness() {
   };
 
   const authorization = (userId = 1) =>
-    `Bearer ${jwt.signAccessToken(userId, config.accessTokenTtlSeconds)}`;
+    `access_token=${signTestAccessToken(config.jwtSecret, userId, config.accessTokenTtlSeconds)}`;
   const setNotificationFailure = (fails: boolean) => {
     notificationFails = fails;
   };

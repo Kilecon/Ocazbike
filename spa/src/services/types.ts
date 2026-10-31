@@ -1,5 +1,4 @@
-export interface AuthTokens {
-  accessToken: string;
+export interface AuthSession {
   expiresIn: number;
   user: PublicUser;
 }
@@ -36,33 +35,90 @@ export interface ManagedUser {
   updatedAtEpochMs: number;
 }
 
+/** "completed" only remains on legacy operations awaiting their invoice. */
 export type BillingDocumentStatus =
-  | "created"
   | "pending"
+  | "cancelled"
   | "in_progress"
   | "completed"
+  | "payment_pending"
   | "paid";
 
-export type BillingDocumentType = "repair" | "purchase" | "sale";
+export type BillingDocumentType = "repair" | "purchase" | "sale" | "rental";
+export type BillingOperationCountsDTO = Record<
+  BillingDocumentType,
+  Record<"pending" | "in_progress" | "payment_pending", number>
+>;
+export type BillingPaymentMethod =
+  | "card"
+  | "cheque"
+  | "bank_transfer"
+  | "cash"
+  | "free";
 
-export interface RepairDTO {
+export interface BillingLineDTO {
   id: number;
-  clientId: number;
-  clientFirstname: string;
-  clientLastname: string;
-  clientEmail: string;
-  clientPhoneNumber: string;
+  billingDocumentId: number;
   description: string;
-  date: string;
-  status: string;
-  comment: string | null;
+  quantity: string;
+  unitPrice: string;
+  vatRate: string;
+  discount: string;
+  total: string;
 }
 
-export interface ClientOperationDTO {
+export interface BillingSnapshotDTO {
+  kind: "quote" | "invoice";
+  status: string;
+  payload: Record<string, unknown>;
+  createdAt: number;
+  updatedAt: number;
+  paymentMethod?: BillingPaymentMethod | null;
+  paidAt?: number | null;
+}
+
+export interface BillingOperationDTO {
   id: number;
+  clientId: number;
   type: BillingDocumentType;
   date: number;
-  status: string;
+  serviceStartAt: number | null;
+  serviceEndAt: number | null;
+  comment: string | null;
+  status: BillingDocumentStatus;
+  paymentMethod: BillingPaymentMethod | null;
+  paidAt: number | null;
+  lines: BillingLineDTO[];
+  client: {
+    id: number;
+    firstname: string;
+    lastname: string;
+    email: string;
+    phonenumber: string;
+    address: string | null;
+    addressComplement: string | null;
+    isProfessional: boolean;
+    companyName: string | null;
+    siret: string | null;
+  };
+  snapshots: BillingSnapshotDTO[];
+}
+
+export interface BillingOperationPageDTO {
+  operations: BillingOperationListItemDTO[];
+  page: number;
+  limit: number;
+  total: number;
+}
+
+export interface BillingOperationListItemDTO
+  extends Omit<BillingOperationDTO, "client" | "snapshots" | "lines"> {
+  closedAt: number | null;
+  client: Pick<
+    BillingOperationDTO["client"],
+    "firstname" | "lastname" | "email"
+  >;
+  snapshots: Omit<BillingSnapshotDTO, "payload">[];
 }
 
 export interface ClientDetailDTO {

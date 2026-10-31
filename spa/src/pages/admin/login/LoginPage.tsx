@@ -1,5 +1,5 @@
 import { Moon, SunMedium } from "lucide-react";
-import { type FormEvent, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../../components/ui/button";
 import { ApiError } from "../../../services/api-client";
@@ -16,7 +16,7 @@ export function LoginPage() {
     getPreferredTheme(),
   );
 
-  const submit = async (event: FormEvent) => {
+  const submit = async (event: SubmitEvent) => {
     event.preventDefault();
     setSubmitting(true);
     setError("");

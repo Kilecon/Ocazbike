@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { accessTokenFrom } from "../../../../test-support/authCookies";
 import { createHarness, expectError, expectManagedUserShape } from "./helpers";
 
 describe("GET /users", () => {
@@ -6,10 +7,10 @@ describe("GET /users", () => {
     const { request, adminAuthorization } = createHarness();
     const authorization = await adminAuthorization();
     const active = await request("/users", {
-      headers: { Authorization: authorization },
+      headers: { Cookie: authorization },
     });
     const all = await request("/users?activeOnly=false&limit=50", {
-      headers: { Authorization: authorization },
+      headers: { Cookie: authorization },
     });
     const activeUsers = await active.json();
     const allUsers = await all.json();
@@ -36,7 +37,7 @@ describe("GET /users", () => {
     });
 
     const secondPage = await request("/users?activeOnly=false&page=2&limit=2", {
-      headers: { Authorization: authorization },
+      headers: { Cookie: authorization },
     });
     expect(
       (await secondPage.json()).map(({ id }: { id: number }) => id),
@@ -54,7 +55,7 @@ describe("GET /users", () => {
       "limit=51",
     ]) {
       const response = await request(`/users?${query}`, {
-        headers: { Authorization: authorization },
+        headers: { Cookie: authorization },
       });
       expect(response.status).toBe(400);
     }
@@ -70,17 +71,17 @@ describe("GET /users", () => {
     );
     await expectError(
       await request("/users", {
-        headers: { Authorization: "Bearer invalid" },
+        headers: { Cookie: "access_token=invalid" },
       }),
       401,
       "INVALID_AUTH_TOKEN",
       "Invalid token",
     );
     const loggedIn = await login("user2@example.com");
-    const { accessToken } = await loggedIn.json();
+    const accessToken = accessTokenFrom(loggedIn);
     await expectError(
       await request("/users", {
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: { Cookie: `access_token=${accessToken}` },
       }),
       403,
       "FORBIDDEN",

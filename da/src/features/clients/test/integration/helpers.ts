@@ -1,6 +1,7 @@
 import { expect } from "bun:test";
 import { createApp } from "../../../../appFactory";
-import { createTestDatabase } from "../../../../shared/database/testDatabase";
+import { DataProtector } from "../../../../shared/crypto/DataProtector";
+import { createTestDatabase } from "../../../../test-support/testDatabase";
 import { loadAuthConfig } from "../../../auth/config";
 import {
   DrizzleRefreshSessionRepository,
@@ -9,7 +10,6 @@ import {
 import { BcryptPasswordHasher } from "../../../auth/password";
 import type { User } from "../../../auth/types";
 import { DrizzleBillingDocumentRepository } from "../../../billing/infrastructure/DrizzleBillingDocumentRepository";
-import { ClientDataProtector } from "../../crypto/ClientDataProtector";
 import { DrizzleClientRepository } from "../../infrastructure/DrizzleClientRepository";
 
 const config = loadAuthConfig({
@@ -23,13 +23,14 @@ export function createClientIntegrationFixture(name: string) {
   expect(database.sqlite.query("PRAGMA journal_mode").get()).toEqual({
     journal_mode: "wal",
   });
-  const protector = new ClientDataProtector(Buffer.alloc(32, 31));
+  const protector = new DataProtector(Buffer.alloc(32, 31));
   const users = new DrizzleUserRepository(database.database, protector);
   const sessions = new DrizzleRefreshSessionRepository(database.database);
   const clients = new DrizzleClientRepository(database.database, protector);
   const billingDocuments = new DrizzleBillingDocumentRepository(
     database.database,
     protector,
+    clients,
   );
   const passwords = new BcryptPasswordHasher(config.bcryptRounds);
   const app = createApp(config, {
@@ -38,7 +39,6 @@ export function createClientIntegrationFixture(name: string) {
     passwords,
     clients,
     billingDocuments,
-    clientDataProtector: protector,
   });
   let admin!: User;
   let subadmin!: User;
@@ -48,6 +48,7 @@ export function createClientIntegrationFixture(name: string) {
     database,
     users,
     clients,
+    billingDocuments,
     get admin() {
       return admin;
     },
@@ -58,7 +59,7 @@ export function createClientIntegrationFixture(name: string) {
       return { "X-App-Id": config.appId, ...extra };
     },
     async reset() {
-      database.sqlite.exec(
+      database.sqlite.run(
         `DELETE FROM billing_lines;
          DELETE FROM billing_documents;
          DELETE FROM client_search_trigrams;

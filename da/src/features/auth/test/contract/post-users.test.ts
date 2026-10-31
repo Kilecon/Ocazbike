@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { accessTokenFrom } from "../../../../test-support/authCookies";
 import { createHarness, expectError, json } from "./helpers";
 
 describe("POST /users", () => {
@@ -24,7 +25,7 @@ describe("POST /users", () => {
     await expectError(
       await request("/users", {
         method: "POST",
-        headers: { Authorization: "Bearer invalid" },
+        headers: { Cookie: "access_token=invalid" },
         ...json(validUser),
       }),
       401,
@@ -32,11 +33,11 @@ describe("POST /users", () => {
       "Invalid token",
     );
     const subadminLogin = await login("user2@example.com");
-    const { accessToken: subadminToken } = await subadminLogin.json();
+    const subadminToken = accessTokenFrom(subadminLogin);
     await expectError(
       await request("/users", {
         method: "POST",
-        headers: { Authorization: `Bearer ${subadminToken}` },
+        headers: { Cookie: `access_token=${subadminToken}` },
         ...json(validUser),
       }),
       403,
@@ -46,7 +47,7 @@ describe("POST /users", () => {
 
     const created = await request("/users", {
       method: "POST",
-      headers: { Authorization: authorization },
+      headers: { Cookie: authorization },
       ...json(validUser),
     });
     expect(created.status).toBe(201);
@@ -62,7 +63,7 @@ describe("POST /users", () => {
 
     const duplicate = await request("/users", {
       method: "POST",
-      headers: { Authorization: authorization },
+      headers: { Cookie: authorization },
       ...json(validUser),
     });
     await expectError(
@@ -74,7 +75,7 @@ describe("POST /users", () => {
 
     const invalidEmail = await request("/users", {
       method: "POST",
-      headers: { Authorization: authorization },
+      headers: { Cookie: authorization },
       ...json({ ...validUser, email: "not-an-email" }),
     });
     await expectError(
@@ -86,7 +87,7 @@ describe("POST /users", () => {
 
     const invalidNames = await request("/users", {
       method: "POST",
-      headers: { Authorization: authorization },
+      headers: { Cookie: authorization },
       ...json({ ...validUser, email: "names@example.com", firstname: " " }),
     });
     await expectError(
@@ -98,7 +99,7 @@ describe("POST /users", () => {
 
     const invalidPassword = await request("/users", {
       method: "POST",
-      headers: { Authorization: authorization },
+      headers: { Cookie: authorization },
       ...json({
         ...validUser,
         email: "password@example.com",
@@ -114,7 +115,7 @@ describe("POST /users", () => {
 
     const invalidRole = await request("/users", {
       method: "POST",
-      headers: { Authorization: authorization },
+      headers: { Cookie: authorization },
       ...json({ ...validUser, email: "role@example.com", role: "Owner" }),
     });
     await expectError(
@@ -129,7 +130,7 @@ describe("POST /users", () => {
     const { request, adminAuthorization } = createHarness();
     const response = await request("/users", {
       method: "POST",
-      headers: { Authorization: await adminAuthorization() },
+      headers: { Cookie: await adminAuthorization() },
       ...json({ email: "incomplete@example.com" }),
     });
     await expectError(response, 400, "BAD_REQUEST", "Invalid request data");

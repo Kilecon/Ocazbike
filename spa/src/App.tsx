@@ -1,10 +1,7 @@
 import { useEffect } from "react";
 import { AdminToastProvider } from "./components/admin/AdminToast";
-import "./styles/ocazbike.css";
-import { PublicLayout } from "./layouts/PublicLayout";
 import { AdminRoute } from "./pages/admin/AdminRoute";
-import { BikeCatalogPage } from "./pages/public/BikeCatalogPage";
-import { OcazbikeHome } from "./pages/public/OcazbikeHome";
+import { NotFoundPage } from "./pages/NotFoundPage";
 import { applyTheme, getSystemTheme } from "./theme";
 
 export function App() {
@@ -33,14 +30,7 @@ export function App() {
       </AdminToastProvider>
     );
   }
-  return null;
-
-  // Public dépriorisé 21/10/2026
-  // return (
-  //   <PublicLayout>
-  //     {pathname === "/velo" ? <BikeCatalogPage /> : <OcazbikeHome />}
-  //   </PublicLayout>
-  // );
+  return <NotFoundPage />;
 }
 
 export default App;

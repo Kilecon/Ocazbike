@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from "node:crypto";
+import { createHash } from "node:crypto";
 import type { AuthConfig } from "./config";
 import {
   DuplicateUserError,
@@ -14,10 +14,13 @@ import {
   UserAlreadyDeactivatedError,
   UserNotFoundError,
 } from "./errors";
+import type {
+  IRefreshSessionRepository,
+  IUserRepository,
+} from "./IAuthRepositories";
 import type { JwtService } from "./jwt";
 import { LoginRateLimiter } from "./loginRateLimiter";
 import type { PasswordHasher } from "./password";
-import type { RefreshSessionRepository, UserRepository } from "./repositories";
 import {
   type AuthTokens,
   type CurrentUser,
@@ -36,8 +39,8 @@ const REUSE_GRACE_MS = 10_000;
 
 export class AuthService {
   constructor(
-    private readonly users: UserRepository,
-    private readonly sessions: RefreshSessionRepository,
+    private readonly users: IUserRepository,
+    private readonly sessions: IRefreshSessionRepository,
     private readonly passwords: PasswordHasher,
     private readonly jwt: JwtService,
     private readonly config: AuthConfig,
@@ -71,7 +74,7 @@ export class AuthService {
     refreshToken: string,
     metadata: AuthRequestMetadata = {},
   ): Promise<AuthTokens> {
-    const claims = this.jwt.verifyRefreshToken(refreshToken);
+    const claims = await this.jwt.verifyRefreshToken(refreshToken);
     const session = await this.sessions.findById(claims.jti);
 
     if (!session) {
@@ -104,7 +107,7 @@ export class AuthService {
   }
 
   async logout(refreshToken: string): Promise<void> {
-    const claims = this.jwt.verifyRefreshToken(refreshToken);
+    const claims = await this.jwt.verifyRefreshToken(refreshToken);
     await this.sessions.delete(claims.jti);
     await this.users.recordLogout(Number(claims.sub), Date.now());
   }
@@ -225,11 +228,11 @@ export class AuthService {
     user: PublicUser,
     metadata: AuthRequestMetadata,
   ): Promise<AuthTokens> {
-    const refreshToken = this.jwt.signRefreshToken(
-      user.id,
-      this.config.refreshTokenTtlSeconds,
-    );
-    const refreshClaims = this.jwt.verifyRefreshToken(refreshToken);
+    const { token: refreshToken, claims: refreshClaims } =
+      await this.jwt.signRefreshToken(
+        user.id,
+        this.config.refreshTokenTtlSeconds,
+      );
 
     await this.sessions.create({
       id: refreshClaims.jti,
@@ -245,7 +248,7 @@ export class AuthService {
     );
 
     return {
-      accessToken: this.jwt.signAccessToken(
+      accessToken: await this.jwt.signAccessToken(
         user.id,
         this.config.accessTokenTtlSeconds,
       ),
@@ -258,8 +261,4 @@ export class AuthService {
 
 function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
-}
-
-export function createSessionId(): string {
-  return randomUUID();
 }

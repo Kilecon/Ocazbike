@@ -6,6 +6,7 @@ import {
   expect,
   it,
 } from "bun:test";
+import { accessTokenFrom } from "../../../../test-support/authCookies";
 import type { User } from "../../types";
 import {
   type AuthIntegrationFixture,
@@ -35,11 +36,10 @@ afterAll(() => fixture?.cleanup());
 describe("auth HTTP integration — me", () => {
   it("returns the last login timestamp from /auth/me", async () => {
     const loginResponse = await login();
-    const tokens = await loginResponse.json();
     const response = await app.handle(
       new Request("http://localhost/auth/me", {
         headers: headers({
-          Authorization: `Bearer ${tokens.accessToken}`,
+          Cookie: `access_token=${accessTokenFrom(loginResponse)}`,
         }),
       }),
     );

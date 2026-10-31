@@ -18,17 +18,6 @@ export class InvalidAuthTokenError extends Error {
   }
 }
 
-export class ContractError extends Error {
-  constructor(
-    readonly statusCode: number,
-    readonly code: string,
-    message: string,
-  ) {
-    super(message);
-    this.name = "ContractError";
-  }
-}
-
 export class InvalidCredentialsError extends AuthenticationError {
   constructor() {
     super("Invalid credentials");

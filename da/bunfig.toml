@@ -1,2 +1,2 @@
 [test]
-preload = ["./src/shared/database/testSetup.ts"]
+preload = ["./src/test-support/setup.ts"]

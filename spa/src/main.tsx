@@ -11,10 +11,12 @@ import "./styles/tailwind.generated.css";
 import { App } from "./App";
 import "./i18n";
 import { installNativeFormValidationMessages } from "./lib/nativeFormValidation";
+import { removeLegacyStoredTokens } from "./services/api-client";
 
 const elem = document.getElementById("root");
 if (!elem) throw new Error("Missing application root element");
 installNativeFormValidationMessages();
+removeLegacyStoredTokens();
 const app = (
   <StrictMode>
     <App />

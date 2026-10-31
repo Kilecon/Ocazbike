@@ -55,7 +55,6 @@
   --oz-muted: #4b5563;
   --oz-soft: #f3f4f6;
   --oz-border: #d1d5db;
-  --oz-blue: #a8d7e5;
   --oz-orange: #f59a3b;
   --oz-mint: #a8e6c9;
   --oz-focus: #103b27;
@@ -73,17 +72,7 @@
   --oz-admin-sidebar: #17352f;
   --oz-admin-sidebar-hover: #2b5146;
   --oz-admin-sidebar-line: #49635b;
-  --oz-header-bg: rgba(255, 255, 255, 0.97);
-  --oz-header-border: #e5e7eb;
   --oz-page-bg: #ffffff;
-  --oz-page-surface: #f6f8f7;
-  --oz-hero-overlay: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.97) 0%,
-    rgba(255, 255, 255, 0.88) 42%,
-    rgba(255, 255, 255, 0.54) 68%,
-    rgba(255, 255, 255, 0.12) 100%
-  );
   --font-sans: "DM Sans", "Avenir Next", sans-serif;
   --font-display: "Space Grotesk", "Avenir Next", sans-serif;
 }
@@ -95,7 +84,6 @@ html[data-theme="dark"] {
   --oz-muted: #b6c8c0;
   --oz-soft: #162b29;
   --oz-border: #2d4d49;
-  --oz-blue: #5b7e8d;
   --oz-orange: #f0b26d;
   --oz-mint: #6ec9a0;
   --oz-focus: #dff9ef;
@@ -113,22 +101,7 @@ html[data-theme="dark"] {
   --oz-admin-sidebar: #0d1c1a;
   --oz-admin-sidebar-hover: #18352f;
   --oz-admin-sidebar-line: #2b4b46;
-  --oz-header-bg: rgba(10, 18, 17, 0.88);
-  --oz-header-border: rgba(138, 162, 157, 0.18);
   --oz-page-bg: #0e1716;
-  --oz-page-surface: #101c1a;
-  --oz-panel-soft: #0f1a19;
-  --oz-panel-alt: #162825;
-  --oz-hero-surface: #0d1b1a;
-  --oz-footer-bg: #0a1211;
-  --oz-card-shadow: rgba(0, 0, 0, 0.22);
-  --oz-hero-overlay: linear-gradient(
-    90deg,
-    rgba(9, 17, 16, 0.96) 0%,
-    rgba(9, 17, 16, 0.88) 42%,
-    rgba(9, 17, 16, 0.58) 68%,
-    rgba(9, 17, 16, 0.14) 100%
-  );
 }
 
 @theme {

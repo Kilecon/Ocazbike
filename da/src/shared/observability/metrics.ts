@@ -6,8 +6,6 @@ export const requestsCounter = meter.createCounter("http_requests_total", {
 
 export const errorsCounter = meter.createCounter("http_errors_total");
 
-export const usersCounter = meter.createCounter("users_created_total");
-
 export const loginRateLimitBlocksCounter = meter.createCounter(
   "auth_login_rate_limit_blocks_total",
   {

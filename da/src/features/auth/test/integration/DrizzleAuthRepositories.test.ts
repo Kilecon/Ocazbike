@@ -6,14 +6,15 @@ import {
   expect,
   it,
 } from "bun:test";
-import { createTestDatabase } from "../../../../shared/database/testDatabase";
-import { ClientDataProtector } from "../../../clients/crypto/ClientDataProtector";
+import { DataProtector } from "../../../../shared/crypto/DataProtector";
+import { createTestDatabase } from "../../../../test-support/testDatabase";
+import { ensureBootstrapAdmin } from "../../bootstrapAdmin";
 import {
   DrizzleRefreshSessionRepository,
   DrizzleUserRepository,
 } from "../../infrastructure/DrizzleAuthRepositories";
 
-const protector = new ClientDataProtector(Buffer.alloc(32, 12));
+const protector = new DataProtector(Buffer.alloc(32, 12));
 const revokedRetentionMs = 7 * 24 * 60 * 60 * 1000;
 let testDatabase: ReturnType<typeof createTestDatabase>;
 let users: DrizzleUserRepository;
@@ -26,7 +27,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-  testDatabase.sqlite.exec(
+  testDatabase.sqlite.run(
     "DELETE FROM refresh_sessions; DELETE FROM users; DELETE FROM sqlite_sequence WHERE name = 'users';",
   );
 });
@@ -68,6 +69,23 @@ function createSession(
 }
 
 describe("Drizzle user and refresh-session repositories", () => {
+  it("bootstraps one initial administrator on the consolidated schema", async () => {
+    await ensureBootstrapAdmin(users);
+    const admin = await users.findByEmail("admin@example.com");
+    expect(admin).toMatchObject({
+      role: "Admin",
+      isActive: true,
+      mustChangePassword: true,
+    });
+    await ensureBootstrapAdmin(users);
+    expect((await users.findByEmail("admin@example.com"))?.id).toBe(admin?.id);
+    expect(
+      testDatabase.sqlite.query("SELECT count(*) AS total FROM users").get(),
+    ).toEqual({
+      total: 1,
+    });
+  });
+
   it("stores encrypted user data and supports case-insensitive email lookup", async () => {
     const now = Date.now();
     const user = await users.create({

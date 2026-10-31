@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { DataProtector } from "../../../../shared/crypto/DataProtector";
 import { users } from "../../../../shared/database/schema/auth";
-import { createTestDatabase } from "../../../../shared/database/testDatabase";
-import { ClientDataProtector } from "../../../clients/crypto/ClientDataProtector";
+import { createTestDatabase } from "../../../../test-support/testDatabase";
 import { DrizzleSupportRequestRepository } from "../../infrastructure/DrizzleSupportRequestRepository";
 
 const SAMPLE_COUNT = 25;
@@ -68,7 +68,7 @@ beforeAll(async () => {
   database = createTestDatabase("support-performance");
   repository = new DrizzleSupportRequestRepository(
     database.database,
-    new ClientDataProtector(Buffer.alloc(32, 43)),
+    new DataProtector(Buffer.alloc(32, 43)),
   );
   const [creator] = await database.database
     .insert(users)

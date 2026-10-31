@@ -1,12 +1,21 @@
 import { describe, expect, it } from "bun:test";
 import {
-  clearRefreshCookie,
+  ACCESS_COOKIE_NAME,
+  accessCookie,
+  clearAuthCookies,
   REFRESH_COOKIE_NAME,
   readCookie,
   refreshCookie,
 } from "../../cookies";
 
-describe("refresh cookie helpers", () => {
+describe("auth cookie helpers", () => {
+  it("sets the access cookie for the whole API with security attributes", () => {
+    expect(accessCookie("abc", 900, true)).toBe(
+      "access_token=abc; Path=/; Max-Age=900; HttpOnly; SameSite=Strict; Secure",
+    );
+    expect(ACCESS_COOKIE_NAME).toBe("access_token");
+  });
+
   it("sets the refresh cookie with its path and security attributes", () => {
     const cookie = refreshCookie("token with+symbols", 3600, true);
     expect(cookie).toBe(
@@ -17,9 +26,14 @@ describe("refresh cookie helpers", () => {
 
   it("omits Secure when secure cookies are disabled and clears with zero age", () => {
     expect(refreshCookie("abc", 60, false)).not.toContain("; Secure");
-    expect(clearRefreshCookie(true)).toContain("Max-Age=0");
-    expect(clearRefreshCookie(true)).toContain("Secure");
-    expect(clearRefreshCookie(false)).not.toContain("Secure");
+    const cleared = clearAuthCookies(true);
+    expect(cleared).toHaveLength(2);
+    expect(cleared[0]).toStartWith("access_token=; Path=/; Max-Age=0");
+    expect(cleared[1]).toStartWith("refresh_token=; Path=/auth; Max-Age=0");
+    expect(cleared.every((cookie) => cookie.includes("Secure"))).toBe(true);
+    expect(
+      clearAuthCookies(false).some((cookie) => cookie.includes("Secure")),
+    ).toBe(false);
   });
 
   it("reads the named cookie among other cookies and decodes its value", () => {

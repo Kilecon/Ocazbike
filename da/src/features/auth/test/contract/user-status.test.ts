@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { accessTokenFrom } from "../../../../test-support/authCookies";
 import { createHarness, expectError } from "./helpers";
 
 describe("PATCH /users/:id/{activate,deactivate}", () => {
@@ -7,7 +8,7 @@ describe("PATCH /users/:id/{activate,deactivate}", () => {
     const authorization = await adminAuthorization();
     const deactivate = await request("/users/2/deactivate", {
       method: "PATCH",
-      headers: { Authorization: authorization },
+      headers: { Cookie: authorization },
     });
     expect(deactivate.status).toBe(204);
     expect(await deactivate.text()).toBe("");
@@ -15,7 +16,7 @@ describe("PATCH /users/:id/{activate,deactivate}", () => {
 
     const activate = await request("/users/3/activate", {
       method: "PATCH",
-      headers: { Authorization: authorization },
+      headers: { Cookie: authorization },
     });
     expect(activate.status).toBe(204);
     expect(await activate.text()).toBe("");
@@ -33,19 +34,19 @@ describe("PATCH /users/:id/{activate,deactivate}", () => {
     await expectError(
       await request("/users/2/activate", {
         method: "PATCH",
-        headers: { Authorization: "Bearer invalid" },
+        headers: { Cookie: "access_token=invalid" },
       }),
       401,
       "INVALID_AUTH_TOKEN",
       "Invalid token",
     );
     const subadminLogin = await login("user2@example.com");
-    const { accessToken } = await subadminLogin.json();
-    const authorization = `Bearer ${accessToken}`;
+    const accessToken = accessTokenFrom(subadminLogin);
+    const authorization = `access_token=${accessToken}`;
     await expectError(
       await request("/users/3/deactivate", {
         method: "PATCH",
-        headers: { Authorization: authorization },
+        headers: { Cookie: authorization },
       }),
       403,
       "FORBIDDEN",
@@ -54,7 +55,7 @@ describe("PATCH /users/:id/{activate,deactivate}", () => {
     await expectError(
       await request("/users/3/activate", {
         method: "PATCH",
-        headers: { Authorization: authorization },
+        headers: { Cookie: authorization },
       }),
       403,
       "FORBIDDEN",
@@ -67,14 +68,14 @@ describe("PATCH /users/:id/{activate,deactivate}", () => {
     const authorization = await adminAuthorization();
     const activateMissing = await request("/users/99/activate", {
       method: "PATCH",
-      headers: { Authorization: authorization },
+      headers: { Cookie: authorization },
     });
     await expectError(activateMissing, 404, "USER_NOT_FOUND", "User not found");
 
     await expectError(
       await request("/users/2/activate", {
         method: "PATCH",
-        headers: { Authorization: authorization },
+        headers: { Cookie: authorization },
       }),
       409,
       "USER_ALREADY_ACTIVATED",
@@ -83,7 +84,7 @@ describe("PATCH /users/:id/{activate,deactivate}", () => {
     await expectError(
       await request("/users/3/deactivate", {
         method: "PATCH",
-        headers: { Authorization: authorization },
+        headers: { Cookie: authorization },
       }),
       409,
       "USER_ALREADY_DEACTIVATED",
@@ -97,7 +98,7 @@ describe("PATCH /users/:id/{activate,deactivate}", () => {
     await expectError(
       await request("/users/1/deactivate", {
         method: "PATCH",
-        headers: { Authorization: authorization },
+        headers: { Cookie: authorization },
       }),
       403,
       "FORBIDDEN",
@@ -113,14 +114,14 @@ describe("PATCH /users/:id/{activate,deactivate}", () => {
 
     const deactivate = await request("/users/2/deactivate", {
       method: "PATCH",
-      headers: { Authorization: authorization },
+      headers: { Cookie: authorization },
     });
     expect(deactivate.status).toBe(204);
     expect(users.values[1].isActive).toBe(false);
 
     const activate = await request("/users/2/activate", {
       method: "PATCH",
-      headers: { Authorization: authorization },
+      headers: { Cookie: authorization },
     });
     expect(activate.status).toBe(204);
     expect(users.values[1].isActive).toBe(true);

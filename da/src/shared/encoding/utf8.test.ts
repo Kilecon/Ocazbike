@@ -3,7 +3,7 @@ import { describe, expect, it } from "bun:test";
 import { createApp } from "../../appFactory";
 import { loadAuthConfig } from "../../features/auth/config";
 import { BcryptPasswordHasher } from "../../features/auth/password";
-import { ClientDataProtector } from "../../features/clients/crypto/ClientDataProtector";
+import { DataProtector } from "../crypto/DataProtector";
 import { assertWellFormed, decodeUtf8Strict, parseJsonStrict } from "./utf8";
 
 const config = loadAuthConfig({
@@ -18,7 +18,6 @@ const app = createApp(config, {
   } as never,
   sessions: {} as never,
   passwords: new BcryptPasswordHasher(config.bcryptRounds),
-  clientDataProtector: new ClientDataProtector(Buffer.alloc(32, 7)),
 });
 
 const post = (body: Uint8Array | string, contentType = "application/json") =>
@@ -152,13 +151,13 @@ describe("HTTP responses", () => {
 });
 
 describe("encryption and storage round trip", () => {
-  const protector = new ClientDataProtector(Buffer.alloc(32, 9));
+  const protector = new DataProtector(Buffer.alloc(32, 9));
   const samples = ["Élodie Dupont", "e\u0301", "Ωμέγα 漢字", "🚲👩‍🔧", ""];
 
   it("restores the exact plaintext after encrypt → SQLite → decrypt", () => {
     const db = new Database(":memory:");
     expect(db.query("PRAGMA encoding").get()).toEqual({ encoding: "UTF-8" });
-    db.exec("CREATE TABLE t (id INTEGER PRIMARY KEY, plain TEXT, secret TEXT)");
+    db.run("CREATE TABLE t (id INTEGER PRIMARY KEY, plain TEXT, secret TEXT)");
     const salt = protector.createSalt();
     samples.forEach((sample, index) => {
       db.query("INSERT INTO t (id, plain, secret) VALUES (?, ?, ?)").run(
@@ -202,7 +201,7 @@ describe("encryption and storage round trip", () => {
     const parts = token.split(".");
     parts[3] = Buffer.from("tampered").toString("base64url");
     expect(() => protector.decrypt(parts.join("."), encoded)).toThrow();
-    const other = new ClientDataProtector(Buffer.alloc(32, 1));
+    const other = new DataProtector(Buffer.alloc(32, 1));
     expect(() => other.decrypt(token, encoded)).toThrow();
   });
 

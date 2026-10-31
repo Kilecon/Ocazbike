@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { type FormEvent, useEffect, useRef } from "react";
+import { type SubmitEvent, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
@@ -26,7 +26,7 @@ export function CreateUserDialog({
   saving: boolean;
   onChange: (field: keyof UserForm, value: string) => void;
   onClose: () => void;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onSubmit: (event: SubmitEvent<HTMLFormElement>) => void;
 }) {
   const { t } = useTranslation();
   const dialogRef = useRef<HTMLDialogElement>(null);

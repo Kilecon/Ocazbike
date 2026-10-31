@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { accessTokenFrom } from "../../../../test-support/authCookies";
 import { createHarness, expectError, json } from "./helpers";
 
 describe("POST /auth/change-password", () => {
@@ -19,7 +20,7 @@ describe("POST /auth/change-password", () => {
     await expectError(
       await request("/auth/change-password", {
         method: "POST",
-        headers: { Authorization: "Bearer invalid" },
+        headers: { Cookie: "access_token=invalid" },
         ...json({
           currentPassword: "StrongPasswordSecure",
           password: "AnotherSecurePassword",
@@ -30,8 +31,8 @@ describe("POST /auth/change-password", () => {
       "Invalid token",
     );
     const loggedIn = await login();
-    const { accessToken } = await loggedIn.json();
-    const headers = { Authorization: `Bearer ${accessToken}` };
+    const accessToken = accessTokenFrom(loggedIn);
+    const headers = { Cookie: `access_token=${accessToken}` };
 
     await expectError(
       await request("/auth/change-password", {

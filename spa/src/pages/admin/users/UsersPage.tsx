@@ -1,4 +1,4 @@
-import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { type SubmitEvent, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAdminToast } from "../../../components/admin/AdminToast";
 import {
@@ -77,7 +77,7 @@ export function UsersPage() {
     void refresh();
   }, [refresh]);
 
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSaving(true);
     try {

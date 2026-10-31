@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   check,
+  index,
   integer,
   sqliteTable,
   text,
@@ -42,6 +43,17 @@ export const supportRequests = sqliteTable(
   },
   (table) => [
     uniqueIndex("support_requests_reference_idx").on(table.reference),
+    index("support_requests_created_at_idx").on(table.createdAt, table.id),
+    index("support_requests_status_created_at_idx").on(
+      table.status,
+      table.createdAt,
+      table.id,
+    ),
+    index("support_requests_type_created_at_idx").on(
+      table.type,
+      table.createdAt,
+      table.id,
+    ),
     check(
       "support_requests_type_check",
       sql`${table.type} IN ('SR', 'INC', 'BUG')`,

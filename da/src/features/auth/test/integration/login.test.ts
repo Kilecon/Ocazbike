@@ -6,6 +6,7 @@ import {
   expect,
   it,
 } from "bun:test";
+import { accessTokenFrom } from "../../../../test-support/authCookies";
 import type { User } from "../../types";
 import {
   type AuthIntegrationFixture,
@@ -31,18 +32,21 @@ beforeEach(async () => {
 afterAll(() => fixture?.cleanup());
 
 describe("auth HTTP integration — login", () => {
-  it("contains only the subject and token type/expiry in the access token", async () => {
+  it("contains only the subject, token type and timestamps in the access token", async () => {
     const response = await login();
-    const tokens = await response.json();
-    expectAuthResponse(tokens, expectedPublicUser(user));
+    expectAuthResponse(await response.json(), expectedPublicUser(user));
     const claims = JSON.parse(
-      Buffer.from(tokens.accessToken.split(".")[1], "base64url").toString(),
+      Buffer.from(
+        accessTokenFrom(response).split(".")[1],
+        "base64url",
+      ).toString(),
     ) as Record<string, unknown>;
 
     expect(claims).toEqual({
       sub: String(user.id),
       type: "access",
       exp: expect.any(Number),
+      iat: expect.any(Number),
     });
     expect(claims).not.toHaveProperty("isActive");
     expect(claims).not.toHaveProperty("mustChangePassword");
