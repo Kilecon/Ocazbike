@@ -1,0 +1,15 @@
+data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+.env
+.env.*
+secrets/
+node_modules/
+coverage/
+.git/
+docs/
+docs.old/
+**/test/
+**/*.test.ts
+src/test-support/
