@@ -1,4 +1,5 @@
 #!/bin/sh
+# Obsolete script for installing the Loki Docker plugin
 set -eu
 
 architecture=$(docker info --format '{{.Architecture}}')

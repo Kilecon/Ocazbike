@@ -6,6 +6,7 @@ import {
   expect,
   it,
 } from "bun:test";
+import { ok } from "node:assert/strict";
 import { DataProtector } from "../../../../shared/crypto/DataProtector";
 import { createTestDatabase } from "../../../../test-support/testDatabase";
 import { ensureBootstrapAdmin } from "../../bootstrapAdmin";
@@ -13,6 +14,7 @@ import {
   DrizzleRefreshSessionRepository,
   DrizzleUserRepository,
 } from "../../infrastructure/DrizzleAuthRepositories";
+import { BcryptPasswordHasher } from "../../password";
 
 const protector = new DataProtector(Buffer.alloc(32, 12));
 const revokedRetentionMs = 7 * 24 * 60 * 60 * 1000;
@@ -70,14 +72,21 @@ function createSession(
 
 describe("Drizzle user and refresh-session repositories", () => {
   it("bootstraps one initial administrator on the consolidated schema", async () => {
-    await ensureBootstrapAdmin(users);
+    const passwords = new BcryptPasswordHasher(4);
+    await ensureBootstrapAdmin(users, passwords, {
+      BOOTSTRAP_ADMIN_PASSWORD: "test-bootstrap-password",
+    });
     const admin = await users.findByEmail("admin@example.com");
     expect(admin).toMatchObject({
       role: "Admin",
       isActive: true,
       mustChangePassword: true,
     });
-    await ensureBootstrapAdmin(users);
+    await ensureBootstrapAdmin(users, passwords, {});
+    ok(admin);
+    expect(
+      await passwords.compare("test-bootstrap-password", admin.passwordHash),
+    ).toBe(true);
     expect((await users.findByEmail("admin@example.com"))?.id).toBe(admin?.id);
     expect(
       testDatabase.sqlite.query("SELECT count(*) AS total FROM users").get(),

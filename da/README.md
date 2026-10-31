@@ -274,7 +274,12 @@ d'un seul snapshot et du journal Drizzle. Cette migration crée le schéma actue
 complet, les index et les triggers d'immutabilité des documents. Elle ne contient
 aucun identifiant de connexion : le premier administrateur est toujours créé
 par `ensureBootstrapAdmin` au démarrage du serveur, avec changement obligatoire
-du mot de passe. `bun run db:migrate` initialise le schéma et les coordonnées
+du mot de passe. Définir `BOOTSTRAP_ADMIN_PASSWORD` dans `.env` (au moins
+12 caractères) : le bootstrap le hache avec bcrypt avant stockage. Sans cette
+variable, la création du compte échoue explicitement. Si `admin@example.com`
+existe déjà, son mot de passe reste inchangé et cette variable n'est pas requise.
+Ne jamais versionner sa valeur ; en release, utiliser le secret GitHub du même nom.
+`bun run db:migrate` initialise le schéma et les coordonnées
 du magasin, mais ne crée pas cet administrateur.
 
 Cette nouvelle initiale est destinée aux bases neuves. Une base ayant appliqué

@@ -22,7 +22,8 @@ export async function createServerApp() {
   const { db, sqlite } = await prepareDatabase();
 
   const users = new DrizzleUserRepository(db, dataProtector);
-  await ensureBootstrapAdmin(users);
+  const passwords = new BcryptPasswordHasher(config.bcryptRounds);
+  await ensureBootstrapAdmin(users, passwords);
 
   const sessions = new DrizzleRefreshSessionRepository(db);
   const purgeExpiredSessions = () =>
@@ -35,7 +36,7 @@ export async function createServerApp() {
   const app = createApp(config, {
     users,
     sessions,
-    passwords: new BcryptPasswordHasher(config.bcryptRounds),
+    passwords,
     billingDocuments: new DrizzleBillingDocumentRepository(
       db,
       dataProtector,

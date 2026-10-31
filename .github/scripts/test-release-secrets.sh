@@ -18,6 +18,7 @@ cp "$ROOT/infra/compose.yaml" "$temporary/infra/compose.yaml"
 cp "$ROOT/infra/scripts/init-release-secrets.sh" "$temporary/infra/scripts/"
 export GITHUB_ENV="$temporary/github-env"
 export JWT_SECRET=01234567890123456789012345678901
+export BOOTSTRAP_ADMIN_PASSWORD=test-bootstrap-password
 export ENCRYPTION_KEY=eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 export GARAGE_RPC_SECRET=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 export GARAGE_DEFAULT_ACCESS_KEY=test-access
@@ -36,7 +37,7 @@ fi
 bash "$ROOT/.github/scripts/prepare-release-secrets.sh" > "$temporary/output"
 while IFS= read -r assignment; do export "$assignment"; done < "$GITHUB_ENV"
 # Do not let runner variables override the VPS env-file during validation.
-unset JWT_SECRET ENCRYPTION_KEY GARAGE_RPC_SECRET GARAGE_DEFAULT_ACCESS_KEY \
+unset BOOTSTRAP_ADMIN_PASSWORD JWT_SECRET ENCRYPTION_KEY GARAGE_RPC_SECRET GARAGE_DEFAULT_ACCESS_KEY \
   GARAGE_DEFAULT_SECRET_KEY GRAFANA_USER GRAFANA_PASSWORD SPA_API_URL CORS_ORIGIN \
   STORE_INFORMATION_INITIAL_DATA
 bash "$temporary/infra/scripts/init-release-secrets.sh" >> "$temporary/output"
@@ -48,6 +49,7 @@ bash "$temporary/infra/scripts/init-release-secrets.sh" >> "$temporary/output"
 resolved=$(docker compose --env-file "$temporary/da/.env" \
   -f "$temporary/infra/compose.yaml" config --environment)
 grep -Fqx "GARAGE_DEFAULT_SECRET_KEY=spaces \$VAR 'quoted' \"double\" \\path" <<< "$resolved"
+grep -Fqx "BOOTSTRAP_ADMIN_PASSWORD=test-bootstrap-password" <<< "$resolved"
 grep -Fqx "STORE_INFORMATION_INITIAL_DATA={\"name\":\"L'atelier \$HOME\",\"address\":\"line\\\\next\"}" <<< "$resolved"
 original=$(sha256sum "$temporary/da/.env")
 RELEASE_ENV_B64=$(printf "ENCRYPTION_KEY='%064d'\n" 0 | base64 -w 0)

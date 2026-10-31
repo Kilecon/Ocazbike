@@ -1,11 +1,12 @@
 import type { IUserRepository } from "./IAuthRepositories";
+import type { PasswordHasher } from "./password";
 
 const ADMIN_EMAIL = "admin@example.com";
-const ADMIN_PASSWORD_HASH =
-  "$2b$12$XJ/nC2KeJfh4vSSUQmrPiOOdYv1g5kyCFV3hHgB207.pBtWMEh1zi";
 
 export async function ensureBootstrapAdmin(
   users: IUserRepository,
+  passwords: PasswordHasher,
+  env: Record<string, string | undefined> = process.env,
 ): Promise<void> {
   const timestampMs = Date.now();
   const existing = await users.findByEmail(ADMIN_EMAIL);
@@ -14,11 +15,18 @@ export async function ensureBootstrapAdmin(
     return;
   }
 
+  const ADMIN_PASSWORD = env.BOOTSTRAP_ADMIN_PASSWORD;
+  if (!ADMIN_PASSWORD || ADMIN_PASSWORD.length < 12) {
+    throw new Error(
+      "BOOTSTRAP_ADMIN_PASSWORD must contain at least 12 characters to create the initial administrator",
+    );
+  }
+
   await users.create({
     email: ADMIN_EMAIL,
     firstname: "Admin",
     lastname: "Admin",
-    passwordHash: ADMIN_PASSWORD_HASH,
+    passwordHash: await passwords.hash(ADMIN_PASSWORD),
     role: "Admin",
     isActive: true,
     mustChangePassword: true,

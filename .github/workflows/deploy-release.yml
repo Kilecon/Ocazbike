@@ -44,6 +44,7 @@ jobs:
       - name: Prepare release secrets
         env:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          BOOTSTRAP_ADMIN_PASSWORD: ${{ secrets.BOOTSTRAP_ADMIN_PASSWORD }}
           ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
           GARAGE_RPC_SECRET: ${{ secrets.GARAGE_RPC_SECRET }}
           GARAGE_DEFAULT_ACCESS_KEY: ${{ secrets.GARAGE_DEFAULT_ACCESS_KEY }}
