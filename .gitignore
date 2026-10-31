@@ -1,5 +1,4 @@
 *.md
-infra/*
 da/Dockerfile
 da/.dockerignore
 data/

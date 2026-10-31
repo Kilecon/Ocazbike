@@ -1,0 +1,17 @@
+dbs:
+  - path: /data/elysia.sqlite
+    busy-timeout: 1s
+    replica:
+      type: s3
+      bucket: sqlite-backups
+      path: elysia
+      endpoint: http://garage:3900
+      region: garage
+      force-path-style: true
+
+snapshot:
+  interval: 24h
+  retention: 8760h
+
+retention:
+  enabled: true

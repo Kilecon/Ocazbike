@@ -1,0 +1,93 @@
+name: Deploy release Ocazbike
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ocazbike-release
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to release server
+    runs-on: ubuntu-latest
+    environment: release
+    timeout-minutes: 30
+
+    steps:
+      - name: Require develop
+        env:
+          DEPLOY_REF: ${{ github.ref }}
+        run: |
+          if [ "$DEPLOY_REF" != "refs/heads/develop" ]; then
+            echo "::error::Run this workflow from develop only."
+            exit 1
+          fi
+
+      - name: Check SSH host fingerprint
+        env:
+          VPS_HOST_FINGERPRINT: ${{ vars.VPS_HOST_FINGERPRINT }}
+        run: |
+          if [ -z "$VPS_HOST_FINGERPRINT" ]; then
+            echo "::error::VPS_HOST_FINGERPRINT must be configured."
+            exit 1
+          fi
+
+      - name: Checkout deployment scripts
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Prepare release secrets
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+          GARAGE_RPC_SECRET: ${{ secrets.GARAGE_RPC_SECRET }}
+          GARAGE_DEFAULT_ACCESS_KEY: ${{ secrets.GARAGE_DEFAULT_ACCESS_KEY }}
+          GARAGE_DEFAULT_SECRET_KEY: ${{ secrets.GARAGE_DEFAULT_SECRET_KEY }}
+          GRAFANA_USER: ${{ secrets.GRAFANA_USER }}
+          GRAFANA_PASSWORD: ${{ secrets.GRAFANA_PASSWORD }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          STORE_INFORMATION_INITIAL_DATA: ${{ secrets.STORE_INFORMATION_INITIAL_DATA }}
+          SPA_API_URL: ${{ vars.SPA_API_URL }}
+          CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}
+          SPA_APP_ID: ${{ vars.SPA_APP_ID || 'my-spa' }}
+          COOKIE_SECURE: "true"
+        run: bash .github/scripts/prepare-release-secrets.sh
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 # v1.0.3
+        env:
+          DEPLOY_SHA: ${{ github.sha }}
+          VPS_DIR: ${{ secrets.VPS_DIR }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ vars.VPS_SSH_PORT || 22 }}
+          fingerprint: ${{ vars.VPS_HOST_FINGERPRINT }}
+          envs: DEPLOY_SHA,VPS_DIR,RELEASE_ENV_B64,GRAFANA_USER_B64,GRAFANA_PASSWORD_B64
+          command_timeout: 25m
+          script: |
+            set -eu
+            cd "$VPS_DIR"
+
+            if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+              echo "Tracked files have local changes; deployment refused." >&2
+              exit 1
+            fi
+
+            git fetch origin develop
+            git merge-base --is-ancestor "$DEPLOY_SHA" FETCH_HEAD
+            git switch --detach "$DEPLOY_SHA"
+
+            bash infra/scripts/init-release-secrets.sh
+            docker compose --env-file da/.env -f infra/compose.yaml config --quiet
+            docker compose --env-file da/.env -f infra/compose.yaml build --pull api spa
+            docker compose --env-file da/.env -f infra/compose.yaml up \
+              -d --remove-orphans --wait --wait-timeout 180
+            docker compose --env-file da/.env -f infra/compose.yaml ps
+            echo "Deployment completed."

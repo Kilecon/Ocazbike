@@ -1,0 +1,481 @@
+services:
+# use reverse proxy of the vps  to redirect on front, front to api
+  api:
+    build:
+      context: ../da
+    restart: unless-stopped
+    init: true
+    #pids_limit: 100
+
+    user: "10001:10001"
+
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://127.0.0.1:3100/loki/api/v1/push"
+        loki-retries: "5"
+        loki-batch-size: "400"
+
+    environment:
+      OTEL_SERVICE_NAME: elysia-api
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      LOG_LEVEL: info
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      SPA_APP_ID: ${SPA_APP_ID:-my-spa}
+      JWT_ACCESS_TTL_SECONDS: ${JWT_ACCESS_TTL_SECONDS:-900}
+      JWT_REFRESH_TTL_SECONDS: ${JWT_REFRESH_TTL_SECONDS:-2592000}
+      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-12}
+      LOGIN_RATE_LIMIT_MAX_FAILURES: ${LOGIN_RATE_LIMIT_MAX_FAILURES:-5}
+      LOGIN_RATE_LIMIT_WINDOW_MS: ${LOGIN_RATE_LIMIT_WINDOW_MS:-900000}
+      LOGIN_RATE_LIMIT_LOCK_MS: ${LOGIN_RATE_LIMIT_LOCK_MS:-900000}
+      SQLITE_DB_PATH: /data/elysia.sqlite
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY must be set}
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3111}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      STORE_INFORMATION_INITIAL_DATA: ${STORE_INFORMATION_INITIAL_DATA:-}
+
+    ports:
+      - "3000:3000"
+
+    networks:
+      - frontend
+      - observability
+
+    volumes:
+      - sqlite-data:/data
+
+    depends_on:
+      otel-collector:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bun",
+          "-e",
+          "fetch('http://127.0.0.1:3000/health/', { headers: { 'X-App-Id': process.env.SPA_APP_ID } }).then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    read_only: true
+
+    tmpfs:
+      - /tmp
+
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+
+
+  spa:
+    build:
+      context: ../spa
+      dockerfile: Dockerfile
+      args:
+        BUN_PUBLIC_API_URL: ${SPA_API_URL:-http://localhost:3000}
+        BUN_PUBLIC_APP_ID: ${SPA_APP_ID:-my-spa}
+    restart: unless-stopped
+    init: true
+    user: "10001:10001"
+
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://127.0.0.1:3100/loki/api/v1/push"
+        loki-retries: "5"
+        loki-batch-size: "400"
+
+    ports:
+      - "3111:3111"
+
+    networks:
+      - frontend
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bun",
+          "-e",
+          "fetch('http://127.0.0.1:3111/').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    read_only: true
+
+    tmpfs:
+      - /tmp
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.158.0@sha256:c5918f78992ee73b0d6f0e599423ac5ec52dd5d9726733114d6eca53d5a32ed5
+    restart: unless-stopped
+    init: true
+    #pids_limit: 100
+
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://127.0.0.1:3100/loki/api/v1/push"
+        loki-retries: "5"
+        loki-batch-size: "400"
+    
+    command:
+      - --config=/etc/otelcol-contrib/config.yaml
+
+    volumes:
+      - ./docker/otel-collector.yaml:/etc/otelcol-contrib/config.yaml:ro
+
+    networks:
+      - observability
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    read_only: true
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://localhost:13133/ || exit 1"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+
+  garage:
+    image: dxflrs/garage:v2.4.1@sha256:9c96caa2612d3411acc5b0e6701fb238dbfba33e533a6d7d3d811a4b12d0d020
+    restart: unless-stopped
+    init: true
+
+    environment:
+      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET:?GARAGE_RPC_SECRET must be set}
+      GARAGE_DEFAULT_ACCESS_KEY: ${GARAGE_DEFAULT_ACCESS_KEY:?GARAGE_DEFAULT_ACCESS_KEY must be set}
+      GARAGE_DEFAULT_SECRET_KEY: ${GARAGE_DEFAULT_SECRET_KEY:?GARAGE_DEFAULT_SECRET_KEY must be set}
+      GARAGE_DEFAULT_BUCKET: sqlite-backups
+
+    command:
+      - /garage
+      - server
+      - --single-node
+      - --default-bucket
+
+    volumes:
+      - ./docker/garage.toml:/etc/garage.toml:ro
+      - garage-data:/var/lib/garage
+
+    networks:
+      - backup
+
+    healthcheck:
+      test: ["CMD", "/garage", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+
+
+  litestream:
+    image: litestream/litestream:0.5.14@sha256:ef0ac5958cf81725b7a85fb76f82ef71ace030db9429086eeefc59ee6ca53941
+    restart: unless-stopped
+    init: true
+    user: "10001:10001"
+
+    environment:
+      LITESTREAM_ACCESS_KEY_ID: ${GARAGE_DEFAULT_ACCESS_KEY:?GARAGE_DEFAULT_ACCESS_KEY must be set}
+      LITESTREAM_SECRET_ACCESS_KEY: ${GARAGE_DEFAULT_SECRET_KEY:?GARAGE_DEFAULT_SECRET_KEY must be set}
+
+    command:
+      - replicate
+      - -config
+      - /etc/litestream.yml
+
+    volumes:
+      - sqlite-data:/data
+      - ./docker/litestream.yml:/etc/litestream.yml:ro
+
+    networks:
+      - backup
+
+    depends_on:
+      api:
+        condition: service_healthy
+        restart: true
+      garage:
+        condition: service_healthy
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+
+  tempo:
+    image: grafana/tempo:2.9.4@sha256:3ecdaa1af90b3068e77e4fb4b11d9f26201c3a57d5740d34965a323173a4f1aa
+    restart: unless-stopped
+    #pids_limit: 100
+    init: true
+
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://127.0.0.1:3100/loki/api/v1/push"
+        loki-retries: "5"
+        loki-batch-size: "400"
+
+    command:
+      - -config.file=/etc/tempo.yaml
+
+    volumes:
+      - ./docker/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo-data:/var/tempo
+
+    networks:
+      - observability
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    read_only: true
+
+    tmpfs:
+      - /tmp
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M
+
+
+  loki:
+    image: grafana/loki:3.6.15@sha256:a678400d75866739e70cf413de834b929c8ac500256bc6beedf17a91ab6430a3
+    restart: unless-stopped
+    init: true
+    #pids_limit: 100
+
+    ports:
+      - "127.0.0.1:3100:3100"
+
+    command:
+      - -config.file=/etc/loki/local-config.yaml
+    
+    volumes:
+      - loki-data:/loki
+
+    networks:
+      - observability
+      - loki-host
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    read_only: true
+
+    tmpfs:
+      - /tmp
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M
+
+
+  prometheus:
+    image: prom/prometheus:v3.13.2@sha256:508729e0e2d18e11fd742a5a5ca70e557b940a93948c3c95fd0123a6fd538b69
+    restart: unless-stopped
+    #pids_limit: 100
+    init: true
+
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://127.0.0.1:3100/loki/api/v1/push"
+        loki-retries: "5"
+        loki-batch-size: "400"
+
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+
+    volumes:
+      - ./docker/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+    networks:
+      - observability
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    read_only: true
+
+    tmpfs:
+      - /tmp
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+
+  grafana:
+    image: grafana/grafana:13.0@sha256:28476aa8096cd8d0f658a05a443b605fffb450e57f444335216175d604cfd23d
+    restart: unless-stopped
+    init: true
+    #pids_limit: 100
+
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://127.0.0.1:3100/loki/api/v1/push"
+        loki-retries: "5"
+        loki-batch-size: "400"
+        
+    environment:
+      GF_SECURITY_ADMIN_USER__FILE: /run/secrets/grafana_user
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_password
+      GF_USERS_ALLOW_SIGN_UP: "false"
+
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+
+    secrets:
+      - grafana_user
+      - grafana_password
+
+    ports:
+      - "127.0.0.1:3001:3000"
+    networks:
+      - frontend
+      - observability
+
+    depends_on:
+      - tempo
+      - loki
+      - prometheus
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    read_only: true
+
+    tmpfs:
+      - /tmp
+
+    user: "472:472"
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://localhost:3000/api/health || exit 1"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+
+networks:
+  frontend:
+  observability:
+    internal: true
+  backup:
+    internal: true
+  loki-host:
+    driver: bridge
+
+volumes:
+  grafana-data:
+  sqlite-data:
+  garage-data:
+  tempo-data:
+  loki-data:
+  prometheus-data:
+
+secrets:
+  grafana_user:
+    file: ../da/secrets/grafana_user
+  
+  grafana_password:
+    file: ../da/secrets/grafana_password
+  
