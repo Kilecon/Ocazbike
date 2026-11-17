@@ -64,8 +64,9 @@ export class JwtService {
   async verifyRefreshToken(
     token: string,
     now = Math.floor(Date.now() / 1000),
+    expiredToleranceSeconds = 0,
   ): Promise<RefreshTokenClaims> {
-    const claims = await this.verify(token, now);
+    const claims = await this.verify(token, now, expiredToleranceSeconds);
     if (
       claims.type !== "refresh" ||
       !isValidSubject(claims.sub) ||
@@ -82,10 +83,16 @@ export class JwtService {
     };
   }
 
-  private async verify(token: string, now: number) {
+  /** The signature is always checked; the tolerance only relaxes `exp`. */
+  private async verify(
+    token: string,
+    now: number,
+    expiredToleranceSeconds = 0,
+  ) {
     const claims = await this.signer.verify(token, {
       algorithms: [ALGORITHM],
       currentDate: new Date(now * 1000),
+      clockTolerance: expiredToleranceSeconds,
     });
     if (!claims || !Number.isInteger(claims.exp)) {
       throw new InvalidAuthTokenError();

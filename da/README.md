@@ -59,10 +59,28 @@ Pour arrêter le serveur, utiliser `Ctrl+C`.
 
 ## ⚙️ Configuration `.env`
 
-Bun charge automatiquement le fichier `.env` du dossier courant. `.env.example`
+Bun charge automatiquement le fichier `.env` du dossier courant en développement. `.env.example`
 est un modèle à copier ; les valeurs d'exemple doivent être remplacées par
 celles de votre environnement. Ne partagez pas `.env` et n'y inscrivez pas de
 secrets dans Git : ce fichier est ignoré par le `.gitignore`.
+
+En production (`NODE_ENV=production`), l'API lit les secrets dans les fichiers
+désignés par `JWT_SECRET_FILE` et `ENCRYPTION_KEY_FILE` (obligatoires), ainsi
+que `BOOTSTRAP_ADMIN_PASSWORD_FILE`, `DISCORD_WEBHOOK_URL_FILE` et
+`STORE_INFORMATION_INITIAL_DATA_FILE` (optionnels). Les variables portant les
+valeurs de ces secrets ne sont pas utilisées dans ce mode.
+
+Le déploiement release utilise `infra/compose.release.yaml` : le workflow
+GitHub écrit ces secrets dans `da/secrets/` et conserve uniquement la
+configuration non secrète dans `da/.env`. Les clés de chiffrement et Garage
+existantes doivent être conservées ; une rotation exige une procédure séparée.
+Les fichiers Compose secrets restent lisibles par root et les administrateurs
+Docker sur le VPS.
+
+Mailpit capture les messages sans les distribuer ; son interface est accessible
+sur `127.0.0.1:8025` et le SMTP interne sur `mailpit:1025`. Aucun envoi de
+courriel n'est actuellement implémenté dans l'API. Le port de l'interface peut
+être modifié avec `MAILPIT_UI_PORT` (variable GitHub en release).
 
 | Variable | Obligatoire | Description |
 | --- | --- | --- |

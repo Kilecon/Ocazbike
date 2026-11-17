@@ -192,6 +192,63 @@ describe("AuthService.refresh and logout", () => {
     expect(fixture.sessions.revokeAllForUser).not.toHaveBeenCalled();
   });
 
+  it("detects the replay of a rotated refresh token even once it has expired", async () => {
+    const fixture = createAuthFixture();
+    const login = await fixture.service.login(
+      "admin@example.com",
+      "valid-password",
+    );
+    const id = (await fixture.jwt.verifyRefreshToken(login.refreshToken)).jti;
+    requireTestValue(fixture.sessionRecords.get(id)).revokedAt = new Date();
+    const later = Date.now() + 2 * 3600 * 1000;
+    const clock = spyOn(Date, "now").mockReturnValue(later);
+
+    try {
+      await expect(
+        fixture.service.refresh(login.refreshToken),
+      ).rejects.toBeInstanceOf(InvalidAuthTokenError);
+      expect(fixture.sessions.revokeAllForUser).toHaveBeenCalledWith(1);
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
+  it("rejects an expired refresh token that was never rotated without revoking sessions", async () => {
+    const fixture = createAuthFixture();
+    const login = await fixture.service.login(
+      "admin@example.com",
+      "valid-password",
+    );
+    const clock = spyOn(Date, "now").mockReturnValue(
+      Date.now() + 2 * 3600 * 1000,
+    );
+
+    try {
+      await expect(
+        fixture.service.refresh(login.refreshToken),
+      ).rejects.toBeInstanceOf(InvalidAuthTokenError);
+      expect(fixture.sessions.revokeAllForUser).not.toHaveBeenCalled();
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
+  it("does not revoke sessions for a forged refresh token", async () => {
+    const fixture = createAuthFixture();
+    const login = await fixture.service.login(
+      "admin@example.com",
+      "valid-password",
+    );
+    const id = (await fixture.jwt.verifyRefreshToken(login.refreshToken)).jti;
+    requireTestValue(fixture.sessionRecords.get(id)).revokedAt = new Date(
+      Date.now() - 11_000,
+    );
+    const forgedToken = `${login.refreshToken.slice(0, login.refreshToken.lastIndexOf(".") + 1)}${"A".repeat(43)}`;
+
+    await expect(fixture.service.refresh(forgedToken)).rejects.toThrow();
+    expect(fixture.sessions.revokeAllForUser).not.toHaveBeenCalled();
+  });
+
   it("deletes the refresh session and records logout", async () => {
     const fixture = createAuthFixture();
     const login = await fixture.service.login(

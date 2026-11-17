@@ -3,6 +3,7 @@
 # temporary files
 *README.md
 src/shared/documentation/*
+!src/shared/documentation/api-documentation.ts
 src/features/clients/changes.md
 src/features/support/README.md
 docs.old/*

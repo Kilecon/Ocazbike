@@ -118,6 +118,7 @@ export interface BillingOperationListItemDTO
     BillingOperationDTO["client"],
     "firstname" | "lastname" | "email"
   >;
+  lines: Pick<BillingLineDTO, "description" | "quantity">[];
   snapshots: Omit<BillingSnapshotDTO, "payload">[];
 }
 

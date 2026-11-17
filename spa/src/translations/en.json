@@ -233,6 +233,7 @@
   "clientFirstName": "First name",
   "clientLastName": "Last name",
   "clientAddress": "Address",
+  "addressSuggestions": "Address suggestions",
   "clientAddressComplement": "Address complement (optional)",
   "clientIdentityCardNumber": "Identity card number (optional)",
   "clientType": "Client type",
@@ -316,5 +317,10 @@
   "changePassword": "Change password",
   "notFoundTitle": "Page not found",
   "notFoundDescription": "The page you requested does not exist or has been moved.",
-  "notFoundBackToAdmin": "Go to administration"
+  "notFoundBackToAdmin": "Go to administration",
+  "datePlaceholderDay": "dd",
+  "datePlaceholderMonth": "mm",
+  "datePlaceholderYear": "yyyy",
+  "invalidDate": "Invalid date (format {{format}})",
+  "openCalendar": "Choose a date"
 }

@@ -1,6 +1,7 @@
 import { Pencil } from "lucide-react";
 import type { SubmitEvent } from "react";
 import { useTranslation } from "react-i18next";
+import { AddressInput } from "../../../components/ui/address-input";
 import { Button } from "../../../components/ui/button";
 import {
   formatClientFirstName,
@@ -225,12 +226,17 @@ export function ClientInformationPanel({
               required={!form.email.trim()}
               onChange={(value) => onChange("phonenumber", value)}
             />
-            <ClientTextField
-              id="client-address"
-              label={t("clientAddress")}
-              value={form.address}
-              onChange={(value) => onChange("address", value)}
-            />
+            <label
+              className="grid gap-1.5 text-sm font-semibold text-foreground"
+              htmlFor="client-address"
+            >
+              {t("clientAddress")}
+              <AddressInput
+                id="client-address"
+                value={form.address}
+                onChange={(value) => onChange("address", value)}
+              />
+            </label>
             <ClientTextField
               id="client-address-complement"
               label={t("clientAddressComplement")}

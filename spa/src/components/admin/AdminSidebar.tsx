@@ -2,7 +2,6 @@ import {
   ArrowLeftRight,
   Bike,
   CircleHelp,
-  LayoutDashboard,
   LogOut,
   Moon,
   ScanEye,
@@ -31,7 +30,6 @@ import { Button } from "../ui/button";
 import { useAdminToast } from "./AdminToast";
 
 const menuItems = [
-  { key: "adminDashboard", href: "/admin", icon: LayoutDashboard },
   { key: "adminRepairs", href: "/admin/repairs", icon: Wrench, type: "repair" },
   { key: "adminSales", href: "/admin/sales", icon: ShoppingBag, type: "sale" },
   {
@@ -176,8 +174,7 @@ export function AdminSidebar() {
             const Icon = item.icon;
             const isActive =
               window.location.pathname === item.href ||
-              (item.href !== "/admin" &&
-                window.location.pathname.startsWith(`${item.href}/`));
+              window.location.pathname.startsWith(`${item.href}/`);
 
             return (
               <li

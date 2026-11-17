@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
 import { type SubmitEvent, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { AddressInput } from "../../components/ui/address-input";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import type { StoreInformation } from "./types";
@@ -91,15 +92,12 @@ export function StoreInformationDialog({
             >
               {t(label)}
               {field === "address" ? (
-                <textarea
+                <AddressInput
                   id={`store-information-${field}`}
-                  className="min-h-20 w-full rounded-[0.3125rem] border border-control-border bg-surface px-3 py-2.5 text-foreground"
+                  multiline
                   value={form[field]}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      [field]: event.target.value,
-                    }))
+                  onChange={(value) =>
+                    setForm((current) => ({ ...current, [field]: value }))
                   }
                   maxLength={maxLength}
                 />

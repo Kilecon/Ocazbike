@@ -17,6 +17,7 @@ services:
         loki-batch-size: "400"
 
     environment:
+      NODE_ENV: development
       OTEL_SERVICE_NAME: elysia-api
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       LOG_LEVEL: info
@@ -134,6 +135,24 @@ services:
         limits:
           cpus: "0.5"
           memory: 256M
+
+
+  mailpit:
+    image: axllent/mailpit:v1.31.4@sha256:b68349e3a014b90c5610bfb26b2ae36f3892d7b8cf25ee140c6c71c98d2fcf48
+    restart: unless-stopped
+    init: true
+    ports:
+          - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025"
+          - "127.0.0.1:1025:1025"
+    networks:
+          - frontend
+    security_opt:
+          - no-new-privileges:true
+    cap_drop:
+          - ALL
+    read_only: true
+    tmpfs:
+          - /tmp
 
 
   otel-collector:

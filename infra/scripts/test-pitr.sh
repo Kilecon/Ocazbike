@@ -12,7 +12,7 @@ restore_path="/data/${test_id}-restored.sqlite"
 target_timestamp=""
 
 compose() {
-  docker compose --env-file ../da/.env -f compose.yaml "$@"
+  docker compose --env-file ../da/.env -f "${COMPOSE_FILE:-compose.yaml}" "$@"
 }
 
 run_api_bun() {
@@ -68,8 +68,9 @@ run_api_bun '
     process.env.CONFIG_PATH,
     `dbs:
   - path: ${process.env.DATABASE_PATH}
-    replicas:
-      - url: file://${process.env.REPLICA_PATH}
+    replica:
+      type: file
+      path: ${process.env.REPLICA_PATH}
 sync-interval: 1s
 snapshot:
   interval: 24h
@@ -117,7 +118,7 @@ ltx_json=$(
 )
 
 target_timestamp=$(
-  LTX_JSON="$ltx_json" bun -e '
+  compose exec -T -e "LTX_JSON=$ltx_json" api bun -e '
     const files = JSON.parse(process.env.LTX_JSON)
       .sort((left, right) => left.timestamp.localeCompare(right.timestamp));
     if (files.length < 3) {

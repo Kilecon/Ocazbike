@@ -180,3 +180,12 @@ html[data-theme="dark"] {
     }
   }
 }
+
+.date-input-calendar {
+  --rdp-accent-color: var(--oz-primary);
+  --rdp-accent-background-color: var(--oz-soft);
+  --rdp-day-height: 2.5rem;
+  --rdp-day-width: 2.5rem;
+  --rdp-day_button-height: 2.375rem;
+  --rdp-day_button-width: 2.375rem;
+}

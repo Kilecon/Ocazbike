@@ -1,4 +1,7 @@
+import logoUrl from "../../../../../public/assets/ocazbike-logo.png";
 import { documentStyles } from "../styles";
+
+export const documentLogo = `<img class="logo" src="${logoUrl}" alt="Ocazbike" width="70" height="60">`;
 
 export function createDocumentHtml(content: string): string {
   return `<!doctype html>

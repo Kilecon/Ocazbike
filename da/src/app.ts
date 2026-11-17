@@ -9,21 +9,24 @@ import { BcryptPasswordHasher } from "./features/auth/password";
 import { DrizzleBillingDocumentRepository } from "./features/billing/infrastructure/DrizzleBillingDocumentRepository";
 import { DrizzleClientRepository } from "./features/clients/infrastructure/DrizzleClientRepository";
 import { DrizzleStoreInformationRepository } from "./features/store-information/infrastructure/DrizzleStoreInformationRepository";
+import { DiscordSupportNotifier } from "./features/support/infrastructure/DiscordSupportNotifier";
 import { DrizzleSupportRequestRepository } from "./features/support/infrastructure/DrizzleSupportRequestRepository";
 import { prepareDatabase } from "./prepareDatabase";
+import { loadRuntimeEnvironment } from "./shared/config/secrets";
 import { DataProtector } from "./shared/crypto/DataProtector";
 import { logger } from "./shared/observability/logger";
 
 const PURGE_INTERVAL_MS = 60 * 60 * 1000;
 
 export async function createServerApp() {
-  const config = loadAuthConfig();
-  const dataProtector = DataProtector.fromEnvironment();
-  const { db, sqlite } = await prepareDatabase();
+  const env = loadRuntimeEnvironment();
+  const config = loadAuthConfig(env);
+  const dataProtector = DataProtector.fromEnvironment(env.ENCRYPTION_KEY);
+  const { db, sqlite } = await prepareDatabase(env);
 
   const users = new DrizzleUserRepository(db, dataProtector);
   const passwords = new BcryptPasswordHasher(config.bcryptRounds);
-  await ensureBootstrapAdmin(users, passwords);
+  await ensureBootstrapAdmin(users, passwords, env);
 
   const sessions = new DrizzleRefreshSessionRepository(db);
   const purgeExpiredSessions = () =>
@@ -44,6 +47,7 @@ export async function createServerApp() {
     ),
     clients,
     supportRequests: new DrizzleSupportRequestRepository(db, dataProtector),
+    supportNotifier: new DiscordSupportNotifier(env.DISCORD_WEBHOOK_URL ?? ""),
     storeInformation: new DrizzleStoreInformationRepository(db, dataProtector),
   });
 

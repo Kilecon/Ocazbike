@@ -370,6 +370,24 @@ export class DrizzleBillingDocumentRepository
       .orderBy(desc(billingDocuments.dateMs), desc(billingDocuments.id))
       .limit(input.limit)
       .offset((input.page - 1) * input.limit);
+    const operationIds = rows.map(({ operation }) => operation.id);
+    const lineRows = operationIds.length
+      ? await this.database
+          .select({
+            billingDocumentId: billingLines.billingDocumentId,
+            description: billingLines.description,
+            quantity: billingLines.quantity,
+          })
+          .from(billingLines)
+          .where(inArray(billingLines.billingDocumentId, operationIds))
+          .orderBy(asc(billingLines.id))
+      : [];
+    const linesById = new Map<number, BillingOperationListItem["lines"]>();
+    for (const { billingDocumentId, ...line } of lineRows) {
+      const lines = linesById.get(billingDocumentId) ?? [];
+      lines.push(line);
+      linesById.set(billingDocumentId, lines);
+    }
     const legacyRows = rows.length
       ? await this.database
           .select({
@@ -442,6 +460,7 @@ export class DrizzleBillingDocumentRepository
           ...operation,
           paymentMethod: operation.paymentMethod as BillingPaymentMethod | null,
           client,
+          lines: linesById.get(operation.id) ?? [],
           snapshots,
         });
       },

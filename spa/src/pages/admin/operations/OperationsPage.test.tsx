@@ -5,7 +5,11 @@ import { I18nextProvider } from "react-i18next";
 import { AdminToastProvider } from "../../../components/admin/AdminToast";
 import type { BillingOperationDTO } from "../../../services/types";
 import fr from "../../../translations/fr.json";
-import { CreateOperationForm, OperationDetail } from "./OperationsPage";
+import {
+  CreateOperationForm,
+  OperationDetail,
+  summarizeLines,
+} from "./OperationsPage";
 
 const i18n = createInstance();
 await i18n.init({ lng: "fr", resources: { fr: { translation: fr } } });
@@ -100,6 +104,7 @@ describe("rental repair-style UI", () => {
     );
     expect(html).toMatch(/id="operation-service-start"[^>]*required=""/);
     expect(html).toMatch(/id="operation-service-end"[^>]*required=""/);
+    expect(html).toMatch(/id="operation-date"[^>]*placeholder="jj\/mm\/aaaa"/);
     expect(html).toContain("Créer la location");
     expect(html).toContain('rows="6"');
   });
@@ -140,5 +145,17 @@ describe("rental repair-style UI", () => {
     expect(html).toContain("08/10/2026");
     expect(html).toContain('href="/admin/rentals/42/documents/invoice"');
     expect(html).not.toContain(">Terminer<");
+  });
+});
+
+describe("operation list summary", () => {
+  it("lists billing lines as quantity and description", () => {
+    expect(
+      summarizeLines([
+        { description: "Pneu", quantity: "2.000" },
+        { description: "Main d'œuvre", quantity: "1.5" },
+      ]),
+    ).toBe("2 Pneu, 1.5 Main d'œuvre");
+    expect(summarizeLines([])).toBe("");
   });
 });

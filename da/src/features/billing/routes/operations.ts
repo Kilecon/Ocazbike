@@ -93,7 +93,7 @@ export function createBillingOperationRoutes(
         detail: {
           summary: "Lister les dossiers de facturation",
           description:
-            "Liste les dossiers paginés sans lignes, avec filtres facultatifs par type et statut. Le client contient uniquement firstname, lastname et email ; les documents sont limités à leurs métadonnées. closedAt est la date de refus du devis ou de paiement de la facture (null sinon). Pour tous les types, les dates de prestation saisies sont prioritaires dans serviceStartAt/serviceEndAt ; à défaut, ces champs reprennent la date du dossier et closedAt. Toutes les dates sont en millisecondes UTC entières. Aucun paymentStatus n'est renvoyé.",
+            "Liste les dossiers paginés avec filtres facultatifs par type et statut. Les lignes sont limitées à description et quantity. Le client contient uniquement firstname, lastname et email ; les documents sont limités à leurs métadonnées. closedAt est la date de refus du devis ou de paiement de la facture (null sinon). Pour tous les types, les dates de prestation saisies sont prioritaires dans serviceStartAt/serviceEndAt ; à défaut, ces champs reprennent la date du dossier et closedAt. Toutes les dates sont en millisecondes UTC entières. Aucun paymentStatus n'est renvoyé.",
           tags: ["Facturation"],
         },
         beforeHandle: authenticated,

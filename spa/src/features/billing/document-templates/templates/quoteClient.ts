@@ -1,10 +1,13 @@
-import { createDocumentHtml } from "./layout";
+import { createDocumentHtml, documentLogo } from "./layout";
 
 export const quoteClientTemplate = createDocumentHtml(`
     <header class="topline">
-      <div>
-        <p class="brand">{{company_name}}</p>
-        <p class="eyebrow">RÉPARATION, VENTE-RACHAT<br>&amp; LOCATION DE VÉLOS - Eysines</p>
+      <div class="brand-block">
+        ${documentLogo}
+        <div>
+          <p class="brand">{{company_name}}</p>
+          <p class="eyebrow">RÉPARATION, VENTE-RACHAT<br>&amp; LOCATION DE VÉLOS - Eysines</p>
+        </div>
       </div>
       <div>
         <h1>{{document_title}}</h1>

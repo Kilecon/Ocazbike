@@ -192,11 +192,16 @@ describe("Drizzle user and refresh-session repositories", () => {
     await createSession("recent-revoked", user.id, {
       revokedAt: new Date(now - 1_000),
     });
+    await createSession("expired-recent-revoked", user.id, {
+      expiresAt: new Date(now - 1_000),
+      revokedAt: new Date(now - 2_000),
+    });
 
     expect(await sessions.deleteExpired(new Date(now))).toBe(2);
     expect(await sessions.findById("expired")).toBeNull();
     expect(await sessions.findById("old-revoked")).toBeNull();
     expect(await sessions.findById("recent-revoked")).not.toBeNull();
+    expect(await sessions.findById("expired-recent-revoked")).not.toBeNull();
   });
 
   it("filters active users by default and can include inactive users", async () => {

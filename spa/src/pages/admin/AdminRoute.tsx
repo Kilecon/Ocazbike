@@ -7,9 +7,6 @@ import { ApiError } from "../../services/api-client";
 import { getCurrentUser, logout } from "../../services/auth.api";
 import type { CurrentUser } from "../../services/types";
 
-const AdminPage = lazy(() =>
-  import("./dashboard/AdminPage").then((m) => ({ default: m.AdminPage })),
-);
 const Client360Page = lazy(() =>
   import("./clients/Client360Page").then((m) => ({
     default: m.Client360Page,
@@ -143,6 +140,14 @@ export function AdminRoute() {
   );
 }
 
+const DEFAULT_ADMIN_PATH = "/admin/repairs";
+
+// The dashboard is disabled: unknown or forbidden admin paths land on repairs.
+function renderDefaultPage() {
+  window.history.replaceState(null, "", DEFAULT_ADMIN_PATH);
+  return <OperationsPage type="repair" />;
+}
+
 function renderPage(user: CurrentUser) {
   const pathname = window.location.pathname.replace(/\/+$/, "");
   const documentMatch = pathname.match(
@@ -181,9 +186,9 @@ function renderPage(user: CurrentUser) {
     case "/admin/support":
       return <SupportPage />;
     case "/admin/users":
-      return user.role === "Admin" ? <UsersPage /> : <AdminPage />;
+      return user.role === "Admin" ? <UsersPage /> : renderDefaultPage();
     case "/admin/settings":
-      return user.role === "Admin" ? <SettingsPage /> : <AdminPage />;
+      return user.role === "Admin" ? <SettingsPage /> : renderDefaultPage();
     default: {
       const clientMatch = window.location.pathname
         .replace(/\/+$/, "")
@@ -191,7 +196,7 @@ function renderPage(user: CurrentUser) {
       if (clientMatch) {
         return <ClientDetailPage clientId={Number(clientMatch[1])} />;
       }
-      return <AdminPage />;
+      return renderDefaultPage();
     }
   }
 }

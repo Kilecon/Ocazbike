@@ -1,5 +1,6 @@
 import { ArrowRight, Plus, X } from "lucide-react";
 import {
+  type KeyboardEvent,
   type ReactNode,
   type SubmitEvent,
   useCallback,
@@ -13,6 +14,7 @@ import { useAdminToast } from "../../../components/admin/AdminToast";
 import { StatusBadge } from "../../../components/admin/StatusBadge";
 import { Button } from "../../../components/ui/button";
 import { ClientSearchInput } from "../../../components/ui/ClientSearchInput";
+import { DateInput } from "../../../components/ui/date-input";
 import { Grid } from "../../../components/ui/Grid";
 import { Input } from "../../../components/ui/input";
 import { TruncatedCellText } from "../../../components/ui/TruncatedCellText";
@@ -37,6 +39,20 @@ import type {
   ClientListItemDTO,
 } from "../../../services/types";
 import { AdminPageShell } from "../common/AdminPageShell";
+
+// Amounts and VAT are typed, not incremented: hide spinners and block arrow/wheel steps.
+const noStepperInputProps = {
+  className:
+    "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+  onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+      event.preventDefault();
+    }
+  },
+  onWheel: (event: { currentTarget: HTMLInputElement }) =>
+    event.currentTarget.blur(),
+};
+
 import { InvoicePayment } from "./InvoicePayment";
 import { OperationDocuments } from "./OperationDocuments";
 import {
@@ -137,6 +153,17 @@ function formatAmount(value: string): string {
         currency: "EUR",
       }).format(amount)
     : value;
+}
+
+export function summarizeLines(
+  lines: BillingOperationListItemDTO["lines"],
+): string {
+  return lines
+    .map(({ description, quantity }) => {
+      const amount = Number(quantity);
+      return `${Number.isFinite(amount) ? amount : quantity} ${description}`;
+    })
+    .join(", ");
 }
 
 function ClientOperationsShell({
@@ -402,7 +429,7 @@ export function OperationsPage({
             width: "36%",
             render: (item) => (
               <TruncatedCellText
-                text={item.comment || "—"}
+                text={item.comment || summarizeLines(item.lines) || "—"}
                 maxLength={70}
                 tooltipLabel={t("supportShowFullText")}
               />
@@ -769,31 +796,28 @@ export function CreateOperationForm({
         <div className="grid gap-3 md:grid-cols-2">
           <label htmlFor="operation-date">
             {t("date")}
-            <Input
+            <DateInput
               id="operation-date"
-              type="date"
               value={date}
-              onChange={(event) => setDate(event.target.value)}
+              onChange={setDate}
               required
             />
           </label>
           <label htmlFor="operation-service-start">
             {t("serviceStartDate")}
-            <Input
+            <DateInput
               id="operation-service-start"
-              type="date"
               value={serviceStartAt}
-              onChange={(event) => setServiceStartAt(event.target.value)}
+              onChange={setServiceStartAt}
               required={requiresServicePeriod}
             />
           </label>
           <label htmlFor="operation-service-end">
             {t("serviceEndDate")}
-            <Input
+            <DateInput
               id="operation-service-end"
-              type="date"
               value={serviceEndAt}
-              onChange={(event) => setServiceEndAt(event.target.value)}
+              onChange={setServiceEndAt}
               required={requiresServicePeriod}
             />
           </label>
@@ -865,8 +889,8 @@ export function CreateOperationForm({
                 <Input
                   id={`operation-line-quantity-${line.id}`}
                   type="number"
-                  min="0.001"
-                  step="0.001"
+                  min="1"
+                  step="1"
                   value={line.quantity}
                   onChange={(event) =>
                     updateLine(index, "quantity", event.target.value)
@@ -880,6 +904,7 @@ export function CreateOperationForm({
               >
                 {t("unitPrice")}
                 <Input
+                  {...noStepperInputProps}
                   id={`operation-line-price-${line.id}`}
                   type="number"
                   min="0"
@@ -897,6 +922,7 @@ export function CreateOperationForm({
               >
                 {t("vatRate")}
                 <Input
+                  {...noStepperInputProps}
                   id={`operation-line-vat-${line.id}`}
                   type="number"
                   min="0"

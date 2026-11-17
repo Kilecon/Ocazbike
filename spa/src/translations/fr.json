@@ -233,6 +233,7 @@
   "clientFirstName": "Prénom",
   "clientLastName": "Nom",
   "clientAddress": "Adresse",
+  "addressSuggestions": "Suggestions d’adresses",
   "clientAddressComplement": "Complément d’adresse (facultatif)",
   "clientIdentityCardNumber": "Numéro de carte d’identité (facultatif)",
   "clientType": "Type de client",
@@ -316,5 +317,10 @@
   "changePassword": "Changer le mot de passe",
   "notFoundTitle": "Page introuvable",
   "notFoundDescription": "La page demandée n’existe pas ou a été déplacée.",
-  "notFoundBackToAdmin": "Aller à l’administration"
+  "notFoundBackToAdmin": "Aller à l’administration",
+  "datePlaceholderDay": "jj",
+  "datePlaceholderMonth": "mm",
+  "datePlaceholderYear": "aaaa",
+  "invalidDate": "Date invalide (format {{format}})",
+  "openCalendar": "Choisir une date"
 }

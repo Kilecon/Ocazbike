@@ -135,6 +135,7 @@ describe("operation creation", () => {
               lastname: "Lovelace",
               email: "ada@example.test",
             },
+            lines: [{ description: "Vélo", quantity: "1" }],
             snapshots: [
               {
                 kind: "invoice",

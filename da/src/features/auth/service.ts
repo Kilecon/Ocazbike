@@ -14,9 +14,10 @@ import {
   UserAlreadyDeactivatedError,
   UserNotFoundError,
 } from "./errors";
-import type {
-  IRefreshSessionRepository,
-  IUserRepository,
+import {
+  type IRefreshSessionRepository,
+  type IUserRepository,
+  REVOKED_SESSION_RETENTION_MS,
 } from "./IAuthRepositories";
 import type { JwtService } from "./jwt";
 import { LoginRateLimiter } from "./loginRateLimiter";
@@ -74,7 +75,12 @@ export class AuthService {
     refreshToken: string,
     metadata: AuthRequestMetadata = {},
   ): Promise<AuthTokens> {
-    const claims = await this.jwt.verifyRefreshToken(refreshToken);
+    // Expired tokens are accepted here only so a replayed rotated token can still be detected.
+    const claims = await this.jwt.verifyRefreshToken(
+      refreshToken,
+      undefined,
+      REVOKED_SESSION_RETENTION_MS / 1000,
+    );
     const session = await this.sessions.findById(claims.jti);
 
     if (!session) {
@@ -89,7 +95,10 @@ export class AuthService {
       throw new InvalidAuthTokenError();
     }
 
-    if (session.expiresAt.getTime() <= Date.now()) {
+    if (
+      claims.exp * 1000 <= Date.now() ||
+      session.expiresAt.getTime() <= Date.now()
+    ) {
       throw new InvalidAuthTokenError();
     }
 

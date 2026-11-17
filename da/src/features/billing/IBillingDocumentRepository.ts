@@ -149,12 +149,13 @@ export interface BillingOperationListItem
     BillingOperationRecord["client"],
     "firstname" | "lastname" | "email"
   >;
+  lines: Pick<BillingDocumentLineRecord, "description" | "quantity">[];
   snapshots: Omit<BillingDocumentSnapshot, "payload">[];
 }
 
 export function toOperationListItem(
   operation: Omit<BillingOperationRecord, "lines" | "snapshots" | "client"> & {
-    lines?: BillingDocumentLineRecord[];
+    lines: Pick<BillingDocumentLineRecord, "description" | "quantity">[];
     client: BillingOperationListItem["client"];
     snapshots: (Omit<BillingDocumentSnapshot, "payload"> & {
       payload?: Record<string, unknown>;
@@ -165,7 +166,7 @@ export function toOperationListItem(
   const rejectedQuote = operation.snapshots.find(
     ({ kind, status }) => kind === "quote" && status === "rejected",
   );
-  const { lines: _lines, ...summary } = operation;
+  const { lines, ...summary } = operation;
   const closedAt = rejectedQuote
     ? rejectedQuote.updatedAt
     : invoice?.status === "paid"
@@ -181,6 +182,10 @@ export function toOperationListItem(
       lastname: operation.client.lastname,
       email: operation.client.email,
     },
+    lines: lines.map(({ description, quantity }) => ({
+      description,
+      quantity,
+    })),
     snapshots: operation.snapshots.map(
       ({ payload: _payload, ...metadata }) => metadata,
     ),

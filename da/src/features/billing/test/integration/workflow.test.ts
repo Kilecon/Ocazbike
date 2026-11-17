@@ -536,7 +536,10 @@ describe("billing operation persistence", () => {
               lastname: "Lovelace",
               email: "ada@example.com",
             });
-            expect(summary).not.toHaveProperty("lines");
+            expect(Object.keys(summary.lines[0]).sort()).toEqual([
+              "description",
+              "quantity",
+            ]);
             expect(summary).not.toHaveProperty("paymentStatus");
             expect(summary.serviceStartAt).toBe(
               Date.parse(
@@ -671,7 +674,10 @@ describe("billing operation persistence", () => {
           email: "ada@example.com",
         });
         expect(operation).not.toHaveProperty("paymentStatus");
-        expect(operation).not.toHaveProperty("lines");
+        expect(Object.keys(operation.lines[0]).sort()).toEqual([
+          "description",
+          "quantity",
+        ]);
         for (const document of operation.snapshots) {
           expect(document).not.toHaveProperty("payload");
         }
@@ -1024,7 +1030,10 @@ describe("billing operation persistence", () => {
       expect(summary.serviceEndAt).toBe(cancelled.snapshots[0].updatedAt);
       expect(Number.isSafeInteger(summary.serviceEndAt)).toBe(true);
       expect(summary.paidAt).toBeNull();
-      expect(summary).not.toHaveProperty("lines");
+      expect(Object.keys(summary.lines[0]).sort()).toEqual([
+        "description",
+        "quantity",
+      ]);
       const listedAgain = await fixture.request(
         "/operations?type=repair&page=1&limit=10",
         { headers },

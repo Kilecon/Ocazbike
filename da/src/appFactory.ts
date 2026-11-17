@@ -187,17 +187,21 @@ export function createApp(
         stack: error instanceof Error ? error.stack : undefined,
       });
     })
-    .use(
-      openapi({
-        path: API_DOCUMENTATION.openapi.path,
-        exclude: { paths: API_DOCUMENTATION.openapi.excludedPaths },
-        scalar: API_DOCUMENTATION.openapi.scalar,
-        documentation: {
-          info: API_DOCUMENTATION.info,
-          tags: API_DOCUMENTATION.tags,
-          components: API_DOCUMENTATION.components,
-        },
-      } as Parameters<typeof openapi>[0]),
+    .use((instance) =>
+      process.env.NODE_ENV === "development"
+        ? instance.use(
+            openapi({
+              path: API_DOCUMENTATION.openapi.path,
+              exclude: { paths: API_DOCUMENTATION.openapi.excludedPaths },
+              scalar: API_DOCUMENTATION.openapi.scalar,
+              documentation: {
+                info: API_DOCUMENTATION.info,
+                tags: API_DOCUMENTATION.tags,
+                components: API_DOCUMENTATION.components,
+              },
+            } as Parameters<typeof openapi>[0]),
+          )
+        : instance,
     )
     .use(spaGuard(config))
     .use(healthRoutes)

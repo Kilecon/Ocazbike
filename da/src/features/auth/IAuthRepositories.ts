@@ -20,6 +20,9 @@ export interface IUserRepository {
   recordLogout(id: number, timestamp?: number): Promise<void>;
 }
 
+/** Rotated sessions are kept this long, even once expired, to detect token replay. */
+export const REVOKED_SESSION_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+
 export interface RefreshSession {
   id: string;
   userId: number;

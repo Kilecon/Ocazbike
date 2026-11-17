@@ -7,7 +7,7 @@ cd "$SCRIPT_DIR/.."
 restore_path="/data/backup-restore-check-$$.sqlite"
 
 compose() {
-  docker compose --env-file ../da/.env -f compose.yaml "$@"
+  docker compose --env-file ../da/.env -f "${COMPOSE_FILE:-compose.yaml}" "$@"
 }
 
 cleanup() {

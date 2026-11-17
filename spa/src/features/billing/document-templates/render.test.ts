@@ -15,9 +15,27 @@ describe("document templates", () => {
           EMPTY_STORE_INFORMATION,
         );
         expect(html).toContain(".sheet { width: 210mm; min-height: 297mm;");
-        expect(html).toContain("@page { size: A4; margin: 0; }");
+        expect(html).toContain("@page { size: A4; margin: 15mm; }");
+        expect(html).toMatch(
+          /@media print \{[\s\S]*\.sheet \{[^}]*padding: 0;/,
+        );
         expect(html).toContain("thead { display: table-header-group; }");
         expect(html).toContain("tr { break-inside: avoid; }");
+      }
+    }
+  });
+
+  it("shows the Ocazbike logo in every template header", () => {
+    for (const type of ["invoice", "quote"] as const) {
+      for (const audience of ["client", "pro"] as const) {
+        const html = renderDocumentTemplate(
+          type,
+          audience,
+          EMPTY_STORE_INFORMATION,
+        );
+        expect(html).toMatch(
+          /<header class="topline">\s*<div class="brand-block">\s*<img class="logo" src="[^"]*ocazbike-logo[^"]*\.png" alt="Ocazbike"/,
+        );
       }
     }
   });

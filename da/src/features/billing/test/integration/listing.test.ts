@@ -85,7 +85,7 @@ describe("billing summary queries", () => {
     },
   );
 
-  it("uses three metadata-only queries regardless of page size and decrypts each distinct client once", async () => {
+  it("uses four batched queries regardless of page size and decrypts each distinct client once", async () => {
     for (let clientIndex = 0; clientIndex < 2; clientIndex += 1) {
       const client = await fixture.clients.create(
         {
@@ -134,11 +134,18 @@ describe("billing summary queries", () => {
         decryptPayload.mockClear();
         const page = await repository.listOperations({ page: 1, limit });
         expect(page.operations).toHaveLength(Math.min(limit, 24));
-        expect(queries).toHaveLength(3);
+        expect(queries).toHaveLength(4);
+        const lineQueries = queries.filter((query) =>
+          query.includes('"billing_lines"'),
+        );
+        expect(lineQueries).toHaveLength(1);
+        expect(lineQueries[0]).not.toContain('"unit_price"');
         for (const query of queries) {
-          expect(query).not.toContain('"billing_lines"');
           expect(query).not.toContain('"encrypted_payload"');
         }
+        expect(page.operations[0]?.lines).toEqual([
+          { description: "Service", quantity: "1" },
+        ]);
         expect(decryptClient).toHaveBeenCalledTimes(
           new Set(page.operations.map(({ clientId }) => clientId)).size,
         );

@@ -13,10 +13,11 @@ import {
 import type { DataProtector } from "../../../shared/crypto/DataProtector";
 import type { AppDatabase } from "../../../shared/database/db";
 import { refreshSessions, users } from "../../../shared/database/schema/auth";
-import type {
-  IRefreshSessionRepository,
-  IUserRepository,
-  RefreshSession,
+import {
+  type IRefreshSessionRepository,
+  type IUserRepository,
+  REVOKED_SESSION_RETENTION_MS,
+  type RefreshSession,
 } from "../IAuthRepositories";
 import type { User, UserRole } from "../types";
 
@@ -251,16 +252,20 @@ export class DrizzleRefreshSessionRepository
   }
 
   // Expired sessions are found through refresh_sessions_expires_at_ms_idx.
+  // Revoked sessions outlive their expiry so that replayed rotated tokens are still detected.
   async deleteExpired(
     now = new Date(),
-    revokedRetentionMs = 7 * 24 * 60 * 60 * 1000,
+    revokedRetentionMs = REVOKED_SESSION_RETENTION_MS,
   ): Promise<number> {
     const revokedBefore = new Date(now.getTime() - revokedRetentionMs);
     const deleted = await this.db
       .delete(refreshSessions)
       .where(
         or(
-          lte(refreshSessions.expiresAt, now),
+          and(
+            isNull(refreshSessions.revokedAt),
+            lte(refreshSessions.expiresAt, now),
+          ),
           and(
             isNotNull(refreshSessions.revokedAt),
             lte(refreshSessions.revokedAt, revokedBefore),

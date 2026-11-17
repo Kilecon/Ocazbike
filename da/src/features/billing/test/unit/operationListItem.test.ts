@@ -55,7 +55,7 @@ function operation(): BillingOperationRecord {
 }
 
 describe("billing list projection", () => {
-  it("omits private client fields, lines and document payloads without mutating the detail", () => {
+  it("omits private client fields, line prices and document payloads without mutating the detail", () => {
     const detail = operation();
     const original = structuredClone(detail);
     const summary = toOperationListItem(detail);
@@ -64,7 +64,7 @@ describe("billing list projection", () => {
       lastname: "Lovelace",
       email: "ada@example.test",
     });
-    expect(summary).not.toHaveProperty("lines");
+    expect(summary.lines).toEqual([{ description: "Service", quantity: "1" }]);
     expect(summary).not.toHaveProperty("paymentStatus");
     expect(summary.snapshots).toEqual([
       { kind: "quote", status: "accepted", createdAt: 1100, updatedAt: 1200 },
