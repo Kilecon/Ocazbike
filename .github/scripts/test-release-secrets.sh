@@ -64,8 +64,9 @@ chmod 644 "$temporary/da/secrets/jwt_secret"
 bash "$temporary/infra/scripts/init-release-secrets.sh" >> "$temporary/output"
 [[ $(stat -c %a "$temporary/da/.env") == 600 ]]
 [[ $(stat -c %a "$temporary/da/secrets") == 700 ]]
-[[ $(stat -c %a "$temporary/da/secrets/garage_rpc_secret") == 600 ]]
-[[ $(stat -c %a "$temporary/da/secrets/jwt_secret") == 700 ]]
+for file in "${files[@]}"; do
+  [[ $(stat -c %a "$temporary/da/secrets/$file") == 600 ]]
+done
 [[ $(stat -c %u:%g "$temporary/da/secrets/jwt_secret") == "$(id -u):$(id -g)" ]]
 [[ $(cat "$temporary/da/secrets/jwt_secret") == 01234567890123456789012345678901 ]]
 [[ $(cat "$temporary/da/secrets/grafana_password") == test-password-long ]]

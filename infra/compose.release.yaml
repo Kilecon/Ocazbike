@@ -8,6 +8,12 @@ services:
     #pids_limit: 100
 
     user: "10001:10001"
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - 'umask 0007; exec /usr/local/bin/docker-entrypoint.sh "$$@"'
+      - --
+    command: ["bun", "run", "src/server.ts"]
 
     logging:
       driver: loki
@@ -36,13 +42,6 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
       STORE_INFORMATION_INITIAL_DATA_FILE: /run/secrets/store_information_initial_data
 
-    secrets:
-      - bootstrap_admin_password
-      - jwt_secret
-      - encryption_key
-      - discord_webhook_url
-      - store_information_initial_data
-
     networks:
       - frontend
       - observability
@@ -50,8 +49,11 @@ services:
 
     volumes:
       - sqlite-data:/data
+      - api-secrets:/run/secrets:ro
 
     depends_on:
+      permissions-init:
+        condition: service_completed_successfully
       otel-collector:
         condition: service_started
 
@@ -95,7 +97,7 @@ services:
         BUN_PUBLIC_APP_ID: ${SPA_APP_ID:-my-spa}
     restart: unless-stopped
     init: true
-    user: "10001:10001"
+    user: "10003:10003"
 
     logging:
       driver: loki
@@ -145,6 +147,7 @@ services:
     image: axllent/mailpit:v1.31.4@sha256:b68349e3a014b90c5610bfb26b2ae36f3892d7b8cf25ee140c6c71c98d2fcf48
     restart: unless-stopped
     init: true
+    user: "10005:10005"
     ports:
           - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025"
     networks:
@@ -162,6 +165,7 @@ services:
     image: otel/opentelemetry-collector-contrib:0.158.0@sha256:c5918f78992ee73b0d6f0e599423ac5ec52dd5d9726733114d6eca53d5a32ed5
     restart: unless-stopped
     init: true
+    user: "10006:10006"
     #pids_limit: 100
 
     logging:
@@ -207,12 +211,61 @@ services:
           memory: 256M
 
 
+  # Keep host secrets deployment-owned; give each service private, correctly owned copies.
+  permissions-init:
+    image: ocazbike-garage:release
+    restart: "no"
+    init: true
+    user: "0:0"
+    entrypoint: ["/bin/sh", "/usr/local/bin/release-permissions.sh"]
+    command: []
+    network_mode: none
+    read_only: true
+    volumes:
+      - sqlite-data:/data
+      - garage-data:/var/lib/garage
+      - tempo-data:/var/tempo
+      - loki-data:/loki
+      - prometheus-data:/prometheus
+      - grafana-data:/var/lib/grafana
+      - api-secrets:/secrets/api
+      - garage-secrets:/secrets/garage
+      - litestream-secrets:/secrets/litestream
+      - grafana-secrets:/secrets/grafana
+    secrets:
+      - jwt_secret
+      - bootstrap_admin_password
+      - encryption_key
+      - discord_webhook_url
+      - store_information_initial_data
+      - garage_rpc_secret
+      - garage_access_key
+      - garage_secret_key
+      - garage_credentials
+      - grafana_user
+      - grafana_password
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+
   garage:
+    image: ocazbike-garage:release
     build:
       context: ./docker
       dockerfile: Dockerfile.garage
     restart: unless-stopped
     init: true
+
+    user: "10002:10002"
+
+    depends_on:
+      permissions-init:
+        condition: service_completed_successfully
 
     environment:
       GARAGE_RPC_SECRET_FILE: /run/secrets/garage_rpc_secret
@@ -228,12 +281,8 @@ services:
     volumes:
       - ./docker/garage.toml:/etc/garage.toml:ro
       - garage-data:/var/lib/garage
+      - garage-secrets:/run/secrets:ro
       - ./docker/garage-entrypoint.sh:/etc/garage-entrypoint.sh:ro
-
-    secrets:
-      - garage_rpc_secret
-      - garage_access_key
-      - garage_secret_key
 
     networks:
       - backup
@@ -262,13 +311,16 @@ services:
     image: litestream/litestream:0.5.14@sha256:ef0ac5958cf81725b7a85fb76f82ef71ace030db9429086eeefc59ee6ca53941
     restart: unless-stopped
     init: true
-    user: "10001:10001"
+    # Only the SQLite data group is shared with the API, never its secret volume.
+    user: "10004:10001"
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - 'umask 0007; exec /usr/local/bin/litestream "$$@"'
+      - --
 
     environment:
       AWS_SHARED_CREDENTIALS_FILE: /run/secrets/garage_credentials
-
-    secrets:
-      - garage_credentials
 
     command:
       - replicate
@@ -277,12 +329,15 @@ services:
 
     volumes:
       - sqlite-data:/data
+      - litestream-secrets:/run/secrets:ro
       - ./docker/litestream.yml:/etc/litestream.yml:ro
 
     networks:
       - backup
 
     depends_on:
+      permissions-init:
+        condition: service_completed_successfully
       api:
         condition: service_healthy
         restart: true
@@ -307,6 +362,10 @@ services:
     restart: unless-stopped
     #pids_limit: 100
     init: true
+    user: "10007:10007"
+    depends_on:
+      permissions-init:
+        condition: service_completed_successfully
 
     logging:
       driver: loki
@@ -347,6 +406,10 @@ services:
     image: grafana/loki:3.6.15@sha256:a678400d75866739e70cf413de834b929c8ac500256bc6beedf17a91ab6430a3
     restart: unless-stopped
     init: true
+    user: "10008:10008"
+    depends_on:
+      permissions-init:
+        condition: service_completed_successfully
     #pids_limit: 100
 
     ports:
@@ -385,6 +448,10 @@ services:
     restart: unless-stopped
     #pids_limit: 100
     init: true
+    user: "10009:10009"
+    depends_on:
+      permissions-init:
+        condition: service_completed_successfully
 
     logging:
       driver: loki
@@ -440,11 +507,8 @@ services:
 
     volumes:
       - grafana-data:/var/lib/grafana
+      - grafana-secrets:/run/secrets:ro
       - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
-
-    secrets:
-      - grafana_user
-      - grafana_password
 
     ports:
       - "127.0.0.1:3001:3000"
@@ -453,9 +517,14 @@ services:
       - observability
 
     depends_on:
-      - tempo
-      - loki
-      - prometheus
+      permissions-init:
+        condition: service_completed_successfully
+      tempo:
+        condition: service_started
+      loki:
+        condition: service_started
+      prometheus:
+        condition: service_started
 
     security_opt:
       - no-new-privileges:true
@@ -486,7 +555,6 @@ services:
           cpus: "0.5"
           memory: 256M
 
-
 networks:
   frontend:
     internal: true
@@ -500,9 +568,13 @@ networks:
     external: true
 
 volumes:
+  api-secrets:
+  litestream-secrets:
+  grafana-secrets:
   grafana-data:
   sqlite-data:
   garage-data:
+  garage-secrets:
   tempo-data:
   loki-data:
   prometheus-data:

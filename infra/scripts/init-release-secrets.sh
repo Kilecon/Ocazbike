@@ -89,12 +89,17 @@ printf '[default]\naws_access_key_id = %s\naws_secret_access_key = %s\n' \
   "$(cat "$temporary/garage_access_key")" "$(cat "$temporary/garage_secret_key")" > "$temporary/garage_credentials"
 docker compose --env-file "$temporary/.env" -f infra/compose.release.yaml config --quiet
 chmod 600 "$temporary/.env"
-chmod 644 "$temporary/garage_rpc_secret"
-chmod 700 "$temporary/jwt_secret"
-chmod 644 "$temporary/bootstrap_admin_password" "$temporary/encryption_key" \
-  "$temporary/garage_access_key" "$temporary/garage_secret_key" "$temporary/garage_credentials" \
-  "$temporary/grafana_user" "$temporary/grafana_password" "$temporary/discord_webhook_url" \
-  "$temporary/store_information_initial_data"
+chmod 600 "$temporary/garage_rpc_secret"
+chmod 600 "$temporary/garage_access_key"
+chmod 600 "$temporary/garage_secret_key"
+chmod 600 "$temporary/garage_credentials"
+chmod 600 "$temporary/encryption_key"
+chmod 600 "$temporary/bootstrap_admin_password"
+chmod 600 "$temporary/grafana_user"
+chmod 600 "$temporary/grafana_password"
+chmod 600 "$temporary/discord_webhook_url"
+chmod 600 "$temporary/store_information_initial_data"
+chmod 600 "$temporary/jwt_secret"
 for file in "${files[@]}"; do
   if [[ "$file" == .env ]]; then mv "$temporary/$file" da/.env
   else mv "$temporary/$file" "da/secrets/$file"

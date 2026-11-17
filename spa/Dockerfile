@@ -21,10 +21,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3111
 
-COPY --from=builder --chown=10001:10001 /app/dist ./dist
-COPY --chown=10001:10001 server.ts ./server.ts
+COPY --from=builder --chown=10003:10003 /app/dist ./dist
+COPY --chown=10003:10003 server.ts ./server.ts
 
-USER 10001:10001
+USER 10003:10003
 EXPOSE 3111
 
 CMD ["bun", "run", "server.ts"]
