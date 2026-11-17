@@ -27,6 +27,7 @@ export GARAGE_DEFAULT_ACCESS_KEY=test-access
 export GARAGE_DEFAULT_SECRET_KEY="spaces \$VAR 'quoted' \"double\" \\path"
 export GRAFANA_USER=admin
 export GRAFANA_PASSWORD=test-password-long
+export DISCORD_WEBHOOK_URL=https://discord.example/api/webhooks/test/fake-token
 export SPA_API_URL=https://api.release.example.com
 export CORS_ORIGIN=https://release.example.com
 export STORE_INFORMATION_INITIAL_DATA="{\"name\":\"L'atelier \$HOME\",\"address\":\"line\\\\next\"}"
@@ -47,7 +48,7 @@ for name in ENCRYPTION_KEY GARAGE_RPC_SECRET GARAGE_DEFAULT_ACCESS_KEY GARAGE_DE
 done
 unset BOOTSTRAP_ADMIN_PASSWORD JWT_SECRET ENCRYPTION_KEY GARAGE_RPC_SECRET GARAGE_DEFAULT_ACCESS_KEY \
   GARAGE_DEFAULT_SECRET_KEY GRAFANA_USER GRAFANA_PASSWORD SPA_API_URL CORS_ORIGIN \
-  STORE_INFORMATION_INITIAL_DATA
+  STORE_INFORMATION_INITIAL_DATA DISCORD_WEBHOOK_URL
 original=$(sha256sum "$temporary/da/.env")
 saved_key=$ENCRYPTION_KEY_B64
 ENCRYPTION_KEY_B64=$(printf '%064d' 0 | base64 -w 0)
@@ -72,6 +73,8 @@ done
 [[ $(cat "$temporary/da/secrets/grafana_password") == test-password-long ]]
 [[ $(cat "$temporary/da/secrets/garage_secret_key") == "spaces \$VAR 'quoted' \"double\" \\path" ]]
 [[ $(cat "$temporary/da/secrets/store_information_initial_data") == "{\"name\":\"L'atelier \$HOME\",\"address\":\"line\\\\next\"}" ]]
+[[ $(cat "$temporary/da/secrets/discord_webhook_url") == https://discord.example/api/webhooks/test/fake-token ]]
+DISCORD_WEBHOOK_URL_B64="" bash "$temporary/infra/scripts/init-release-secrets.sh" >> "$temporary/output"
 [[ ! -s "$temporary/da/secrets/discord_webhook_url" ]]
 if grep -Eq 'JWT_SECRET|ENCRYPTION_KEY|GARAGE_|BOOTSTRAP_ADMIN_PASSWORD|DISCORD_WEBHOOK_URL|STORE_INFORMATION' "$temporary/da/.env"; then
   echo "Secret remained in the Compose environment file." >&2
@@ -85,7 +88,7 @@ if bash "$temporary/infra/scripts/init-release-secrets.sh" >> "$temporary/output
   exit 1
 fi
 [[ $(sha256sum "$temporary/da/.env" "$temporary/da/secrets/encryption_key") == "$original" ]]
-if grep -Fq "test-password-long" "$temporary/output"; then
+if grep -Eq 'test-password-long|fake-token' "$temporary/output"; then
   echo "A secret appeared in script output." >&2
   exit 1
 fi

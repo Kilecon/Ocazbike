@@ -77,6 +77,22 @@ existantes doivent être conservées ; une rotation exige une procédure sépar�
 Les fichiers Compose secrets restent lisibles par root et les administrateurs
 Docker sur le VPS.
 
+L'image API utilise le compte dédié `api` (`10001:10001`) et la SPA le compte
+`spa` (`10003:10003`), tous deux sans shell de connexion. En release,
+`permissions-init` copie les secrets de l'API dans le volume `api-secrets`,
+avec le propriétaire `10001:10001`, les fichiers en `600` et le répertoire
+en `700`. L'API le monte en lecture seule sous `/run/secrets`. Les sources
+sous `da/secrets/` restent la propriété du compte de déploiement : leur
+propriétaire ne permet donc pas de déduire celui des copies lues par l'API.
+La SPA n'a pas accès aux secrets de l'API.
+
+Pour tester les comptes et la lecture du webhook avec des valeurs factices,
+sans réseau ni volume Docker persistant :
+
+```sh
+bash .github/scripts/test-app-permissions.sh
+```
+
 Mailpit capture les messages sans les distribuer ; son interface est accessible
 sur `127.0.0.1:8025` et le SMTP interne sur `mailpit:1025`. Aucun envoi de
 courriel n'est actuellement implémenté dans l'API. Le port de l'interface peut

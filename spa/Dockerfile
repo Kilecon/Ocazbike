@@ -21,6 +21,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3111
 
+RUN groupadd --gid 10003 spa \
+    && useradd --uid 10003 --gid spa --no-create-home --shell /usr/sbin/nologin spa
+
 COPY --from=builder --chown=10003:10003 /app/dist ./dist
 COPY --chown=10003:10003 server.ts ./server.ts
 
