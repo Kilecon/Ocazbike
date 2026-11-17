@@ -37,7 +37,7 @@ jobs:
           fi
 
       - name: Checkout deployment scripts
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           persist-credentials: false
 
@@ -74,9 +74,8 @@ jobs:
           envs: DEPLOY_SHA,VPS_DIR,RELEASE_ENV_B64,JWT_SECRET_B64,BOOTSTRAP_ADMIN_PASSWORD_B64,ENCRYPTION_KEY_B64,GARAGE_RPC_SECRET_B64,GARAGE_DEFAULT_ACCESS_KEY_B64,GARAGE_DEFAULT_SECRET_KEY_B64,GRAFANA_USER_B64,GRAFANA_PASSWORD_B64,DISCORD_WEBHOOK_URL_B64,STORE_INFORMATION_INITIAL_DATA_B64
           command_timeout: 25m
           script: |
-            set -eu
-            if [ "$(id -u)" != 10001 ] || [ "$(id -g)" != 10001 ]; then
-              echo "The deployment account must use UID/GID 10001:10001 so the API can read jwt_secret in mode 700." >&2
+            if [ "$(id -u)" != 1002 ] || [ "$(id -g)" != 1002 ]; then
+              echo "Unexpected deployment account UID/GID." >&2
               exit 1
             fi
             cd "$VPS_DIR"
