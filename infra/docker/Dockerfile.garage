@@ -3,8 +3,8 @@ FROM litestream/litestream:0.5.14@sha256:ef0ac5958cf81725b7a85fb76f82ef71ace030d
 COPY --from=garage /garage /garage
 RUN addgroup --system --gid 10002 garage \
     && adduser --system --uid 10002 --ingroup garage --no-create-home garage \
-    && mkdir -p /var/lib/garage /var/lib/garage-secrets \
-    && chown garage:garage /var/lib/garage /var/lib/garage-secrets \
-    && chmod 700 /var/lib/garage /var/lib/garage-secrets
+    && mkdir -p /var/lib/garage \
+    && chown garage:garage /var/lib/garage \
+    && chmod 700 /var/lib/garage
 COPY --chmod=755 release-permissions.sh /usr/local/bin/release-permissions.sh
 USER 10002:10002

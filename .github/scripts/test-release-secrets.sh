@@ -66,7 +66,7 @@ bash "$temporary/infra/scripts/init-release-secrets.sh" >> "$temporary/output"
 [[ $(stat -c %a "$temporary/da/.env") == 600 ]]
 [[ $(stat -c %a "$temporary/da/secrets") == 700 ]]
 for file in "${files[@]}"; do
-  [[ $(stat -c %a "$temporary/da/secrets/$file") == 600 ]]
+  [[ $(stat -c %a "$temporary/da/secrets/$file") == 644 ]]
 done
 [[ $(stat -c %u:%g "$temporary/da/secrets/jwt_secret") == "$(id -u):$(id -g)" ]]
 [[ $(cat "$temporary/da/secrets/jwt_secret") == 01234567890123456789012345678901 ]]

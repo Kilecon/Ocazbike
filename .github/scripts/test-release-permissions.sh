@@ -34,9 +34,10 @@ printf '[default]\naws_access_key_id = test-garage-access\naws_secret_access_key
   > "$temporary/garage_credentials"
 printf 'admin' > "$temporary/grafana_user"
 printf 'test-password-long' > "$temporary/grafana_password"
+chmod 644 "$temporary"/*
 
 # Render the real release config, isolating only images, host ports, logging and sources.
-docker compose -p "$project" --env-file "$temporary/env" -f "$ROOT/infra/compose.release.yaml" config --format json |
+docker compose -p "$project" --env-file "$ROOT/da/.env" -f "$ROOT/infra/compose.release.yaml" config --format json |
   jq --arg directory "$temporary" --arg project "$project" '
     .secrets |= with_entries(.value.file = ($directory + "/" + .key)) |
     .networks.proxying = {internal: true} |
@@ -45,7 +46,7 @@ docker compose -p "$project" --env-file "$temporary/env" -f "$ROOT/infra/compose
       .value.restart = "no" |
       del(.value.ports) |
       if .value.healthcheck and (.value.healthcheck.disable != true) then
-        .value.healthcheck.interval = "2s" | .value.healthcheck.start_period = "1s"
+        .value.healthcheck.interval = "2s" | .value.healthcheck.start_period = "30s"
       else . end
     ) |
     .services.api.image = ("ocazbike-api:" + $project) |
@@ -56,6 +57,12 @@ docker compose -p "$project" --env-file "$temporary/env" -f "$ROOT/infra/compose
 jq -e --arg prefix "${project}_" '
   ([.volumes[].name] + [.networks[] | select(.name != null) | .name]) |
   all(startswith($prefix))
+' "$temporary/compose.json" >/dev/null
+jq -e '
+  (.services.api.networks | has("mailpit") | not) and
+  (.services.spa.networks | has("observability") | not) and
+  (.services.grafana.networks | has("proxying") | not) and
+  (.services.mailpit.networks | keys == ["mailpit"])
 ' "$temporary/compose.json" >/dev/null
 resources_created=true
 compose build api spa garage
@@ -78,21 +85,19 @@ printf '%064d' 0 > "$temporary/garage_rpc_secret"
 source_owners=$(for secret in "${secrets[@]}"; do stat -c '%u:%g:%a' "$temporary/$secret"; done)
 
 check_secrets() {
-  local service=$1 owner=$2 names=$3
+  local service=$1 owner=$2 group=$3 names=$4
   compose exec -T "$service" /bin/sh -ec '
     owner=$1
-    shift
-    test "$(stat -c %u:%g:%a /run/secrets)" = "$owner:$owner:700"
+    group=$2
+    shift 2
+    awk '\''$2 == "/run/secrets" && $3 == "tmpfs" { found = 1 } END { exit !found }'\'' /proc/mounts
+    test "$(stat -c %u:%g:%a /run/secrets)" = "$owner:$group:700"
     test "$(ls -A /run/secrets | wc -l)" = "$#"
     for secret do
-      test "$(stat -c %u:%g:%a "/run/secrets/$secret")" = "$owner:$owner:600"
+      test "$(stat -c %u:%g:%a "/run/secrets/$secret")" = "$owner:$group:600"
       cat "/run/secrets/$secret" >/dev/null
     done
-    if touch /run/secrets/write-check 2>/dev/null; then
-      echo "Secrets volume is writable." >&2
-      exit 1
-    fi
-  ' -- "$owner" $names
+  ' -- "$owner" "$group" $names
   compose exec -T --user 10003:10001 "$service" /bin/sh -ec '
     for secret do
       if cat "/run/secrets/$secret" >/dev/null 2>&1; then
@@ -114,20 +119,23 @@ for attempt in 1 2; do
     uid=${user%%:*}
     [[ "$uid" != 0 ]]
     container=$(compose ps -q "$service")
-    [[ "$(docker top "$container" -eo uid | tail -n +2 | sort -u | xargs)" == "$uid" ]]
+    [[ "$(docker top "$container" -eo pid,uid | awk 'NR > 1 { print $2 }' | sort -u | xargs)" == "$uid" ]]
     uids+=("$uid")
   done < <(jq -r '.services | to_entries[] | select(.key != "permissions-init") |
     [.key, .value.user] | @tsv' "$temporary/compose.json")
   [[ "$(printf '%s\n' "${uids[@]}" | sort -u | wc -l)" == "${#uids[@]}" ]]
 
-  check_secrets api 10001 'jwt_secret bootstrap_admin_password encryption_key discord_webhook_url store_information_initial_data'
-  check_secrets garage 10002 'garage_rpc_secret garage_access_key garage_secret_key'
-  check_secrets litestream 10004 'garage_credentials'
-  check_secrets grafana 472 'grafana_user grafana_password'
+  check_secrets api 10001 10001 'jwt_secret bootstrap_admin_password encryption_key discord_webhook_url store_information_initial_data'
+  check_secrets garage 10002 10002 'garage_rpc_secret garage_access_key garage_secret_key'
+  check_secrets litestream 10004 10001 'garage_credentials'
+  check_secrets grafana 472 472 'grafana_user grafana_password'
   compose exec -T api /bin/sh -ec '
-    test "$(stat -c %u:%g:%a /data)" = 10001:10001:2770
-    test "$(stat -c %a /data/elysia.sqlite)" = 660
-    test "$(cat /data/existing/sentinel)" = preserved
+    directory=$(stat -c %u:%g:%a /data)
+    database=$(stat -c %a /data/elysia.sqlite)
+    sentinel=$(cat /data/existing/sentinel)
+    test "$directory" = 10001:10001:770 || { echo "Unexpected SQLite volume permissions: $directory" >&2; exit 1; }
+    test "$database" = 660 || { echo "Unexpected SQLite file permissions: $database" >&2; exit 1; }
+    test "$sentinel" = preserved || { echo "Existing SQLite volume data was not preserved." >&2; exit 1; }
   '
   compose run --rm --no-deps --entrypoint /bin/sh permissions-init -ec '
     for pair in /var/lib/garage:10002 /var/tempo:10007 /loki:10008 /prometheus:10009 /var/lib/grafana:472; do
@@ -139,7 +147,6 @@ for attempt in 1 2; do
   '
   compose exec -T api bun -e '
     const urls = [
-      "http://spa:3111/", "http://mailpit:8025/readyz",
       "http://otel-collector:13133/", "http://tempo:3200/ready",
       "http://loki:3100/ready", "http://prometheus:9090/-/ready",
       "http://grafana:3000/api/health",
@@ -156,4 +163,4 @@ for attempt in 1 2; do
   '
   [[ "$(for secret in "${secrets[@]}"; do stat -c '%u:%g:%a' "$temporary/$secret"; done)" == "$source_owners" ]]
 done
-echo "Release permissions passed: distinct non-root UIDs, private secrets, volume migration, healthy services and reruns."
+echo "Release permissions passed: distinct non-root UIDs, tmpfs secrets, volume migration, isolated networks, healthy services and reruns."

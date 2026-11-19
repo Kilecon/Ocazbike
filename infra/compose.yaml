@@ -41,8 +41,8 @@ services:
       - "3000:3000"
 
     networks:
-      - frontend
       - observability
+      - api-egress
 
     volumes:
       - sqlite-data:/data
@@ -104,7 +104,7 @@ services:
       - "3111:3111"
 
     networks:
-      - frontend
+      - spa
 
     healthcheck:
       test:
@@ -141,11 +141,12 @@ services:
     image: axllent/mailpit:v1.31.4@sha256:b68349e3a014b90c5610bfb26b2ae36f3892d7b8cf25ee140c6c71c98d2fcf48
     restart: unless-stopped
     init: true
+    user: "10005:10005"
     ports:
           - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025"
           - "127.0.0.1:1025:1025"
     networks:
-          - frontend
+          - mailpit
     security_opt:
           - no-new-privileges:true
     cap_drop:
@@ -204,9 +205,17 @@ services:
 
 
   garage:
-    image: dxflrs/garage:v2.4.1@sha256:9c96caa2612d3411acc5b0e6701fb238dbfba33e533a6d7d3d811a4b12d0d020
+    image: ocazbike-garage:dev
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.garage
     restart: unless-stopped
     init: true
+    user: "10002:10002"
+
+    depends_on:
+      garage-permissions-init:
+        condition: service_completed_successfully
 
     environment:
       GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET:?GARAGE_RPC_SECRET must be set}
@@ -214,8 +223,8 @@ services:
       GARAGE_DEFAULT_SECRET_KEY: ${GARAGE_DEFAULT_SECRET_KEY:?GARAGE_DEFAULT_SECRET_KEY must be set}
       GARAGE_DEFAULT_BUCKET: sqlite-backups
 
+    entrypoint: ["/garage"]
     command:
-      - /garage
       - server
       - --single-node
       - --default-bucket
@@ -245,6 +254,30 @@ services:
         limits:
           cpus: "1"
           memory: 1G
+
+
+  garage-permissions-init:
+    image: ocazbike-garage:dev
+    restart: "no"
+    user: "0:0"
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - 'chown -R 10002:10002 /var/lib/garage; chmod 700 /var/lib/garage; chown 10001:10001 /var/tempo; chmod 700 /var/tempo'
+    command: []
+    network_mode: none
+    read_only: true
+    volumes:
+      - garage-data:/var/lib/garage
+      - tempo-data:/var/tempo
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
 
 
   litestream:
@@ -294,6 +327,9 @@ services:
     restart: unless-stopped
     #pids_limit: 100
     init: true
+    depends_on:
+      garage-permissions-init:
+        condition: service_completed_successfully
 
     logging:
       driver: loki
@@ -307,7 +343,11 @@ services:
 
     volumes:
       - ./docker/tempo.yaml:/etc/tempo.yaml:ro
-      - tempo-data:/var/tempo
+      - type: volume
+        source: tempo-data
+        target: /var/tempo
+        volume:
+          nocopy: true
 
     networks:
       - observability
@@ -437,7 +477,6 @@ services:
     ports:
       - "127.0.0.1:3001:3000"
     networks:
-      - frontend
       - observability
 
     depends_on:
@@ -476,7 +515,12 @@ services:
 
 
 networks:
-  frontend:
+  spa:
+    internal: true
+  mailpit:
+    internal: true
+  api-egress:
+    driver: bridge
   observability:
     internal: true
   backup:

@@ -1,0 +1,59 @@
+services:
+  falco:
+    image: falcosecurity/falco:0.45.2@sha256:1562a643953f938e02f47319b5214d93a235f11f646d60e9b8a516fd5a64698e
+    restart: unless-stopped
+    environment:
+      HOST_ROOT: /host
+      SKIP_DRIVER_LOADER: "true"
+    command:
+      - -o
+      - engine.kind=modern_ebpf
+      - -o
+      - json_output=true
+      - -o
+      - http_output.enabled=true
+      - -o
+      - http_output.url=http://falcosidekick:2801/
+    volumes:
+      - /sys/kernel/tracing:/sys/kernel/tracing:ro
+      - /proc:/host/proc:ro
+      - /etc:/host/etc:ro
+      - /var/run/docker.sock:/host/var/run/docker.sock
+    networks:
+      - falco-internal
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - SYS_PTRACE
+    tmpfs:
+      - /tmp
+    depends_on:
+      falcosidekick:
+        condition: service_started
+
+  falcosidekick:
+    image: falcosecurity/falcosidekick:2.35.1@sha256:a9bb60d2c7742febd912315ca1155839abc0199bf322c58d3adbb8b0849fadb9
+    restart: unless-stopped
+    environment:
+      DISCORD_WEBHOOKURL: ${DISCORD_WEBHOOK_URL:?Set DISCORD_WEBHOOK_URL via infra/scripts/start-falco.sh}
+      DISCORD_MINIMUMPRIORITY: notice
+    networks:
+      - falco-internal
+      - falco-egress
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+
+networks:
+  falco-internal:
+    internal: true
+  falco-egress:
+    driver: bridge

@@ -13,5 +13,7 @@ distributor:
 storage:
   trace:
     backend: local
+    wal:
+      path: /var/tempo/wal
     local:
-      path: /tmp/tempo/traces
+      path: /var/tempo/traces

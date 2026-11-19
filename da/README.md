@@ -71,20 +71,64 @@ que `BOOTSTRAP_ADMIN_PASSWORD_FILE`, `DISCORD_WEBHOOK_URL_FILE` et
 valeurs de ces secrets ne sont pas utilisées dans ce mode.
 
 Le déploiement release utilise `infra/compose.release.yaml` : le workflow
-GitHub écrit ces secrets dans `da/secrets/` et conserve uniquement la
+GitHub Actions construit les images API, SPA et Garage, les scanne avec
+Trivy puis les publie sur GHCR avec `GITHUB_TOKEN`. Le VPS les récupère par
+digest `sha256`, sans build local. `skip_trivy` reste une exception manuelle
+pour un seul lancement. L'URL `SPA_API_URL` est intégrée à la SPA pendant le
+build ; la renseigner dans les variables de l'environnement GitHub `release`.
+
+Les nouveaux packages GHCR sont privés par défaut. Si les packages
+`ocazbike-api`, `ocazbike-spa` ou `ocazbike-garage` existent déjà, vérifier
+qu'ils sont privés et que le dépôt peut y publier avant de lancer le workflow.
+Sur le VPS, sous le compte de déploiement (sans `sudo`), authentifier Docker
+avec un PAT GitHub classique limité à `read:packages` et dont le compte a
+accès en lecture aux trois packages. Utiliser de préférence un gestionnaire
+d'identifiants Docker. Dans Bash :
+
+```bash
+read -rs -p 'Jeton GHCR en lecture seule : ' token; printf '\n'
+printf '%s\n' "$token" | docker login ghcr.io --username VOTRE_COMPTE_GITHUB --password-stdin
+unset token
+```
+
+### Rollback release
+
+Sur le VPS, depuis le clone et avec le compte de déploiement :
+
+```bash
+bash data/release/manage-release.sh rollback
+```
+
+Le workflow conserve dans `data/release/` le commit, les digests GHCR,
+la configuration non secrète et l'empreinte du schéma des releases
+validées. Le rollback revient à la release précédente, ou à la dernière
+release validée après une tentative interrompue. Il ne rebâtit rien, ne
+restaure pas les secrets et n'écrase ni SQLite ni ses écritures. Il refuse
+de démarrer l'ancienne API si le schéma ou le journal des migrations a changé.
+Il n'est disponible qu'après une première release validée avec ce workflow
+(et une deuxième pour revenir d'une release réussie à la précédente).
+Ne pas supprimer les versions correspondantes dans GHCR. Falco reste
+indépendant du rollback applicatif.
+
+La release recrée la stack sans supprimer ses volumes, notamment celui
+des traces et du WAL Tempo. Un `up` sans recréation forcée serait moins
+disruptif, mais un changement de contenu des fichiers montés ou des secrets
+ne suffit pas toujours à déclencher la recréation du conteneur.
+
+Le workflow écrit les secrets applicatifs dans `da/secrets/` et conserve uniquement la
 configuration non secrète dans `da/.env`. Les clés de chiffrement et Garage
 existantes doivent être conservées ; une rotation exige une procédure séparée.
 Les fichiers Compose secrets restent lisibles par root et les administrateurs
 Docker sur le VPS.
 
 L'image API utilise le compte dédié `api` (`10001:10001`) et la SPA le compte
-`spa` (`10003:10003`), tous deux sans shell de connexion. En release,
-`permissions-init` copie les secrets de l'API dans le volume `api-secrets`,
-avec le propriétaire `10001:10001`, les fichiers en `600` et le répertoire
-en `700`. L'API le monte en lecture seule sous `/run/secrets`. Les sources
-sous `da/secrets/` restent la propriété du compte de déploiement : leur
-propriétaire ne permet donc pas de déduire celui des copies lues par l'API.
-La SPA n'a pas accès aux secrets de l'API.
+`spa` (`10003:10003`), tous deux sans shell de connexion. En release, les
+fichiers sources sont limités au compte de déploiement par le dossier
+`da/secrets/` en `700`. Compose ne monte chaque secret en lecture seule que
+dans les services concernés ; leur entrée les copie dans `/run/secrets`, un
+tmpfs privé au conteneur avec des fichiers en `600`, avant de lancer le
+processus non-root. Le tmpfs disparaît avec le conteneur et est recréé au
+démarrage. La SPA ne monte aucun secret de l'API.
 
 Pour tester les comptes et la lecture du webhook avec des valeurs factices,
 sans réseau ni volume Docker persistant :
@@ -94,8 +138,9 @@ bash .github/scripts/test-app-permissions.sh
 ```
 
 Mailpit capture les messages sans les distribuer ; son interface est accessible
-sur `127.0.0.1:8025` et le SMTP interne sur `mailpit:1025`. Aucun envoi de
-courriel n'est actuellement implémenté dans l'API. Le port de l'interface peut
+sur `127.0.0.1:8025` et le SMTP sur `127.0.0.1:1025` ou depuis un conteneur
+attaché à son réseau dédié. Aucun envoi de courriel n'est actuellement implémenté
+dans l'API. Le port de l'interface peut
 être modifié avec `MAILPIT_UI_PORT` (variable GitHub en release).
 
 | Variable | Obligatoire | Description |
