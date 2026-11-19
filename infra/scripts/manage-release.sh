@@ -77,6 +77,13 @@ schema_fingerprint() {
     '
 }
 
+checkout_target() {
+  # Git may rewrite bind-mounted configs; keep the private umask for release state only.
+  (umask 022; git switch --detach "$DEPLOY_SHA")
+  # Repair checkouts where Git leaves the previously written Tempo file in place.
+  chmod a+r -- infra/docker/tempo.yaml
+}
+
 up_target() {
   compose config --quiet
   compose up --no-build --pull never -d --force-recreate --remove-orphans --wait --wait-timeout 180
@@ -91,7 +98,7 @@ case "${1:-}" in
     install -m 700 -- "$0" "$work/manage-release.sh"
     mv -f -- "$work/manage-release.sh" "$state/manage-release.sh"
     save_status "$current" "$previous" yes
-    git switch --detach "$DEPLOY_SHA"
+    checkout_target
     bash infra/scripts/init-release-secrets.sh
     up_target
 
@@ -128,7 +135,7 @@ case "${1:-}" in
     env_file=$(mktemp da/.env.rollback.XXXXXXXX)
     cp -- "$state/$target/env" "$env_file"
     save_status "$current" "$previous" yes
-    git switch --detach "$DEPLOY_SHA"
+    checkout_target
     mv -f -- "$env_file" da/.env
     up_target
     [[ "$(schema_fingerprint)" == "${manifest[4]}" ]] ||

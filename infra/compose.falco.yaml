@@ -5,6 +5,7 @@ services:
     environment:
       HOST_ROOT: /host
       SKIP_DRIVER_LOADER: "true"
+    entrypoint: ["/usr/bin/falco"]
     command:
       - -o
       - engine.kind=modern_ebpf
