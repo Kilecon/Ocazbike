@@ -108,6 +108,31 @@ check_secrets() {
   ' -- $names
 }
 
+check_api_secrets() {
+  compose exec -T api /usr/local/bin/bun -e '
+    import { strict as assert } from "node:assert";
+    import { readFileSync, statSync } from "node:fs";
+    const names = ["jwt_secret", "bootstrap_admin_password", "encryption_key",
+      "discord_webhook_url", "store_information_initial_data"];
+    assert.match(readFileSync("/proc/mounts", "utf8"), /^.* \/run\/secrets tmpfs .*$/m);
+    const directory = statSync("/run/secrets");
+    assert.equal(`${directory.uid}:${directory.gid}:${directory.mode & 0o777}`, "10001:10001:448");
+    for (const name of names) {
+      const stat = statSync(`/run/secrets/${name}`);
+      assert.equal(`${stat.uid}:${stat.gid}:${stat.mode & 0o777}`, "10001:10001:384");
+      readFileSync(`/run/secrets/${name}`);
+    }
+  '
+  compose exec -T --user 10003:10001 api /usr/local/bin/bun -e '
+    import { strict as assert } from "node:assert";
+    import { readFileSync } from "node:fs";
+    for (const name of ["jwt_secret", "bootstrap_admin_password", "encryption_key",
+      "discord_webhook_url", "store_information_initial_data"]) {
+      assert.throws(() => readFileSync(`/run/secrets/${name}`), { code: "EACCES" });
+    }
+  '
+}
+
 for attempt in 1 2; do
   if ! compose up -d --force-recreate --wait --wait-timeout 120 > "$temporary/output" 2>&1; then
     cat "$temporary/output" >&2
@@ -125,17 +150,18 @@ for attempt in 1 2; do
     [.key, .value.user] | @tsv' "$temporary/compose.json")
   [[ "$(printf '%s\n' "${uids[@]}" | sort -u | wc -l)" == "${#uids[@]}" ]]
 
-  check_secrets api 10001 10001 'jwt_secret bootstrap_admin_password encryption_key discord_webhook_url store_information_initial_data'
+  check_api_secrets
   check_secrets garage 10002 10002 'garage_rpc_secret garage_access_key garage_secret_key'
   check_secrets litestream 10004 10001 'garage_credentials'
   check_secrets grafana 472 472 'grafana_user grafana_password'
-  compose exec -T api /bin/sh -ec '
-    directory=$(stat -c %u:%g:%a /data)
-    database=$(stat -c %a /data/elysia.sqlite)
-    sentinel=$(cat /data/existing/sentinel)
-    test "$directory" = 10001:10001:770 || { echo "Unexpected SQLite volume permissions: $directory" >&2; exit 1; }
-    test "$database" = 660 || { echo "Unexpected SQLite file permissions: $database" >&2; exit 1; }
-    test "$sentinel" = preserved || { echo "Existing SQLite volume data was not preserved." >&2; exit 1; }
+  compose exec -T api /usr/local/bin/bun -e '
+    import { strict as assert } from "node:assert";
+    import { readFileSync, statSync } from "node:fs";
+    const directory = statSync("/data");
+    const database = statSync("/data/elysia.sqlite");
+    assert.equal(`${directory.uid}:${directory.gid}:${directory.mode & 0o777}`, "10001:10001:504");
+    assert.equal(database.mode & 0o777, 0o660);
+    assert.equal(readFileSync("/data/existing/sentinel", "utf8"), "preserved");
   '
   compose run --rm --no-deps --entrypoint /bin/sh permissions-init -ec '
     for pair in /var/lib/garage:10002 /var/tempo:10007 /loki:10008 /prometheus:10009 /var/lib/grafana:472; do

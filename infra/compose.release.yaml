@@ -9,12 +9,7 @@ services:
     #pids_limit: 100
 
     user: "10001:10001"
-    entrypoint:
-      - /bin/sh
-      - -ec
-      - 'for secret in /run/secret-files/*; do test -s "$$secret" || test "$$secret" = /run/secret-files/discord_webhook_url || test "$$secret" = /run/secret-files/store_information_initial_data || exit 1; done; umask 0077; cp /run/secret-files/* /run/secrets/; umask 0007; exec /usr/local/bin/docker-entrypoint.sh "$$@"'
-      - --
-    command: ["bun", "run", "src/server.ts"]
+    command: ["run", "release-entrypoint.ts"]
 
     logging:
       driver: loki
@@ -72,7 +67,7 @@ services:
       test:
         [
           "CMD",
-          "bun",
+          "/usr/local/bin/bun",
           "-e",
           "fetch('http://127.0.0.1:3000/health/', { headers: { 'X-App-Id': process.env.SPA_APP_ID } }).then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
         ]
