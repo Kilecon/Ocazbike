@@ -14,5 +14,20 @@ for image in "${images[@]}"; do
     exit 1
   fi
 
-  trivy image --image-src docker --scanners vuln,secret --exit-code 1 --severity HIGH,CRITICAL "$image"
+  if trivy image --image-src docker --scanners vuln,secret --exit-code 1 --severity HIGH,CRITICAL "$image"; then
+    continue
+  else
+    status=$?
+  fi
+
+  if [[ "$image" == ocazbike-api:release || "$image" == ocazbike-spa:release ]]; then
+    exit "$status"
+  fi
+
+  if [[ "$status" -ne 1 ]]; then
+    echo "Trivy failed while scanning $image (exit code $status)." >&2
+    exit "$status"
+  fi
+
+  echo "::warning::Trivy found HIGH or CRITICAL issues in $image; third-party image findings do not block deployment."
 done

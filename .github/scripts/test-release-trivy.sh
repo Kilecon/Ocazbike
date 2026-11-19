@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 temporary=$(mktemp -d)
 cleanup() {
-  rm -f "$temporary/bin/docker" "$temporary/bin/trivy" "$temporary/scans"
+  rm -f "$temporary/bin/docker" "$temporary/bin/trivy" "$temporary/scans" "$temporary/warnings"
   rmdir "$temporary/bin" "$temporary"
 }
 trap cleanup EXIT
@@ -30,10 +30,25 @@ expected=$'ocazbike-api:release\nocazbike-spa:release\nocazbike-garage:release'
 [[ "$(cat "$temporary/scans")" == "$expected" ]]
 
 : > "$temporary/scans"
-if PATH="$temporary/bin:$PATH" SCAN_LOG="$temporary/scans" FAIL_IMAGE=ocazbike-spa:release \
-  bash "$ROOT/infra/scripts/scan-release-images.sh"; then
-  echo "Release image scanning succeeded despite a Trivy finding." >&2
-  exit 1
-fi
-[[ "$(cat "$temporary/scans")" == $'ocazbike-api:release\nocazbike-spa:release' ]]
-echo "Release image scanning tests passed: all images scanned and high/critical findings block deployment."
+PATH="$temporary/bin:$PATH" SCAN_LOG="$temporary/scans" FAIL_IMAGE=ocazbike-garage:release \
+  bash "$ROOT/infra/scripts/scan-release-images.sh" > "$temporary/warnings"
+[[ "$(cat "$temporary/scans")" == "$expected" ]]
+grep -Fq \
+  '::warning::Trivy found HIGH or CRITICAL issues in ocazbike-garage:release' \
+  "$temporary/warnings"
+
+for blocking_image in ocazbike-api:release ocazbike-spa:release; do
+  : > "$temporary/scans"
+  if PATH="$temporary/bin:$PATH" SCAN_LOG="$temporary/scans" FAIL_IMAGE="$blocking_image" \
+    bash "$ROOT/infra/scripts/scan-release-images.sh"; then
+    echo "Release image scanning succeeded despite a Trivy finding in $blocking_image." >&2
+    exit 1
+  fi
+  case "$blocking_image" in
+    ocazbike-api:release) expected=ocazbike-api:release ;;
+    ocazbike-spa:release) expected=$'ocazbike-api:release\nocazbike-spa:release' ;;
+  esac
+  [[ "$(cat "$temporary/scans")" == "$expected" ]]
+done
+
+echo "Release image scanning tests passed: third-party findings warn, application findings block deployment."
