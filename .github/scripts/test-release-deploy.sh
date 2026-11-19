@@ -12,13 +12,15 @@ cleanup() {
   done
   rm -f "$temporary/commands" "$temporary/output" "$temporary/deploy.sh" \
     "$temporary/publish.sh" "$temporary/images" "$temporary/da/.env" \
+    "$temporary/infra/docker/tempo.yaml" \
     "$temporary/data/release/status" "$temporary/data/release/lock" \
     "$temporary/data/release/manage-release.sh"
-  rmdir "$temporary/data/release" "$temporary/data" "$temporary/da"
+  rmdir "$temporary/data/release" "$temporary/data" "$temporary/da" "$temporary/infra/docker" "$temporary/infra"
   rmdir "$temporary"
 }
 trap cleanup EXIT
-mkdir -p "$temporary/da" "$temporary/data/release"
+mkdir -p "$temporary/da" "$temporary/data/release" "$temporary/infra/docker"
+install -m 700 "$ROOT/infra/docker/tempo.yaml" "$temporary/infra/docker/tempo.yaml"
 
 sed -n '/^          script: |$/,$p' "$ROOT/.github/workflows/deploy-release.yml" |
   sed '1d;s/^            //' > "$temporary/deploy.sh"
@@ -60,7 +62,7 @@ git() {
         *) return 2 ;;
       esac ;;
     switch)
-      [[ "$2" == --detach && "$3" =~ ^[0-9a-f]{40}$ ]] || return 2
+      [[ "$2" == --detach && "$3" =~ ^[0-9a-f]{40}$ && "$(umask)" == 0022 ]] || return 2
       record_step checkout ;;
     *) return 2 ;;
   esac
@@ -105,7 +107,10 @@ docker() {
       else
         case "$8" in
           config) [[ "$9" == --quiet ]] || return 2 ;;
-          up) [[ "$9 ${10} ${11}" == '--no-build --pull never' ]] || return 2 ;;
+          up)
+            [[ "$9 ${10} ${11}" == '--no-build --pull never' &&
+              "$(stat -c %a infra/docker/tempo.yaml)" == 744 &&
+              "$(stat -c %a data/release/status)" == 600 ]] || return 2 ;;
           ps) ;;
           *) return 2 ;;
         esac
@@ -190,6 +195,7 @@ fi
 grep -Fq 'SQLite schema or migration history changed' "$temporary/output"
 
 : > "$COMMAND_LOG"
+chmod 700 "$temporary/infra/docker/tempo.yaml"
 /bin/bash "$temporary/data/release/manage-release.sh" rollback > "$temporary/output" 2>&1
 [[ "$(cat "$COMMAND_LOG")" == $'pull\ninspect\nschema\ncheckout\nconfig\nup\nps\nschema' ]]
 [[ "$(cat "$temporary/da/.env")" == "SPA_APP_ID=$old_sha" ]]

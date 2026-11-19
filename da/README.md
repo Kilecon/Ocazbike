@@ -1,6 +1,6 @@
 # API Ocazbike
 
-API backend construite avec Elysia, Bun et SQLite.
+Ce guide explique comment démarrer et tester l’API Ocazbike, configurer son déploiement et vérifier ses sauvegardes.
 
 ## 🧰 Prérequis
 
@@ -43,8 +43,7 @@ cp .env.example .env
 Copy-Item .env.example .env
 ```
 
-Configurer au minimum `JWT_SECRET` et `ENCRYPTION_KEY` dans `.env` (voir
-[Configuration](#-configuration-env)). Puis démarrer le serveur :
+Configurez `JWT_SECRET`, `ENCRYPTION_KEY` et le mot de passe du premier administrateur (`BOOTSTRAP_ADMIN_PASSWORD`) dans `.env`. Consultez la [configuration de l’environnement](#configuration-env), puis démarrez le serveur :
 
 ```sh
 bun run dev
@@ -57,7 +56,24 @@ Les migrations de la base sont appliquées automatiquement au démarrage.
 
 Pour arrêter le serveur, utiliser `Ctrl+C`.
 
-## ⚙️ Configuration `.env`
+### Démarrer la stack Docker de développement
+
+Installez Docker avec Compose et OpenSSL. Dans `da/.env`, renseignez aussi `GARAGE_RPC_SECRET` (64 caractères hexadécimaux), `GARAGE_DEFAULT_ACCESS_KEY` et `GARAGE_DEFAULT_SECRET_KEY`.
+
+Depuis la racine du dépôt, si le pilote de logs `loki` n’est pas déjà installé, exécutez le script d’installation et examinez les permissions demandées par Docker :
+
+```sh
+sh infra/scripts/install-loki-plugin.sh
+```
+
+Initialisez les identifiants Grafana, puis démarrez la stack :
+
+```sh
+sh infra/scripts/init-grafana-secrets.sh
+docker compose -p infra --env-file da/.env -f infra/compose.yaml up -d
+```
+
+## Configuration `.env`
 
 Bun charge automatiquement le fichier `.env` du dossier courant en développement. `.env.example`
 est un modèle à copier ; les valeurs d'exemple doivent être remplacées par
@@ -70,12 +86,11 @@ que `BOOTSTRAP_ADMIN_PASSWORD_FILE`, `DISCORD_WEBHOOK_URL_FILE` et
 `STORE_INFORMATION_INITIAL_DATA_FILE` (optionnels). Les variables portant les
 valeurs de ces secrets ne sont pas utilisées dans ce mode.
 
-Le déploiement release utilise `infra/compose.release.yaml` : le workflow
-GitHub Actions construit les images API, SPA et Garage, les scanne avec
-Trivy puis les publie sur GHCR avec `GITHUB_TOKEN`. Le VPS les récupère par
-digest `sha256`, sans build local. `skip_trivy` reste une exception manuelle
-pour un seul lancement. L'URL `SPA_API_URL` est intégrée à la SPA pendant le
-build ; la renseigner dans les variables de l'environnement GitHub `release`.
+### Déployer en production
+
+Le workflow GitHub Actions construit les images de l’API, de l’application web (SPA) et de Garage, puis les publie dans le GitHub Container Registry (GHCR). Trivy recherche les vulnérabilités et les secrets embarqués dans ces trois images, sauf si vous cochez `skip_trivy`. Ce contrôle ne scanne ni le dépôt ni les images tierces.
+
+Le serveur récupère les images par empreinte `sha256`, sans les reconstruire. Renseignez `SPA_API_URL` dans les variables de l’environnement GitHub `release` : le workflow intègre cette URL à l’application web pendant sa compilation.
 
 Les nouveaux packages GHCR sont privés par défaut. Si les packages
 `ocazbike-api`, `ocazbike-spa` ou `ocazbike-garage` existent déjà, vérifier
@@ -87,7 +102,8 @@ d'identifiants Docker. Dans Bash :
 
 ```bash
 read -rs -p 'Jeton GHCR en lecture seule : ' token; printf '\n'
-printf '%s\n' "$token" | docker login ghcr.io --username VOTRE_COMPTE_GITHUB --password-stdin
+printf '%s\n' "$token" |
+  docker login ghcr.io --username votre_compte_github --password-stdin
 unset token
 ```
 
@@ -110,10 +126,7 @@ Il n'est disponible qu'après une première release validée avec ce workflow
 Ne pas supprimer les versions correspondantes dans GHCR. Falco reste
 indépendant du rollback applicatif.
 
-La release recrée la stack sans supprimer ses volumes, notamment celui
-des traces et du WAL Tempo. Un `up` sans recréation forcée serait moins
-disruptif, mais un changement de contenu des fichiers montés ou des secrets
-ne suffit pas toujours à déclencher la recréation du conteneur.
+Le déploiement conserve les volumes, dont les traces et le journal d’écriture de Tempo.
 
 Le workflow écrit les secrets applicatifs dans `da/secrets/` et conserve uniquement la
 configuration non secrète dans `da/.env`. Les clés de chiffrement et Garage
@@ -147,6 +160,7 @@ dans l'API. Le port de l'interface peut
 | --- | --- | --- |
 | `JWT_SECRET` | Oui | Secret de signature d'au moins 32 caractères. Utiliser une valeur aléatoire et privée. |
 | `ENCRYPTION_KEY` | Oui | Clé hexadécimale de 64 caractères (32 octets) pour chiffrer les données sensibles en base. |
+| `BOOTSTRAP_ADMIN_PASSWORD` | Au premier démarrage | Mot de passe d’au moins 12 caractères pour créer le compte `admin@example.com`. |
 | `STORE_INFORMATION_INITIAL_DATA` | Non | JSON privé pour l'initialisation unique des coordonnées du magasin après migration ; utiliser `"-"` pour un champ vide. Chiffré avec `ENCRYPTION_KEY`, sans remplacer une ligne existante. |
 | `SQLITE_DB_PATH` | Non | Chemin du fichier SQLite ; défaut : `./data/elysia.sqlite`, relatif au dossier `da/`. |
 | `PORT` | Non | Port HTTP ; défaut : `3000`. |
@@ -218,15 +232,7 @@ Pour relancer toute la suite automatiquement à chaque modification :
 bun run test:watch
 ```
 
-Billing reprend l'organisation d'auth dans `src/features/billing/test/` :
-`unit` vérifie les projections de liste, dates, compteurs et erreurs ;
-`contract` utilise des repositories en mémoire et un hasher déterministe pour
-les contrats HTTP, l'authentification, la validation et les transitions ;
-`integration` utilise SQLite migré en WAL pour les quatre prestations, les
-documents chiffrés immuables, les paiements, la pagination et les transactions.
-Les anciens tests billing sont déplacés dans ces catégories, sans doublons.
-Les fixtures SQLite réutilisent le socle clients/auth et sont nettoyées après
-chaque test.
+Les tests de facturation dans `src/features/billing/test/` couvrent les projections et les erreurs (`unit`), les contrats HTTP (`contract`) et les workflows de facturation sur une base SQLite temporaire (`integration`).
 
 Comme auth, `performance` mesure 100 échantillons de 10 appels par opération
 (1 000 appels), hors préparation des transitions. Le tableau présente les
@@ -263,17 +269,9 @@ retourne un objet par type (`repair`, `sale`, `purchase`, `rental`) contenant
 Une seule agrégation SQL compte tous les dossiers, sans pagination, lecture
 des lignes ni déchiffrement des clients ou documents. Les autres statuts
 ne sont pas inclus dans ces compteurs.
-L'index couvrant `billing_documents_status_type_idx` (`status`, `type`) sert
-le filtre et l'agrégation sans lire les dossiers ni trier les groupes.
-La migration `0021` l'ajoute ; les index de pagination existants sont conservés.
-L'index couvrant `billing_documents_client_type_date_ms_idx`
-(`client_id`, `type`, `date_ms`, `id`) sert les grilles par client et type
-sans parcourir tous les dossiers du type ni trier en mémoire. Il remplace
-`billing_documents_client_id_idx` (préfixe identique, clé étrangère comprise ;
-migration `0022`).
+Le schéma initial définit les index `billing_documents_status_type_idx` pour les compteurs par statut et `billing_documents_client_type_date_ms_idx` pour la pagination par client et par type.
 
-Les nouveaux devis sont conservés dans `billing_quotes` et les nouvelles
-factures dans `billing_invoices`, avec un lien unique vers leur dossier.
+L’API enregistre les devis dans `billing_quotes` et les factures dans `billing_invoices`, avec un lien unique vers leur dossier.
 Le JSON complet est chiffré avec `ENCRYPTION_KEY`. Le contenu, le sel de
 chiffrement et la date d'émission sont immuables, y compris par mise à jour SQL.
 Les statuts et les informations de règlement restent dans des colonnes séparées,
@@ -283,7 +281,6 @@ Chaque nouveau devis contient une date `validUntil` dans son JSON chiffré :
 30 jours après son émission (timestamp UTC en millisecondes), indépendamment
 de son statut, y compris en cas d'acceptation automatique. Cette date est
 affichée et imprimée ; elle n'est pas recalculée lors de l'acceptation.
-Les anciens documents immuables ne sont pas modifiés.
 
 - Devis : statut `pending`, `accepted` ou `rejected`, date d'émission
   `issued_at_ms` et dernier changement de statut `status_changed_at_ms`.
@@ -303,23 +300,14 @@ le dossier `payment_pending` ; un montant nul règle la facture avec `free`.
 Les locations exigent une période prévue complète, conservée dans le dossier
 et les documents indépendamment de la création et de la clôture.
 
-Seul ce parcours est exposé : `GET|POST /operations`, `GET /operations/:id`,
-`/operations/counts` et les actions `accept`, `reject`, `complete` et `pay`.
-Les anciennes routes (`/repairs`, `/clients/:id/documents`, `PUT /operations/:id`
-et les actions `submit`, `start` et `invoice`) ont été supprimées ; les grilles
-d'un client utilisent `GET /operations?clientId=`. Un ancien dossier
-`completed` non facturé reste traitable : `complete` crée sa facture et `pay`
-la crée et la règle dans la même transaction.
+L’API expose `GET /operations`, `POST /operations`, `GET /operations/:id`, `GET /operations/counts` et les actions `accept`, `reject`, `complete` et `pay`.
 
 L'API conserve la collection `snapshots` du dossier ; `payload` est le JSON
 immuable, `status`, `createdAt`, `updatedAt`, `paymentMethod` et `paidAt` sont
 les métadonnées du document. Le statut d'une facture dans cette collection
-est désormais `unpaid` ou `paid`.
+est `unpaid` ou `paid`.
 
-Les opérations n'ont plus de champ `paymentStatus` ni de colonne
-`payment_status`. Le règlement est déterminé par le statut de la facture ;
-l'absence de facture signifie « Non facturé ». Les colonnes `payment_method`
-et `paid_at_ms` de l'opération restent disponibles pour les anciens documents.
+Le statut de la facture indique si le dossier est réglé. Sans facture, le dossier est « Non facturé ».
 
 La liste paginée `GET /operations` omet `lines`, limite `client` à `firstname`, `lastname`
 et `email`, et `snapshots` aux métadonnées (sans JSON complet). Pour une
@@ -348,28 +336,9 @@ bun run db:migrate
 bun run db:studio
 ```
 
-L'historique a été regroupé dans `drizzle/0000_initial_schema.sql`, accompagné
-d'un seul snapshot et du journal Drizzle. Cette migration crée le schéma actuel
-complet, les index et les triggers d'immutabilité des documents. Elle ne contient
-aucun identifiant de connexion : le premier administrateur est toujours créé
-par `ensureBootstrapAdmin` au démarrage du serveur, avec changement obligatoire
-du mot de passe. Définir `BOOTSTRAP_ADMIN_PASSWORD` dans `.env` (au moins
-12 caractères) : le bootstrap le hache avec bcrypt avant stockage. Sans cette
-variable, la création du compte échoue explicitement. Si `admin@example.com`
-existe déjà, son mot de passe reste inchangé et cette variable n'est pas requise.
-Ne jamais versionner sa valeur ; en release, utiliser le secret GitHub du même nom.
-`bun run db:migrate` initialise le schéma et les coordonnées
-du magasin, mais ne crée pas cet administrateur.
+La migration `drizzle/0000_initial_schema.sql` crée le schéma, les index et les déclencheurs qui protègent le contenu des documents. Au premier démarrage, le serveur crée `admin@example.com` à partir de `BOOTSTRAP_ADMIN_PASSWORD` et exige un changement de mot de passe à la première connexion. En release, configurez le secret GitHub du même nom. `bun run db:migrate` ne crée pas ce compte.
 
-Cette nouvelle initiale est destinée aux bases neuves. Une base ayant appliqué
-l'ancien historique est refusée explicitement avant toute migration ; aucune
-donnée ni aucun journal existant n'est réécrit. Pour démarrer sans toucher à
-l'ancienne base, définir `SQLITE_DB_PATH` vers un nouveau fichier. La reprise
-des données existantes nécessite une migration de données distincte, précédée
-d'une sauvegarde ; ne pas supprimer ni modifier manuellement leur journal.
-Les migrations suivantes peuvent être générées normalement avec
-`bun run db:generate`. Les trois triggers sont ajoutés manuellement à l'initiale,
-car Drizzle ne les représente pas dans ses snapshots.
+Si le démarrage refuse l’historique d’une base existante, sauvegardez-la avant toute reprise de données. Ne modifiez pas le journal des migrations à la main.
 
 Pour initialiser les informations du magasin lors de la migration, définir
 `STORE_INFORMATION_INITIAL_DATA` comme JSON dans la configuration secrète de
@@ -382,8 +351,7 @@ initialisées.
 
 ### 🔄 Vérifier une sauvegarde et sa restauration
 
-La stack Docker réplique SQLite vers Garage avec Litestream. Pour tester une
-restauration réelle sans écraser la base active, lancer depuis le dépôt :
+La stack Docker réplique SQLite vers Garage avec Litestream. Pour vérifier une restauration en développement sans écraser la base active, exécutez cette commande depuis la racine du dépôt :
 
 ```sh
 ./infra/scripts/verify-backup.sh
