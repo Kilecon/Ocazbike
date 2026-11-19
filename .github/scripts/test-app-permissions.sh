@@ -83,10 +83,13 @@ docker run --rm --network none --read-only --cap-drop ALL --user 10003:10003 \
     assert.throws(() => readFileSync("/run/secrets/discord_webhook_url"), { code: "EACCES" });
   '
 docker run --rm --network none --read-only --cap-drop ALL \
-  --entrypoint /bin/sh "ocazbike-spa:$test_id" -ec '
-    test "$(id -un)" = spa
-    test "$(id -u):$(id -g)" = 10003:10003
-    test -r /app/server.ts
-    test -r /app/dist/index.html
+  --entrypoint /usr/local/bin/bun "ocazbike-spa:$test_id" -e '
+    import { strict as assert } from "node:assert";
+    import { accessSync, constants } from "node:fs";
+    assert.equal(process.getuid(), 10003);
+    assert.equal(process.getgid(), 10003);
+    assert.equal(await Bun.file("/bin/sh").exists(), false);
+    accessSync("/app/server.ts", constants.R_OK);
+    accessSync("/app/dist/index.html", constants.R_OK);
   '
-echo "App permissions passed: non-root users, private API secrets, webhook loaded, SPA denied access."
+echo "App permissions passed: distroless non-root users, private API secrets, webhook loaded, SPA denied access."

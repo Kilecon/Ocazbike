@@ -93,6 +93,7 @@ services:
     restart: unless-stopped
     init: true
     user: "10003:10003"
+    command: ["run", "server.ts"]
 
     logging:
       driver: loki
@@ -111,7 +112,7 @@ services:
       test:
         [
           "CMD",
-          "bun",
+          "/usr/local/bin/bun",
           "-e",
           "fetch('http://127.0.0.1:3111/').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
         ]
