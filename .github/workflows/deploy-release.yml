@@ -2,6 +2,15 @@ name: Deploy release Ocazbike
 
 on:
   workflow_dispatch:
+    inputs:
+      skip_trivy:
+        description: Skip Trivy image scanning for this run
+        type: boolean
+        default: false
+      deploy_falco:
+        description: Deploy Falco after the application
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -15,7 +24,10 @@ jobs:
     name: Deploy to release server
     runs-on: ubuntu-latest
     environment: release
-    timeout-minutes: 30
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Require develop
@@ -41,6 +53,50 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Build release images
+        env:
+          SPA_API_URL: ${{ vars.SPA_API_URL }}
+          SPA_APP_ID: ${{ vars.SPA_APP_ID || 'my-spa' }}
+        run: |
+          : "${SPA_API_URL:?Configure SPA_API_URL for the release environment}"
+          docker compose --env-file /dev/null -f infra/compose.release.yaml build --pull api spa garage
+
+      - name: Install Trivy
+        if: ${{ inputs.skip_trivy == false }}
+        uses: aquasecurity/setup-trivy@81e514348e19b6112ce2a7e3ecbafe19c1e1f567 # v0.3.1
+        with:
+          version: v0.76.2
+
+      - name: Scan release images
+        if: ${{ inputs.skip_trivy == false }}
+        run: bash infra/scripts/scan-release-images.sh
+
+      - name: Warn when Trivy is skipped
+        if: ${{ inputs.skip_trivy }}
+        run: echo "::warning::Trivy image scanning was skipped for this release."
+
+      - name: Publish release images to GHCR
+        id: publish
+        shell: bash
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: |
+          printf '%s\n' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          trap 'docker logout ghcr.io' EXIT
+          tag="sha-$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          for service in api spa garage; do
+            image="ghcr.io/${GITHUB_REPOSITORY,,}-$service"
+            docker image tag "ocazbike-$service:release" "$image:$tag"
+            push_output=$(docker image push "$image:$tag")
+            printf '%s\n' "$push_output"
+            digest=$(awk -v tag="$tag:" '$1 == tag && $2 == "digest:" { print $3 }' <<< "$push_output")
+            if [[ ! "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+              echo "::error::Could not determine published digest for $image." >&2
+              exit 1
+            fi
+            printf '%s=%s@%s\n' "$service" "$image" "$digest" >> "$GITHUB_OUTPUT"
+          done
+
       - name: Prepare release secrets
         env:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
@@ -65,16 +121,23 @@ jobs:
         env:
           DEPLOY_SHA: ${{ github.sha }}
           VPS_DIR: ${{ secrets.VPS_DIR }}
+          RELEASE_API_IMAGE: ${{ steps.publish.outputs.api }}
+          RELEASE_SPA_IMAGE: ${{ steps.publish.outputs.spa }}
+          RELEASE_GARAGE_IMAGE: ${{ steps.publish.outputs.garage }}
+          DEPLOY_FALCO: ${{ inputs.deploy_falco }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ vars.VPS_SSH_PORT || 22 }}
           fingerprint: ${{ vars.VPS_HOST_FINGERPRINT }}
-          envs: DEPLOY_SHA,VPS_DIR,RELEASE_ENV_B64,JWT_SECRET_B64,BOOTSTRAP_ADMIN_PASSWORD_B64,ENCRYPTION_KEY_B64,GARAGE_RPC_SECRET_B64,GARAGE_DEFAULT_ACCESS_KEY_B64,GARAGE_DEFAULT_SECRET_KEY_B64,GRAFANA_USER_B64,GRAFANA_PASSWORD_B64,DISCORD_WEBHOOK_URL_B64,STORE_INFORMATION_INITIAL_DATA_B64
+          envs: DEPLOY_SHA,VPS_DIR,RELEASE_API_IMAGE,RELEASE_SPA_IMAGE,RELEASE_GARAGE_IMAGE,DEPLOY_FALCO,RELEASE_ENV_B64,JWT_SECRET_B64,BOOTSTRAP_ADMIN_PASSWORD_B64,ENCRYPTION_KEY_B64,GARAGE_RPC_SECRET_B64,GARAGE_DEFAULT_ACCESS_KEY_B64,GARAGE_DEFAULT_SECRET_KEY_B64,GRAFANA_USER_B64,GRAFANA_PASSWORD_B64,DISCORD_WEBHOOK_URL_B64,STORE_INFORMATION_INITIAL_DATA_B64
           command_timeout: 25m
           script: |
             set -eu
+            : "${RELEASE_API_IMAGE:?Missing published API image}" \
+              "${RELEASE_SPA_IMAGE:?Missing published SPA image}" \
+              "${RELEASE_GARAGE_IMAGE:?Missing published Garage image}"
             if [ "$(id -u)" != 1002 ] || [ "$(id -g)" != 1002 ]; then
               echo "Unexpected deployment account UID/GID." >&2
               exit 1
@@ -88,12 +151,7 @@ jobs:
 
             git fetch origin develop
             git merge-base --is-ancestor "$DEPLOY_SHA" FETCH_HEAD
-            git switch --detach "$DEPLOY_SHA"
-
-            bash infra/scripts/init-release-secrets.sh
-            docker compose --env-file da/.env -f infra/compose.release.yaml config --quiet
-            docker compose --env-file da/.env -f infra/compose.release.yaml build --pull api spa garage
-            docker compose --env-file da/.env -f infra/compose.release.yaml up \
-              -d --force-recreate --remove-orphans --wait --wait-timeout 180
-            docker compose --env-file da/.env -f infra/compose.release.yaml ps
-            echo "Deployment completed."
+            manager=$(mktemp)
+            trap 'rm -f -- "$manager"' EXIT
+            git show "$DEPLOY_SHA:infra/scripts/manage-release.sh" > "$manager"
+            bash "$manager" deploy
