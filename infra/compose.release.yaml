@@ -152,7 +152,7 @@ services:
 
 
   mailpit:
-    image: axllent/mailpit:v1.31.4@sha256:b68349e3a014b90c5610bfb26b2ae36f3892d7b8cf25ee140c6c71c98d2fcf48
+    image: axllent/mailpit:v1.34@sha256:23a2ef85bc50853ab3093645d1d64679afd8887e89da5e48a88940c172591a4e
     restart: unless-stopped
     init: true
     user: "10005:10005"
@@ -170,7 +170,7 @@ services:
 
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.158.0@sha256:c5918f78992ee73b0d6f0e599423ac5ec52dd5d9726733114d6eca53d5a32ed5
+    image: otel/opentelemetry-collector-contrib:0.165.0@sha256:e40d61f10c9a617cca1ffd1be4d7e2b3a4b0f0001798ff07e58cabe82e618cea
     restart: unless-stopped
     init: true
     user: "10006:10006"
@@ -314,7 +314,7 @@ services:
 
 
   litestream:
-    image: litestream/litestream:0.5.14@sha256:ef0ac5958cf81725b7a85fb76f82ef71ace030db9429086eeefc59ee6ca53941
+    image: litestream/litestream:0.5.18@sha256:513bff62a88fc0c86c73d27333c41c54c89fe890a7c32a551600adff9309b11b
     restart: unless-stopped
     init: true
     # Only the SQLite data group is shared with the API; credentials stay in Litestream's tmpfs.
@@ -370,7 +370,7 @@ services:
 
 
   tempo:
-    image: grafana/tempo:2.9.4@sha256:3ecdaa1af90b3068e77e4fb4b11d9f26201c3a57d5740d34965a323173a4f1aa
+    image: grafana/tempo:3.1.1@sha256:64e2fbd56d9c2b3412a4b430a58ea59e91a670b1e75f920a0c702213ad145044
     restart: unless-stopped
     #pids_limit: 100
     init: true
@@ -419,7 +419,7 @@ services:
 
 
   loki:
-    image: grafana/loki:3.6.15@sha256:a678400d75866739e70cf413de834b929c8ac500256bc6beedf17a91ab6430a3
+    image: grafana/loki:3.6.22@sha256:4cf4ceb20e88b0543c88b541a71797c22a46eade04dd588dcdebf9f2b9c36063
     restart: unless-stopped
     init: true
     user: "10008:10008"
@@ -460,7 +460,7 @@ services:
 
 
   prometheus:
-    image: prom/prometheus:v3.13.2@sha256:508729e0e2d18e11fd742a5a5ca70e557b940a93948c3c95fd0123a6fd538b69
+    image: prom/prometheus:v3.16.0-distroless@sha256:e8b8fb0e336fe0affce6f9ea347b11d24975465fd3ba8119420186679c3efd5f
     restart: unless-stopped
     #pids_limit: 100
     init: true
@@ -505,7 +505,7 @@ services:
 
 
   grafana:
-    image: grafana/grafana:13.0@sha256:28476aa8096cd8d0f658a05a443b605fffb450e57f444335216175d604cfd23d
+    image: grafana/grafana:13.1-slim@sha256:016f985170123bf396f568c4d1cea18f0a16cee0477ace26dda0fc5e8039348a
     restart: unless-stopped
     init: true
     #pids_limit: 100
