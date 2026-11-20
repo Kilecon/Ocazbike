@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { isValidEmail } from "../../shared/validation/email";
 import type { AuthConfig } from "./config";
 import {
   DuplicateUserError,
@@ -145,7 +146,7 @@ export class AuthService {
   }): Promise<PublicUser> {
     const role = input.role ?? "Subadmin";
     const email = input.email.trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!isValidEmail(email)) {
       throw new InvalidEmailError();
     }
     if (!input.firstname.trim() || !input.lastname.trim()) {

@@ -1,6 +1,10 @@
 import { expect } from "bun:test";
 import { createApp } from "../../../../appFactory";
 import { DataProtector } from "../../../../shared/crypto/DataProtector";
+import {
+  compareFrenchStrings,
+  sortFrenchStrings,
+} from "../../../../shared/sort";
 import { createTestDatabase } from "../../../../test-support/testDatabase";
 import { loadAuthConfig } from "../../config";
 import {
@@ -34,17 +38,20 @@ export function createAuthIntegrationFixture(name: string) {
         ["expires_at_ms", "revoked_at_ms", "created_at_ms"].includes(name),
       )
       .map(({ name, type, hidden }) => [name, type, hidden])
-      .sort(([left], [right]) => String(left).localeCompare(String(right))),
+      .sort(([left], [right]) =>
+        compareFrenchStrings(String(left), String(right)),
+      ),
   ).toEqual([
     ["created_at_ms", "INTEGER", 0],
     ["expires_at_ms", "INTEGER", 0],
     ["revoked_at_ms", "INTEGER", 0],
   ]);
   expect(
-    refreshSessionColumns
-      .filter(({ hidden }) => hidden === 2)
-      .map(({ name }) => name)
-      .sort(),
+    sortFrenchStrings(
+      refreshSessionColumns
+        .filter(({ hidden }) => hidden === 2)
+        .map(({ name }) => name),
+    ),
   ).toEqual(["created_at", "expires_at", "revoked_at"]);
   const userColumns = testDatabase.sqlite
     .query("PRAGMA table_xinfo(users)")
@@ -141,7 +148,10 @@ export function expectAuthResponse(
   responseBody: Record<string, unknown>,
   expectedUser: ReturnType<typeof expectedPublicUser>,
 ) {
-  expect(Object.keys(responseBody).sort()).toEqual(["expiresIn", "user"]);
+  expect(sortFrenchStrings(Object.keys(responseBody))).toEqual([
+    "expiresIn",
+    "user",
+  ]);
   expect(responseBody.expiresIn).toBe(config.accessTokenTtlSeconds);
   expect(responseBody.user).toEqual(expectedUser);
 }

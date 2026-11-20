@@ -1,5 +1,6 @@
 import { expect } from "bun:test";
 import { createApp } from "../../../../appFactory";
+import { sortFrenchStrings } from "../../../../shared/sort";
 import { accessTokenFrom } from "../../../../test-support/authCookies";
 import { loadAuthConfig } from "../../config";
 import type {
@@ -72,7 +73,9 @@ class ContractUsers implements IUserRepository {
     if (user) user.lastLoginAtEpochMs = timestamp;
   }
 
-  async recordLogout() {}
+  recordLogout() {
+    return Promise.resolve();
+  }
 }
 
 class ContractSessions implements IRefreshSessionRepository {
@@ -101,7 +104,9 @@ class ContractSessions implements IRefreshSessionRepository {
     this.values.delete(id);
   }
 
-  async limitActiveSessions() {}
+  limitActiveSessions() {
+    return Promise.resolve();
+  }
 }
 
 function makeUser(
@@ -198,8 +203,8 @@ export function expectAuthResponse(
 }
 
 export function expectManagedUserShape(user: Record<string, unknown>) {
-  expect(Object.keys(user).sort()).toEqual(
-    [
+  expect(sortFrenchStrings(Object.keys(user))).toEqual(
+    sortFrenchStrings([
       "id",
       "email",
       "firstname",
@@ -210,7 +215,7 @@ export function expectManagedUserShape(user: Record<string, unknown>) {
       "lastLoginAtEpochMs",
       "createdAtEpochMs",
       "updatedAtEpochMs",
-    ].sort(),
+    ]),
   );
   expect(Number.isSafeInteger(user.id)).toBe(true);
   expect(typeof user.id).toBe("number");

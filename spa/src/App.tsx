@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { AdminToastProvider } from "./components/admin/AdminToast";
+import { trimTrailingSlashes } from "./lib/pathname";
 import { AdminRoute } from "./pages/admin/AdminRoute";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { applyTheme, getSystemTheme } from "./theme";
@@ -21,7 +22,7 @@ export function App() {
     return () => mediaQuery.removeEventListener("change", syncTheme);
   }, []);
 
-  const pathname = window.location.pathname.replace(/\/+$/, "") || "/";
+  const pathname = trimTrailingSlashes(window.location.pathname);
 
   if (pathname.startsWith("/admin")) {
     return (

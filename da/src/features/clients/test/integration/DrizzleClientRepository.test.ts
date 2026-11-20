@@ -224,9 +224,11 @@ describe("DrizzleClientRepository integration", () => {
         limit: 20,
         search: suffix,
       });
-      expect(matchingClients.clients.map(({ id }) => id).sort()).toEqual(
-        [ada.id, splitMatch.id].sort(),
-      );
+      expect(
+        matchingClients.clients
+          .map(({ id }) => id)
+          .sort((left, right) => left - right),
+      ).toEqual([ada.id, splitMatch.id].sort((left, right) => left - right));
       const billingList = await new DrizzleBillingDocumentRepository(
         db,
         protector,

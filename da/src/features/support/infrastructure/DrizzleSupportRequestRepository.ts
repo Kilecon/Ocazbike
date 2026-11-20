@@ -28,7 +28,7 @@ export class DrizzleSupportRequestRepository
   async create(
     input: CreateSupportRequestInput,
   ): Promise<SupportRequestRecord> {
-    return this.database.transaction((transaction) => {
+    return await this.database.transaction((transaction) => {
       const now = new Date();
       const date = now.toISOString().slice(0, 10);
       const [sequence] = transaction

@@ -19,6 +19,7 @@ import { Grid } from "../../../components/ui/Grid";
 import { Input } from "../../../components/ui/input";
 import { TruncatedCellText } from "../../../components/ui/TruncatedCellText";
 import { formatLocalDate } from "../../../lib/date";
+import { trimTrailingSlashes } from "../../../lib/pathname";
 import { getClientsPage } from "../../../services/clients.api";
 import {
   acceptQuote,
@@ -193,7 +194,7 @@ export function OperationsPage({
   const [listPage, setListPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_OPERATIONS_PAGE_SIZE);
   const [totalOperations, setTotalOperations] = useState(0);
-  const path = window.location.pathname.replace(/\/+$/, "");
+  const path = trimTrailingSlashes(window.location.pathname);
   const [filters, setFilters] = useState(() =>
     clientId
       ? { statuses: [], search: "" }
@@ -1116,11 +1117,9 @@ export function OperationDetail({
   const rejectedQuote = operation.snapshots.find(
     ({ kind, status }) => kind === "quote" && status === "rejected",
   );
-  const closedAt = rejectedQuote
-    ? rejectedQuote.updatedAt
-    : invoice?.status === "paid"
-      ? (invoice.paidAt ?? null)
-      : null;
+  const invoicePaidAt =
+    invoice?.status === "paid" ? (invoice.paidAt ?? null) : null;
+  const closedAt = rejectedQuote ? rejectedQuote.updatedAt : invoicePaidAt;
 
   return (
     <div className="mx-auto grid max-w-[77.5rem] gap-5">

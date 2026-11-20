@@ -183,7 +183,7 @@ export class DrizzleUserRepository implements IUserRepository {
       .where(eq(users.id, id));
   }
 
-  private async toUser(row: UserStorageRow): Promise<User> {
+  private toUser(row: UserStorageRow): User {
     return this.decryptRow(row);
   }
 

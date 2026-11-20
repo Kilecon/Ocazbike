@@ -1,5 +1,7 @@
-FROM dxflrs/garage:v2.5.0@sha256:677e5b758e4425a325b811c425c026bf35a4bf42f7ddbaa773de3f4fd779a5a5 AS garage
-FROM litestream/litestream:0.5.18@sha256:513bff62a88fc0c86c73d27333c41c54c89fe890a7c32a551600adff9309b11b
+# Garage v2.5.0
+FROM dxflrs/garage@sha256:677e5b758e4425a325b811c425c026bf35a4bf42f7ddbaa773de3f4fd779a5a5 AS garage
+# Litestream 0.5.18
+FROM litestream/litestream@sha256:513bff62a88fc0c86c73d27333c41c54c89fe890a7c32a551600adff9309b11b
 COPY --from=garage /garage /garage
 RUN addgroup --system --gid 10002 garage \
     && adduser --system --uid 10002 --ingroup garage --no-create-home garage \

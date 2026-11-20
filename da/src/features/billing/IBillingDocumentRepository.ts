@@ -167,11 +167,9 @@ export function toOperationListItem(
     ({ kind, status }) => kind === "quote" && status === "rejected",
   );
   const { lines, ...summary } = operation;
-  const closedAt = rejectedQuote
-    ? rejectedQuote.updatedAt
-    : invoice?.status === "paid"
-      ? (invoice.paidAt ?? null)
-      : null;
+  const invoicePaidAt =
+    invoice?.status === "paid" ? (invoice.paidAt ?? null) : null;
+  const closedAt = rejectedQuote ? rejectedQuote.updatedAt : invoicePaidAt;
   return {
     ...summary,
     closedAt,

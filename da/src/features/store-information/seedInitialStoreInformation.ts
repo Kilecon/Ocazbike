@@ -1,6 +1,7 @@
 import type { DataProtector } from "../../shared/crypto/DataProtector";
 import type { AppDatabase } from "../../shared/database/db";
 import { storeInformation as storeInformationTable } from "../../shared/database/schema/storeInformation";
+import { isValidEmail } from "../../shared/validation/email";
 import {
   normalizeStoreInformation,
   STORE_INFORMATION_ID,
@@ -88,10 +89,7 @@ function parseInitialStoreInformation(payload: string): StoreInformation {
     }
   }
 
-  if (
-    normalized.email &&
-    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized.email)
-  ) {
+  if (normalized.email && !isValidEmail(normalized.email)) {
     throw new Error(
       'STORE_INFORMATION_INITIAL_DATA field "email" must be a valid email address',
     );

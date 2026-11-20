@@ -47,6 +47,10 @@ for blocking_image in ocazbike-api:release ocazbike-spa:release; do
   case "$blocking_image" in
     ocazbike-api:release) expected=ocazbike-api:release ;;
     ocazbike-spa:release) expected=$'ocazbike-api:release\nocazbike-spa:release' ;;
+    *)
+      echo "Unexpected blocking image: $blocking_image" >&2
+      exit 1
+      ;;
   esac
   [[ "$(cat "$temporary/scans")" == "$expected" ]]
 done

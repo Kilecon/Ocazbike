@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { sortFrenchStrings } from "../../../../shared/sort";
 import {
   BILLING_DOCUMENT_TYPES,
   type BillingOperationRecord,
@@ -147,8 +148,8 @@ describe("billing counters", () => {
   it("returns the twelve zero counters with independent objects on every call", () => {
     const first = emptyOperationCounts();
     const second = emptyOperationCounts();
-    expect(Object.keys(first).sort()).toEqual(
-      [...BILLING_DOCUMENT_TYPES].sort(),
+    expect(sortFrenchStrings(Object.keys(first))).toEqual(
+      sortFrenchStrings(BILLING_DOCUMENT_TYPES),
     );
     for (const type of BILLING_DOCUMENT_TYPES)
       expect(first[type]).toEqual({

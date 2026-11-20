@@ -29,14 +29,24 @@ import {
 } from "../../IBillingDocumentRepository";
 
 class MemorySessions implements IRefreshSessionRepository {
-  async create(_session: RefreshSession): Promise<void> {}
+  create(_session: RefreshSession): Promise<void> {
+    return Promise.resolve();
+  }
   async findById(_id: string): Promise<RefreshSession | null> {
     return null;
   }
-  async revoke(_id: string): Promise<void> {}
-  async revokeAllForUser(_userId: number): Promise<void> {}
-  async delete(_id: string): Promise<void> {}
-  async limitActiveSessions(): Promise<void> {}
+  revoke(_id: string): Promise<void> {
+    return Promise.resolve();
+  }
+  revokeAllForUser(_userId: number): Promise<void> {
+    return Promise.resolve();
+  }
+  delete(_id: string): Promise<void> {
+    return Promise.resolve();
+  }
+  limitActiveSessions(): Promise<void> {
+    return Promise.resolve();
+  }
 }
 
 function setUpdatedAt(user: User, timestamp?: number): void {

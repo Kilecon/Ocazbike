@@ -16,13 +16,14 @@ compose() {
 }
 
 run_api_bun() {
+  local script=$1
   compose exec -T \
     -e "DATABASE_PATH=$database_path" \
     -e "CONFIG_PATH=$config_path" \
     -e "REPLICA_PATH=$replica_path" \
     -e "RESTORE_PATH=$restore_path" \
     -e "TARGET_TIMESTAMP=$target_timestamp" \
-    api bun -e "$1"
+    api bun -e "$script"
 }
 
 cleanup() {
@@ -86,10 +87,11 @@ replicate_snapshot() {
 }
 
 set_state() {
+  local state_id=$1 state_value=$2
   compose exec -T \
     -e "DATABASE_PATH=$database_path" \
-    -e "STATE_ID=$1" \
-    -e "STATE_VALUE=$2" \
+    -e "STATE_ID=$state_id" \
+    -e "STATE_VALUE=$state_value" \
     api bun -e '
     import { Database } from "bun:sqlite";
     const database = new Database(process.env.DATABASE_PATH);

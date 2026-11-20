@@ -124,7 +124,7 @@ export function authRoutes(
         beforeHandle: requireAuth(jwt, users),
       },
     )
-    .get("/me", async ({ request }) => service.me(readAuthUserId(request)), {
+    .get("/me", ({ request }) => service.me(readAuthUserId(request)), {
       detail: {
         summary: "Récupérer l'utilisateur connecté",
         description:
@@ -193,7 +193,7 @@ export function authRoutes(
     )
     .post(
       "/users",
-      async ({ body, set }) => {
+      ({ body, set }) => {
         set.status = 201;
         return service.createUser(body);
       },

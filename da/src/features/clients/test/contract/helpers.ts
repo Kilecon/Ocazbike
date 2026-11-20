@@ -64,19 +64,33 @@ class ContractUsers implements IUserRepository {
       .map(({ passwordHash: _passwordHash, ...user }) => user);
   }
 
-  async recordLogin() {}
-  async recordLogout() {}
+  recordLogin() {
+    return Promise.resolve();
+  }
+  recordLogout() {
+    return Promise.resolve();
+  }
 }
 
 class ContractSessions implements IRefreshSessionRepository {
-  async create(_session: RefreshSession) {}
+  create(_session: RefreshSession) {
+    return Promise.resolve();
+  }
   async findById(_id: string) {
     return null;
   }
-  async revoke(_id: string) {}
-  async revokeAllForUser(_userId: number) {}
-  async delete(_id: string) {}
-  async limitActiveSessions(_userId: number, _maxActive: number) {}
+  revoke(_id: string) {
+    return Promise.resolve();
+  }
+  revokeAllForUser(_userId: number) {
+    return Promise.resolve();
+  }
+  delete(_id: string) {
+    return Promise.resolve();
+  }
+  limitActiveSessions(_userId: number, _maxActive: number) {
+    return Promise.resolve();
+  }
 }
 
 class ContractClients implements IClientRepository {

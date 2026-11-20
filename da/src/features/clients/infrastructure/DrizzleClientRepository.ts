@@ -27,12 +27,15 @@ export class DrizzleClientRepository implements IClientRepository {
     private readonly protector: DataProtector,
   ) {}
 
-  async create(input: CreateClientInput, actorUserId: number) {
+  async create(
+    input: CreateClientInput,
+    actorUserId: number,
+  ): Promise<ClientRecord> {
     const salt = this.protector.createSalt();
     const fieldProtector = this.protector.createFieldProtector(salt);
     const timestampMs = Date.now();
 
-    return this.database.transaction((transaction) => {
+    return await this.database.transaction((transaction) => {
       const [row] = transaction
         .insert(clients)
         .values({
@@ -49,8 +52,12 @@ export class DrizzleClientRepository implements IClientRepository {
     });
   }
 
-  async update(id: number, input: CreateClientInput, actorUserId: number) {
-    return this.database.transaction((transaction) => {
+  async update(
+    id: number,
+    input: CreateClientInput,
+    actorUserId: number,
+  ): Promise<ClientRecord | null> {
+    return await this.database.transaction((transaction) => {
       const existing = transaction
         .select()
         .from(clients)
@@ -141,7 +148,7 @@ export class DrizzleClientRepository implements IClientRepository {
     const pageRows = rowsArePage
       ? decryptedRows
       : decryptedRows
-          .sort(
+          .toSorted(
             (left, right) =>
               right.lastModificationMs - left.lastModificationMs ||
               right.id - left.id,

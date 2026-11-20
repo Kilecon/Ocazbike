@@ -100,7 +100,7 @@ export function createAuthFixture(
       const user = userRecords.get(id);
       if (user) user.lastLoginAtEpochMs = timestamp;
     }),
-    recordLogout: mock(async () => {}),
+    recordLogout: mock(() => Promise.resolve()),
   } satisfies IUserRepository;
 
   const sessions = {
@@ -120,7 +120,7 @@ export function createAuthFixture(
     delete: mock(async (id: string) => {
       sessionRecords.delete(id);
     }),
-    limitActiveSessions: mock(async () => {}),
+    limitActiveSessions: mock(() => Promise.resolve()),
   } satisfies IRefreshSessionRepository;
 
   const passwords = {

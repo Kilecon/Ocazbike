@@ -3,8 +3,9 @@ set -eu
 umask 077
 
 prepare_data() {
-  chown -R "$2:$2" "$1"
-  chmod 700 "$1"
+  local directory=$1 owner=$2
+  chown -R "$owner:$owner" "$directory"
+  chmod 700 "$directory"
 }
 
 prepare_data /var/lib/garage 10002

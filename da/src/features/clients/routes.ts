@@ -115,7 +115,7 @@ export function createClientRoutes(
     )
     .get(
       "/",
-      async ({ query }) => {
+      ({ query }) => {
         return service.listClients({
           page: query.page,
           limit: query.limit,

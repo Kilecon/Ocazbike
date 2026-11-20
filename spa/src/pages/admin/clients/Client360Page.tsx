@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAdminToast } from "../../../components/admin/AdminToast";
+import { trimTrailingSlashes } from "../../../lib/pathname";
 import { getClientsPage } from "../../../services/clients.api";
 import type { ClientPageDTO } from "../../../services/types";
 import { AdminPageShell } from "../common/AdminPageShell";
@@ -29,7 +30,7 @@ export function Client360Page({
 
   const closeCreateModal = () => {
     setCreateModalOpen(false);
-    if (window.location.pathname.replace(/\/+$/, "") === "/admin/clients/new") {
+    if (trimTrailingSlashes(window.location.pathname) === "/admin/clients/new") {
       window.history.replaceState(null, "", "/admin/clients");
     }
   };

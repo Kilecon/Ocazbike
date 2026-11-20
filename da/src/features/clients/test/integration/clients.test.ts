@@ -194,8 +194,10 @@ describe("clients HTTP integration", () => {
       const body = await response.json();
       expect(body.total).toBe(ids.length);
       expect(
-        body.clients.map((client: { id: number }) => client.id).sort(),
-      ).toEqual([...ids].sort());
+        body.clients
+          .map((client: { id: number }) => client.id)
+          .sort((left: number, right: number) => left - right),
+      ).toEqual([...ids].sort((left, right) => left - right));
     }
 
     const pageIds: number[] = [];

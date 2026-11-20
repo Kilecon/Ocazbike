@@ -40,9 +40,10 @@ printf -v TEST_DIGEST 'sha256:%064d' 1
 export TEST_DIGEST
 
 record_step() {
-  printf '%s\n' "$1" >> "$COMMAND_LOG"
-  if [[ "$FAIL_STEP" == "$1" ]]; then
-    printf 'Simulated failure: %s\n' "$1" >&2
+  local step=$1
+  printf '%s\n' "$step" >> "$COMMAND_LOG"
+  if [[ "$FAIL_STEP" == "$step" ]]; then
+    printf 'Simulated failure: %s\n' "$step" >&2
     return 1
   fi
 }
@@ -50,50 +51,60 @@ id() {
   printf '1002\n'
 }
 git() {
-  case "$1" in
+  local command=$1
+  case "$command" in
     rev-parse) printf '%s\n' "$VPS_DIR" ;;
     status) return 0 ;;
     fetch) record_step fetch ;;
     merge-base) record_step ancestry ;;
     show)
-      case "$2" in
+      local object=$2
+      case "$object" in
         *:infra/scripts/manage-release.sh) cat "$ROOT/infra/scripts/manage-release.sh" ;;
         *:infra/compose.release.yaml) cat "$ROOT/infra/compose.release.yaml" ;;
         *) return 2 ;;
       esac ;;
     switch)
-      [[ "$2" == --detach && "$3" =~ ^[0-9a-f]{40}$ && "$(umask)" == 0022 ]] || return 2
+      local mode=$2 revision=$3
+      [[ "$mode" == --detach && "$revision" =~ ^[0-9a-f]{40}$ && "$(umask)" == 0022 ]] || return 2
       record_step checkout ;;
     *) return 2 ;;
   esac
 }
 bash() {
-  case "$1" in
+  local script=$1
+  case "$script" in
     infra/scripts/init-release-secrets.sh)
       record_step secrets || return 1
       printf 'SPA_APP_ID=%s\n' "$DEPLOY_SHA" > da/.env ;;
     infra/scripts/start-falco.sh) record_step falco ;;
-    *) [[ "$2" == deploy ]] && /bin/bash "$@" ;;
+    *)
+      local action=$2
+      [[ "$action" == deploy ]] && /bin/bash "$@" ;;
   esac
 }
 docker() {
-  case "$1 $2" in
+  local command=$1 subcommand=$2
+  case "$command $subcommand" in
     'login ghcr.io')
-      local token
+      local token user_flag=$3 username=$4 password_flag=$5
       read -r token
-      [[ "$token" == test-token && "$3 $4 $5" == '-u test-user --password-stdin' ]] || return 2
+      [[ "$token" == test-token && "$user_flag $username $password_flag" == '-u test-user --password-stdin' ]] || return 2
       record_step login ;;
     'logout ghcr.io') record_step logout ;;
     'image inspect')
-      [[ "$3 $4 $5" == "$RELEASE_API_IMAGE $RELEASE_SPA_IMAGE $RELEASE_GARAGE_IMAGE" ]] || return 2
+      local api_image=$3 spa_image=$4 garage_image=$5
+      [[ "$api_image $spa_image $garage_image" == "$RELEASE_API_IMAGE $RELEASE_SPA_IMAGE $RELEASE_GARAGE_IMAGE" ]] || return 2
       record_step inspect ;;
     'image tag')
-      local target=${4%:sha-test-commit-123-2}
-      [[ "$4" == "$target:sha-test-commit-123-2" && "$target" == ghcr.io/example/ocazbike-* &&
-        "$3" == "ocazbike-${target##*-}:release" ]] || return 2
+      local source_image=$3 tagged_image=$4
+      local target=${tagged_image%:sha-test-commit-123-2}
+      [[ "$tagged_image" == "$target:sha-test-commit-123-2" && "$target" == ghcr.io/example/ocazbike-* &&
+        "$source_image" == "ocazbike-${target##*-}:release" ]] || return 2
       record_step "tag-${target##*-}" ;;
     'image push')
-      local target=${3%:sha-test-commit-123-2}
+      local tagged_image=$3
+      local target=${tagged_image%:sha-test-commit-123-2}
       record_step "push-${target##*-}" || return 1
       if [[ ${BAD_DIGEST:-} == "${target##*-}" ]]; then
         printf 'sha-test-commit-123-2: digest: invalid size: 1\n'
@@ -101,22 +112,30 @@ docker() {
         printf 'sha-test-commit-123-2: digest: %s size: 1\n' "$TEST_DIGEST"
       fi ;;
     'compose -p')
-      if [[ "$4" == --project-directory ]]; then
-        [[ "${10} ${11} ${12}" == 'pull --policy missing' ]] || return 2
+      local project_option=$4
+      if [[ "$project_option" == --project-directory ]]; then
+        local action=${10} policy_flag=${11} policy=${12}
+        [[ "$action $policy_flag $policy" == 'pull --policy missing' ]] || return 2
         record_step pull
       else
-        case "$8" in
-          config) [[ "$9" == --quiet ]] || return 2 ;;
+        local action=$8
+        case "$action" in
+          config)
+            local quiet_flag=$9
+            [[ "$quiet_flag" == --quiet ]] || return 2 ;;
           up)
-            [[ "$9 ${10} ${11}" == '--no-build --pull never' &&
+            local build_flag=$9 pull_flag=${10} pull_policy=${11}
+            [[ "$build_flag $pull_flag $pull_policy" == '--no-build --pull never' &&
               "$(stat -c %a infra/docker/tempo.yaml)" == 744 &&
               "$(stat -c %a data/release/status)" == 600 ]] || return 2 ;;
           ps) ;;
           *) return 2 ;;
         esac
-        record_step "$8"
+        record_step "$action"
       fi ;;
-    'volume inspect') [[ "$3" == infra_sqlite-data ]] ;;
+    'volume inspect')
+      local volume=$3
+      [[ "$volume" == infra_sqlite-data ]] ;;
     'run --rm')
       [[ " $* " == *' type=volume,source=infra_sqlite-data,target=/data,readonly '* ]] || return 2
       record_step schema || return 1

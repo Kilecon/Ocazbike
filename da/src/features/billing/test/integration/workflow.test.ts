@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { DataProtector } from "../../../../shared/crypto/DataProtector";
+import { sortFrenchStrings } from "../../../../shared/sort";
 import { accessTokenFrom } from "../../../../test-support/authCookies";
 import type { BillingOperationRecord } from "../../IBillingDocumentRepository";
 import { BillingOperationInputError } from "../../IBillingDocumentRepository";
@@ -536,7 +537,7 @@ describe("billing operation persistence", () => {
               lastname: "Lovelace",
               email: "ada@example.com",
             });
-            expect(Object.keys(summary.lines[0]).sort()).toEqual([
+            expect(sortFrenchStrings(Object.keys(summary.lines[0]))).toEqual([
               "description",
               "quantity",
             ]);
@@ -674,7 +675,7 @@ describe("billing operation persistence", () => {
           email: "ada@example.com",
         });
         expect(operation).not.toHaveProperty("paymentStatus");
-        expect(Object.keys(operation.lines[0]).sort()).toEqual([
+        expect(sortFrenchStrings(Object.keys(operation.lines[0]))).toEqual([
           "description",
           "quantity",
         ]);
@@ -1030,7 +1031,7 @@ describe("billing operation persistence", () => {
       expect(summary.serviceEndAt).toBe(cancelled.snapshots[0].updatedAt);
       expect(Number.isSafeInteger(summary.serviceEndAt)).toBe(true);
       expect(summary.paidAt).toBeNull();
-      expect(Object.keys(summary.lines[0]).sort()).toEqual([
+      expect(sortFrenchStrings(Object.keys(summary.lines[0]))).toEqual([
         "description",
         "quantity",
       ]);

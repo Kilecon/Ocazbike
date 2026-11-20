@@ -1,5 +1,6 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import { trimTrailingSlashes } from "./lib/pathname";
 import en from "./translations/en.json";
 import fr from "./translations/fr.json";
 
@@ -23,7 +24,7 @@ const resources = {
 
 function syncDocumentMetadata(language: SupportedLanguage) {
   const translation = resources[language].translation;
-  const pathname = window.location.pathname.replace(/\/+$/, "") || "/";
+  const pathname = trimTrailingSlashes(window.location.pathname);
   const page = pathname.startsWith("/admin") ? "admin" : "home";
   const description = document.querySelector<HTMLMetaElement>(
     'meta[name="description"]',

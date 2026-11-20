@@ -3,6 +3,7 @@ import { lazy, type ReactNode, Suspense, useEffect, useState } from "react";
 import { useAdminToast } from "../../components/admin/AdminToast";
 import { CurrentUserContext } from "../../contexts/CurrentUser";
 import i18n from "../../i18n";
+import { trimTrailingSlashes } from "../../lib/pathname";
 import { ApiError } from "../../services/api-client";
 import { getCurrentUser, logout } from "../../services/auth.api";
 import type { CurrentUser } from "../../services/types";
@@ -149,7 +150,7 @@ function renderDefaultPage() {
 }
 
 function renderPage(user: CurrentUser) {
-  const pathname = window.location.pathname.replace(/\/+$/, "");
+  const pathname = trimTrailingSlashes(window.location.pathname);
   const documentMatch = pathname.match(
     /^\/admin\/(?:repairs|sales|buybacks|rentals)\/(\d+)\/documents\/(quote|invoice)$/,
   );
@@ -190,9 +191,7 @@ function renderPage(user: CurrentUser) {
     case "/admin/settings":
       return user.role === "Admin" ? <SettingsPage /> : renderDefaultPage();
     default: {
-      const clientMatch = window.location.pathname
-        .replace(/\/+$/, "")
-        .match(/^\/admin\/clients\/(\d+)$/);
+      const clientMatch = pathname.match(/^\/admin\/clients\/(\d+)$/);
       if (clientMatch) {
         return <ClientDetailPage clientId={Number(clientMatch[1])} />;
       }

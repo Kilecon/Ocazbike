@@ -2,7 +2,7 @@ FROM oven/bun@sha256:ec06c3b6cea04192ae6770c434f668ca41d343ad19fa6472216c7b48be3
 
 WORKDIR /app
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile --production
+RUN bun install --frozen-lockfile --production --ignore-scripts
 RUN mkdir /data && chown 10001:10001 /data
 
 FROM oven/bun:1-distroless

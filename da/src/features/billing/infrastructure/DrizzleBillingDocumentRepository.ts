@@ -267,7 +267,7 @@ export class DrizzleBillingDocumentRepository
 
       return document.id;
     });
-    return id === null ? null : this.getOperation(id);
+    return id === null ? null : await this.getOperation(id);
   }
 
   async countOperations() {
@@ -601,23 +601,23 @@ export class DrizzleBillingDocumentRepository
     };
   }
 
-  async acceptQuote(id: number) {
+  acceptQuote(id: number) {
     return this.transition(id, ["pending"], "in_progress", {
       updateSnapshot: ["quote", "accepted"],
     });
   }
 
-  async rejectQuote(id: number) {
+  rejectQuote(id: number) {
     return this.transition(id, ["pending"], "cancelled", {
       updateSnapshot: ["quote", "rejected"],
     });
   }
 
-  async completeOperation(id: number) {
+  completeOperation(id: number) {
     return this.transition(id, ["in_progress", "completed"], "completed");
   }
 
-  async payOperation(id: number, method: BillingPaymentMethod) {
+  payOperation(id: number, method: BillingPaymentMethod) {
     return this.transition(id, ["completed", "payment_pending"], "paid", {
       snapshot: "invoice",
       updateSnapshot: ["invoice", "paid"],
@@ -764,7 +764,7 @@ export class DrizzleBillingDocumentRepository
         .run();
       return true;
     });
-    return changed ? this.getOperation(id) : null;
+    return changed ? await this.getOperation(id) : null;
   }
 
   private saveSnapshot(

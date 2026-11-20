@@ -81,7 +81,7 @@ export function iso8601ToUtcTimestamp(isoDatetime: string): number {
 
   // If timezone offset is provided (not Z), adjust
   if (tz !== "Z") {
-    const sign = tz[0] === "+" ? 1 : -1;
+    const sign = tz.startsWith("+") ? 1 : -1;
     const offsetHours = Number(tz.substring(1, 3));
     const offsetMinutes = Number(tz.substring(4, 6));
     if (offsetHours > 23 || offsetMinutes > 59) {
