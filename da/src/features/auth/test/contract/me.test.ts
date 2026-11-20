@@ -1,0 +1,89 @@
+import { describe, expect, it } from "bun:test";
+import { accessTokenFrom } from "../../../../test-support/authCookies";
+import { createHarness, expectError } from "./helpers";
+
+describe("GET /auth/me", () => {
+  it("returns the documented /me fields and millisecond timestamp", async () => {
+    const { login, request } = createHarness();
+    const loggedIn = await login();
+    const accessToken = accessTokenFrom(loggedIn);
+    const response = await request("/auth/me", {
+      headers: { Cookie: `access_token=${accessToken}` },
+    });
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      email: "admin@example.com",
+      firstname: "Admin",
+      lastname: "Contract",
+      role: "Admin",
+      mustChangePassword: false,
+      lastLoginAtEpochMs: expect.any(Number),
+    });
+  });
+
+  it("returns when the user must change their password", async () => {
+    const { login, request, users } = createHarness();
+    const loggedIn = await login();
+    const accessToken = accessTokenFrom(loggedIn);
+    users.values[0].mustChangePassword = true;
+
+    const response = await request("/auth/me", {
+      headers: { Cookie: ["access_", "token=", accessToken].join("") },
+    });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      email: "admin@example.com",
+      firstname: "Admin",
+      lastname: "Contract",
+      role: "Admin",
+      mustChangePassword: true,
+      lastLoginAtEpochMs: expect.any(Number),
+    });
+  });
+
+  it("returns null when /me has no previous login timestamp", async () => {
+    const { login, request, users } = createHarness();
+    const loggedIn = await login();
+    const accessToken = accessTokenFrom(loggedIn);
+    users.values[0].lastLoginAtEpochMs = null;
+
+    const response = await request("/auth/me", {
+      headers: { Cookie: `access_token=${accessToken}` },
+    });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      email: "admin@example.com",
+      firstname: "Admin",
+      lastname: "Contract",
+      role: "Admin",
+      mustChangePassword: false,
+      lastLoginAtEpochMs: null,
+    });
+  });
+
+  it("rejects unauthenticated /me requests", async () => {
+    const { request } = createHarness();
+    await expectError(
+      await request("/auth/me"),
+      401,
+      "UNAUTHORIZED",
+      "Not authenticated",
+    );
+  });
+
+  it("rejects invalid access tokens using the documented error", async () => {
+    const { request } = createHarness();
+    await expectError(
+      await request("/auth/me", {
+        headers: { Cookie: "access_token=invalid" },
+      }),
+      401,
+      "INVALID_AUTH_TOKEN",
+      "Invalid token",
+    );
+  });
+});

@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 5s
+
+
+scrape_configs:
+
+  - job_name: otel
+
+    static_configs:
+      - targets:
+          - da-otel-collector-1:9464

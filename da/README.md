@@ -1,0 +1,388 @@
+# API Ocazbike
+
+Ce guide explique comment démarrer et tester l’API Ocazbike, configurer son déploiement et vérifier ses sauvegardes.
+
+## 🧰 Prérequis
+
+- **Git** pour récupérer le dépôt.
+- **Bun** pour installer les dépendances, lancer l'API et exécuter les tests.
+  Node.js n'est pas nécessaire pour le développement courant.
+
+| Système | Ressources d'installation |
+| --- | --- |
+| Windows | [Installer Bun sur Windows](https://bun.sh/docs/installation#installing-bun) · [Installer Git](https://git-scm.com/download/win) |
+| macOS | [Installer Bun sur macOS](https://bun.sh/docs/installation#installing-bun) · [Installer Git](https://git-scm.com/download/mac) |
+| Linux | [Installer Bun sur Linux](https://bun.sh/docs/installation#installing-bun) · [Installer Git](https://git-scm.com/download/linux) |
+
+Les instructions complètes de Bun sont sur [bun.sh](https://bun.sh/docs/installation).
+Après l'installation, vérifier les outils :
+
+```sh
+bun --version
+git --version
+```
+
+## 🚀 Installation et démarrage
+
+Depuis la racine du dépôt, se placer dans le dossier de l'API :
+
+```sh
+cd da
+bun install
+```
+
+Créer le fichier `.env` à partir du modèle :
+
+```sh
+# macOS / Linux
+cp .env.example .env
+```
+
+```powershell
+# Windows PowerShell
+Copy-Item .env.example .env
+```
+
+Configurez `JWT_SECRET`, `ENCRYPTION_KEY` et le mot de passe du premier administrateur (`BOOTSTRAP_ADMIN_PASSWORD`) dans `.env`. Consultez la [configuration de l’environnement](#configuration-env), puis démarrez le serveur :
+
+```sh
+bun run dev
+```
+
+Le serveur écoute par défaut sur `http://localhost:3000`. La documentation
+interactive de l'API est disponible sur
+[`http://localhost:3000/docs`](http://localhost:3000/docs).
+Les migrations de la base sont appliquées automatiquement au démarrage.
+
+Pour arrêter le serveur, utiliser `Ctrl+C`.
+
+### Démarrer la stack Docker de développement
+
+Installez Docker avec Compose et OpenSSL. Dans `da/.env`, renseignez aussi `GARAGE_RPC_SECRET` (64 caractères hexadécimaux), `GARAGE_DEFAULT_ACCESS_KEY` et `GARAGE_DEFAULT_SECRET_KEY`.
+
+Depuis la racine du dépôt, si le pilote de logs `loki` n’est pas déjà installé, exécutez le script d’installation et examinez les permissions demandées par Docker :
+
+```sh
+sh infra/scripts/install-loki-plugin.sh
+```
+
+Initialisez les identifiants Grafana, puis démarrez la stack :
+
+```sh
+sh infra/scripts/init-grafana-secrets.sh
+docker compose -p infra --env-file da/.env -f infra/compose.yaml up -d
+```
+
+## Configuration `.env`
+
+Bun charge automatiquement le fichier `.env` du dossier courant en développement. `.env.example`
+est un modèle à copier ; les valeurs d'exemple doivent être remplacées par
+celles de votre environnement. Ne partagez pas `.env` et n'y inscrivez pas de
+secrets dans Git : ce fichier est ignoré par le `.gitignore`.
+
+En production (`NODE_ENV=production`), l'API lit les secrets dans les fichiers
+désignés par `JWT_SECRET_FILE` et `ENCRYPTION_KEY_FILE` (obligatoires), ainsi
+que `BOOTSTRAP_ADMIN_PASSWORD_FILE`, `DISCORD_WEBHOOK_URL_FILE` et
+`STORE_INFORMATION_INITIAL_DATA_FILE` (optionnels). Les variables portant les
+valeurs de ces secrets ne sont pas utilisées dans ce mode.
+
+### Déployer en production
+
+Le workflow GitHub Actions construit les images de l’API, de l’application web (SPA) et de Garage, puis les publie dans le GitHub Container Registry (GHCR). Trivy recherche les vulnérabilités et les secrets embarqués dans ces trois images, sauf si vous cochez `skip_trivy`. Ce contrôle ne scanne ni le dépôt ni les images tierces.
+
+Le serveur récupère les images par empreinte `sha256`, sans les reconstruire. Renseignez `SPA_API_URL` dans les variables de l’environnement GitHub `release` : le workflow intègre cette URL à l’application web pendant sa compilation.
+
+Les nouveaux packages GHCR sont privés par défaut. Si les packages
+`ocazbike-api`, `ocazbike-spa` ou `ocazbike-garage` existent déjà, vérifier
+qu'ils sont privés et que le dépôt peut y publier avant de lancer le workflow.
+Sur le VPS, sous le compte de déploiement (sans `sudo`), authentifier Docker
+avec un PAT GitHub classique limité à `read:packages` et dont le compte a
+accès en lecture aux trois packages. Utiliser de préférence un gestionnaire
+d'identifiants Docker. Dans Bash :
+
+```bash
+read -rs -p 'Jeton GHCR en lecture seule : ' token; printf '\n'
+printf '%s\n' "$token" |
+  docker login ghcr.io --username votre_compte_github --password-stdin
+unset token
+```
+
+### Rollback release
+
+Sur le VPS, depuis le clone et avec le compte de déploiement :
+
+```bash
+bash data/release/manage-release.sh rollback
+```
+
+Le workflow conserve dans `data/release/` le commit, les digests GHCR,
+la configuration non secrète et l'empreinte du schéma des releases
+validées. Le rollback revient à la release précédente, ou à la dernière
+release validée après une tentative interrompue. Il ne rebâtit rien, ne
+restaure pas les secrets et n'écrase ni SQLite ni ses écritures. Il refuse
+de démarrer l'ancienne API si le schéma ou le journal des migrations a changé.
+Il n'est disponible qu'après une première release validée avec ce workflow
+(et une deuxième pour revenir d'une release réussie à la précédente).
+Ne pas supprimer les versions correspondantes dans GHCR. Falco reste
+indépendant du rollback applicatif.
+
+Le déploiement conserve les volumes, dont les traces et le journal d’écriture de Tempo.
+
+Le workflow écrit les secrets applicatifs dans `da/secrets/` et conserve uniquement la
+configuration non secrète dans `da/.env`. Les clés de chiffrement et Garage
+existantes doivent être conservées ; une rotation exige une procédure séparée.
+Les fichiers Compose secrets restent lisibles par root et les administrateurs
+Docker sur le VPS.
+
+L'image API utilise le compte dédié `api` (`10001:10001`) et la SPA le compte
+`spa` (`10003:10003`), tous deux sans shell de connexion. En release, les
+fichiers sources sont limités au compte de déploiement par le dossier
+`da/secrets/` en `700`. Compose ne monte chaque secret en lecture seule que
+dans les services concernés ; leur entrée les copie dans `/run/secrets`, un
+tmpfs privé au conteneur avec des fichiers en `600`, avant de lancer le
+processus non-root. Le tmpfs disparaît avec le conteneur et est recréé au
+démarrage. La SPA ne monte aucun secret de l'API.
+
+Pour tester les comptes et la lecture du webhook avec des valeurs factices,
+sans réseau ni volume Docker persistant :
+
+```sh
+bash .github/scripts/test-app-permissions.sh
+```
+
+Mailpit capture les messages sans les distribuer ; son interface est accessible
+sur `127.0.0.1:8025` et le SMTP sur `127.0.0.1:1025` ou depuis un conteneur
+attaché à son réseau dédié. Aucun envoi de courriel n'est actuellement implémenté
+dans l'API. Le port de l'interface peut
+être modifié avec `MAILPIT_UI_PORT` (variable GitHub en release).
+
+| Variable | Obligatoire | Description |
+| --- | --- | --- |
+| `JWT_SECRET` | Oui | Secret de signature d'au moins 32 caractères. Utiliser une valeur aléatoire et privée. |
+| `ENCRYPTION_KEY` | Oui | Clé hexadécimale de 64 caractères (32 octets) pour chiffrer les données sensibles en base. |
+| `BOOTSTRAP_ADMIN_PASSWORD` | Au premier démarrage | Mot de passe d’au moins 12 caractères pour créer le compte `admin@example.com`. |
+| `STORE_INFORMATION_INITIAL_DATA` | Non | JSON privé pour l'initialisation unique des coordonnées du magasin après migration ; utiliser `"-"` pour un champ vide. Chiffré avec `ENCRYPTION_KEY`, sans remplacer une ligne existante. |
+| `SQLITE_DB_PATH` | Non | Chemin du fichier SQLite ; défaut : `./data/elysia.sqlite`, relatif au dossier `da/`. |
+| `PORT` | Non | Port HTTP ; défaut : `3000`. |
+| `SPA_APP_ID` | Non | Identifiant attendu dans l'en-tête `X-App-Id` ; défaut : `my-spa`. |
+| `CORS_ORIGIN` | Non | Origine(s) autorisée(s) pour le navigateur ; défaut : `http://localhost:3111`. Plusieurs origines peuvent être séparées par des virgules. |
+| `COOKIE_SECURE` | Non | Mettre `false` pour le développement local en HTTP. En production, les cookies sécurisés sont activés par défaut. |
+| `DISCORD_WEBHOOK_URL` | Non | Webhook Discord pour les notifications Support. Sans cette variable, l'enregistrement de la demande reste possible, mais la notification échoue. |
+| `LOG_LEVEL` | Non | Niveau de journalisation ; défaut : `info`. |
+| `OTEL_SERVICE_NAME` | Non | Nom du service pour la télémétrie ; défaut : `elysia-api`. |
+| `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` | Non | Endpoint OTLP des traces, si un collecteur est utilisé. |
+
+Pour générer deux valeurs aléatoires de 32 octets avec Bun, exécuter :
+
+```sh
+bun -e 'for (let i = 0; i < 2; i++) console.log(Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString("hex"))'
+```
+
+Utiliser une valeur pour `JWT_SECRET` et l'autre pour `ENCRYPTION_KEY`. La clé
+`ENCRYPTION_KEY` doit être conservée dans un gestionnaire de secrets et
+sauvegardée séparément de la base : sans elle, les données chiffrées ne sont
+plus lisibles. Ne pas la remplacer après avoir créé des données chiffrées.
+
+## 🧪 Tests
+
+Depuis `da/`, lancer toute la suite :
+
+```sh
+bun run test
+```
+
+Les tests chargent automatiquement `src/test-support/setup.ts` via
+`bunfig.toml`, qui force `NODE_ENV=test` : la base configurée par
+`SQLITE_DB_PATH` est alors refusée. Les tests qui ont besoin de SQLite créent
+chacun une base temporaire migrée avec `createTestDatabase()`
+(`src/test-support/testDatabase.ts`), puis la suppriment. Les utilitaires
+communs aux tests HTTP (lecture et signature du cookie d'accès) sont dans
+`src/test-support/authCookies.ts`.
+
+Vérifier les types TypeScript (Bun n'effectue pas cette vérification) :
+
+```sh
+bun run typecheck
+```
+
+### Par catégorie
+
+Ces commandes lancent la catégorie choisie pour toutes les features :
+
+```sh
+bun run test:unit
+bun run test:contract
+bun run test:integration
+bun run test:performance
+```
+
+### Par feature
+
+| Feature | Unitaires | Contrats HTTP | Intégration | Performances |
+| --- | --- | --- | --- | --- |
+| Utilisateurs (`auth`) | `bun run test:auth-unit` | `bun run test:auth-contract` | `bun run test:auth-integration` | `bun run test:auth-performance` |
+| Facturation (`billing`) | `bun run test:billing-unit` | `bun run test:billing-contract` | `bun run test:billing-integration` | `bun run test:billing-performance` |
+| Clients | `bun run test:clients-unit` | `bun run test:clients-contract` | `bun run test:clients-integration` | `bun run test:clients-performance` |
+| Support | `bun run test:support-unit` | `bun run test:support-contract` | `bun run test:support-integration` | `bun run test:support-performance` |
+| Informations du magasin | `bun run test:store-information-unit` | `bun run test:store-information-contract` | `bun run test:store-information-integration` | `bun run test:store-information-performance` |
+
+Pour relancer toute la suite automatiquement à chaque modification :
+
+```sh
+bun run test:watch
+```
+
+Les tests de facturation dans `src/features/billing/test/` couvrent les projections et les erreurs (`unit`), les contrats HTTP (`contract`) et les workflows de facturation sur une base SQLite temporaire (`integration`).
+
+Comme auth, `performance` mesure 100 échantillons de 10 appels par opération
+(1 000 appels), hors préparation des transitions. Le tableau présente les
+tailles des tables, la moyenne et le p99 pour chaque méthode du repository,
+ainsi que la pagination par client et la recherche chiffrée. Le plafond p99
+est de 25 ms, comme pour clients, afin de couvrir les lectures de documents et
+le déchiffrement ; il ne reprend pas le plafond de 1 ms des requêtes auth.
+Les trois variantes de `listOperations` ont un plafond renforcé de 3 ms.
+Le listing utilise trois requêtes indépendantes de la taille de page
+(comptage, dossiers avec client et métadonnées dédiées, métadonnées héritées),
+sans lire les lignes ni le JSON chiffré des documents. Chaque client distinct
+n'est déchiffré qu'une fois par liste ; ce cache est local à l'appel et ne
+conserve pas de données personnelles entre requêtes. La liste historique des
+réparations actives applique aussi ce déchiffrement par client distinct.
+
+## 🗃️ Base de données
+
+### Devis et factures
+
+`GET /operations` accepte `status=pending,in_progress,payment_pending`
+(plusieurs statuts combinés par OU) et `search` pour retrouver un client.
+La recherche réutilise les n-grammes chiffrés et la vérification exacte des
+clients, y compris les noms complets dans les deux ordres. Les filtres client,
+type et statuts sont combinés avant le comptage et la pagination. Sans `status`,
+l'API retourne tous les statuts ; les trois statuts actifs par défaut sont
+choisis par la SPA.
+Le filtre facultatif `clientId` sélectionne exactement un client avant
+pagination. Il sert les quatre grilles du détail client, sans filtre de statut.
+L'ordre est `date_ms DESC, id DESC` dans chaque type.
+
+`GET /operations/counts`, soumis à la même authentification que les dossiers,
+retourne un objet par type (`repair`, `sale`, `purchase`, `rental`) contenant
+`pending`, `in_progress` et `payment_pending`. Les compteurs à zéro sont inclus.
+Une seule agrégation SQL compte tous les dossiers, sans pagination, lecture
+des lignes ni déchiffrement des clients ou documents. Les autres statuts
+ne sont pas inclus dans ces compteurs.
+Le schéma initial définit les index `billing_documents_status_type_idx` pour les compteurs par statut et `billing_documents_client_type_date_ms_idx` pour la pagination par client et par type.
+
+L’API enregistre les devis dans `billing_quotes` et les factures dans `billing_invoices`, avec un lien unique vers leur dossier.
+Le JSON complet est chiffré avec `ENCRYPTION_KEY`. Le contenu, le sel de
+chiffrement et la date d'émission sont immuables, y compris par mise à jour SQL.
+Les statuts et les informations de règlement restent dans des colonnes séparées,
+jamais réécrits dans le JSON.
+
+Chaque nouveau devis contient une date `validUntil` dans son JSON chiffré :
+30 jours après son émission (timestamp UTC en millisecondes), indépendamment
+de son statut, y compris en cas d'acceptation automatique. Cette date est
+affichée et imprimée ; elle n'est pas recalculée lors de l'acceptation.
+
+- Devis : statut `pending`, `accepted` ou `rejected`, date d'émission
+  `issued_at_ms` et dernier changement de statut `status_changed_at_ms`.
+- Facture : statut `unpaid` ou `paid`, moyen de paiement `payment_method`,
+  date d'émission `issued_at_ms` et date de paiement `paid_at_ms`.
+  Les dates sont des timestamps UTC en millisecondes. Une facture impayée
+  n'a ni moyen ni date de paiement. Une facture à 0 EUR utilise `free` et
+  est automatiquement réglée lors de son émission.
+
+Les réparations, ventes, rachats et locations suivent le même parcours : devis facultatif,
+démarrage `in_progress` sans devis, `pending` avec devis, acceptation vers
+`in_progress` et refus vers `cancelled`. Un devis à 0 EUR est autoaccepté.
+Terminer un de ces dossiers crée sa facture dans la même transaction, avec ou
+sans devis. Un devis existant doit être accepté et son contenu immuable est
+utilisé pour la facture. Un montant non nul laisse la facture `unpaid` et
+le dossier `payment_pending` ; un montant nul règle la facture avec `free`.
+Les locations exigent une période prévue complète, conservée dans le dossier
+et les documents indépendamment de la création et de la clôture.
+
+L’API expose `GET /operations`, `POST /operations`, `GET /operations/:id`, `GET /operations/counts` et les actions `accept`, `reject`, `complete` et `pay`.
+
+L'API conserve la collection `snapshots` du dossier ; `payload` est le JSON
+immuable, `status`, `createdAt`, `updatedAt`, `paymentMethod` et `paidAt` sont
+les métadonnées du document. Le statut d'une facture dans cette collection
+est `unpaid` ou `paid`.
+
+Le statut de la facture indique si le dossier est réglé. Sans facture, le dossier est « Non facturé ».
+
+La liste paginée `GET /operations` omet `lines`, limite `client` à `firstname`, `lastname`
+et `email`, et `snapshots` aux métadonnées (sans JSON complet). Pour une
+prestation de tout type, les dates saisies sont prioritaires dans `serviceStartAt`
+et `serviceEndAt`. Sans dates saisies, le début reprend la date du dossier et
+la fin la date de refus du devis ou de paiement de la facture (`null` sinon).
+Les dates sont des entiers en millisecondes UTC. Pour tous les types, `closedAt` indique la date
+du refus du devis ou du paiement de la facture (`null` sinon), distincte de
+la période prévue de location. `GET /operations/:id` conserve le détail
+du client et le JSON des documents pour leur consultation.
+
+Le schéma conserve `billing_document_snapshots` pour la lecture des anciens
+documents et leurs transitions sans réécrire leur JSON chiffré.
+Tout nouveau document est écrit uniquement dans sa table dédiée.
+
+La base SQLite est créée dans `data/elysia.sqlite` par défaut, en mode WAL.
+Définir `SQLITE_DB_PATH` pour choisir un autre emplacement. Importer
+`src/shared/database/db.ts` n'a aucun effet de bord : `src/prepareDatabase.ts`
+ouvre, migre puis initialise la base explicitement, au démarrage du serveur
+(`src/server.ts`) comme via `bun run db:migrate` (`src/migrate.ts`). Pour gérer
+les migrations manuellement :
+
+```sh
+bun run db:generate
+bun run db:migrate
+bun run db:studio
+```
+
+La migration `drizzle/0000_initial_schema.sql` crée le schéma, les index et les déclencheurs qui protègent le contenu des documents. Au premier démarrage, le serveur crée `admin@example.com` à partir de `BOOTSTRAP_ADMIN_PASSWORD` et exige un changement de mot de passe à la première connexion. En release, configurez le secret GitHub du même nom. `bun run db:migrate` ne crée pas ce compte.
+
+Si le démarrage refuse l’historique d’une base existante, sauvegardez-la avant toute reprise de données. Ne modifiez pas le journal des migrations à la main.
+
+Pour initialiser les informations du magasin lors de la migration, définir
+`STORE_INFORMATION_INITIAL_DATA` comme JSON dans la configuration secrète de
+l'environnement (ne pas committer sa valeur). Le JSON doit contenir les champs
+`name`, `address`, `phone`, `email`, `siret`, `apeCode`, `vatNumber`,
+`bankName`, `iban` et `bic`. Utiliser `"-"` pour un champ vide. Après la
+migration, les données sont chiffrées en base avec `ENCRYPTION_KEY` ; un
+redémarrage ou une migration suivante ne remplace pas les coordonnées déjà
+initialisées.
+
+### 🔄 Vérifier une sauvegarde et sa restauration
+
+La stack Docker réplique SQLite vers Garage avec Litestream. Pour vérifier une restauration en développement sans écraser la base active, exécutez cette commande depuis la racine du dépôt :
+
+```sh
+./infra/scripts/verify-backup.sh
+```
+
+Le script restaure la dernière réplication dans un fichier temporaire du volume
+SQLite, vérifie l'intégrité et la présence des tables principales, puis supprime
+le fichier restauré. L'API et Litestream doivent être démarrés, et une première
+réplication doit déjà exister. Une erreur de restauration ou de vérification
+fait échouer le script ; relancer régulièrement ce contrôle, notamment après
+une modification de la configuration de sauvegarde.
+
+## 🔔 Support et notifications
+
+Les titres et descriptions des demandes Support sont chiffrés au repos avec
+`ENCRYPTION_KEY` et un sel aléatoire par demande. Le listing est indexé sur
+`(status|type, created_at, id)` pour paginer sans tri en mémoire.
+
+Configurer `DISCORD_WEBHOOK_URL` pour notifier le canal Discord à la création
+d'une demande. Si Discord est indisponible, la demande reste enregistrée et
+l'API indique l'échec ; un administrateur peut réessayer depuis le grid
+Support. Une notification déjà envoyée peut être renvoyée après 24 heures.
+Les demandes clôturées ne peuvent plus être notifiées.
+
+Les références utilisent un compteur journalier atomique, par exemple
+`SR-2026-10-04-001`, `INC-2026-10-04-002` et `BUG-2026-10-04-003`.
+
+## 🧹 Vérifications du code
+
+```sh
+bun run check
+bun run lint
+bun run typecheck
+```
