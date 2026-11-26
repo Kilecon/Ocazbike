@@ -62,8 +62,7 @@ export function invalidateOperations(
   }
   return queryClient.invalidateQueries({
     queryKey: operationKeys.all,
-    predicate: ({ queryKey }) =>
-      queryKey.join() !== freshKey?.join(),
+    predicate: ({ queryKey }) => queryKey.join() !== freshKey?.join(),
   });
 }
 
