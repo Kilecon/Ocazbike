@@ -53,6 +53,41 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Restore licensed Chillax font from VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_SSH_PORT: ${{ vars.VPS_SSH_PORT || 22 }}
+          VPS_HOST_FINGERPRINT: ${{ vars.VPS_HOST_FINGERPRINT }}
+          VPS_DIR: ${{ secrets.VPS_DIR }}
+        run: |
+          set -eu
+          : "${VPS_HOST:?Missing VPS_HOST}" \
+            "${VPS_USERNAME:?Missing VPS_USERNAME}" \
+            "${VPS_SSH_KEY:?Missing VPS_SSH_KEY}" \
+            "${VPS_DIR:?Missing VPS_DIR}"
+          key="$(mktemp)"
+          known_hosts="$(mktemp)"
+          trap 'rm -f "$key" "$known_hosts"' EXIT
+          printf '%s\n' "$VPS_SSH_KEY" > "$key"
+          chmod 600 "$key"
+          ssh-keyscan -H -p "$VPS_SSH_PORT" "$VPS_HOST" > "$known_hosts" 2>/dev/null
+          if [ -n "$VPS_HOST_FINGERPRINT" ]; then
+            fingerprints="$(ssh-keygen -lf "$known_hosts" | awk '{print $2}')"
+            if ! grep -Fxq "$VPS_HOST_FINGERPRINT" <<< "$fingerprints"; then
+              echo "::error::VPS host fingerprint mismatch."
+              exit 1
+            fi
+          fi
+          mkdir -p spa/public/assets/fonts
+          scp -P "$VPS_SSH_PORT" \
+            -i "$key" \
+            -o StrictHostKeyChecking=yes \
+            -o "UserKnownHostsFile=$known_hosts" \
+            "$VPS_USERNAME@$VPS_HOST:$VPS_DIR/da/secrets/Chillax-Variable.woff2" \
+            spa/public/assets/fonts/Chillax-Variable.woff2
+
       - name: Build release images
         env:
           SPA_API_URL: ${{ vars.SPA_API_URL }}

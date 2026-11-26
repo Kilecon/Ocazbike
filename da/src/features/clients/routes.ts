@@ -1,0 +1,152 @@
+import { Elysia, t } from "elysia";
+import {
+  optionalPhoneSchema,
+  phoneSchema,
+} from "../../shared/validation/phone";
+import {
+  readAuthUserId,
+  requireAdmin,
+  requireAuth,
+} from "../auth/authorization";
+import type { IUserRepository } from "../auth/IAuthRepositories";
+import type { JwtService } from "../auth/jwt";
+import type { ClientService } from "./service";
+
+const clientFields = {
+  firstname: t.String({ minLength: 1, pattern: String.raw`\S` }),
+  lastname: t.String({ minLength: 1, pattern: String.raw`\S` }),
+  email: t.Optional(
+    t.Union([t.String({ format: "email" }), t.Literal(""), t.Null()]),
+  ),
+  phonenumber: t.Optional(t.Union([optionalPhoneSchema, t.Null()])),
+  address: t.Optional(t.String()),
+  addressComplement: t.Optional(t.String()),
+  identityCardNumber: t.Optional(t.Union([t.String(), t.Null()])),
+  privatenote: t.Optional(t.String()),
+};
+
+const individualClient = {
+  ...clientFields,
+  isProfessional: t.Optional(t.Literal(false)),
+  siret: t.Optional(t.Null()),
+  companyName: t.Optional(t.Null()),
+};
+
+const professionalClient = {
+  ...clientFields,
+  isProfessional: t.Literal(true),
+  siret: t.Optional(t.Union([t.String(), t.Null()])),
+  companyName: t.Optional(t.Union([t.String(), t.Null()])),
+};
+
+const clientBody = t.Union([
+  t.Object({ ...individualClient, email: t.String({ format: "email" }) }),
+  t.Object({
+    ...individualClient,
+    phonenumber: phoneSchema,
+  }),
+  t.Object({ ...professionalClient, email: t.String({ format: "email" }) }),
+  t.Object({
+    ...professionalClient,
+    phonenumber: phoneSchema,
+  }),
+]);
+
+export function createClientRoutes(
+  service: ClientService,
+  jwt: JwtService,
+  users: IUserRepository,
+) {
+  return new Elysia({ prefix: "/clients" })
+    .post(
+      "/",
+      async ({ body, request, set }) => {
+        const client = await service.createClient(
+          body,
+          readAuthUserId(request),
+        );
+        set.status = 201;
+        return client;
+      },
+      {
+        detail: {
+          summary: "Créer un client",
+          description:
+            "Crée une fiche client. Les téléphones sont validés avec libphonenumber-js : France par défaut, ou indicatif international. Réservé aux administrateurs et sous-administrateurs authentifiés.",
+          tags: ["Clients"],
+        },
+        beforeHandle: requireAuth(jwt, users),
+        body: clientBody,
+      },
+    )
+    .put(
+      "/:clientId",
+      async ({ body, params, request, set }) => {
+        const client = await service.updateClient(
+          params.clientId,
+          body,
+          readAuthUserId(request),
+        );
+        if (!client) {
+          set.status = 404;
+          return { error: "Client not found" };
+        }
+        return client;
+      },
+      {
+        beforeHandle: requireAdmin(jwt, users),
+        params: t.Object({ clientId: t.Numeric({ minimum: 1 }) }),
+        body: clientBody,
+      },
+    )
+    .get(
+      "/:clientId",
+      async ({ params, set }) => {
+        const client = await service.getClient(params.clientId);
+        if (!client) {
+          set.status = 404;
+          return { error: "Client not found" };
+        }
+        return client;
+      },
+      {
+        detail: {
+          summary: "Récupérer un client",
+          description:
+            "Retourne les informations d'un client. Réservé aux utilisateurs authentifiés.",
+          tags: ["Clients"],
+        },
+        beforeHandle: requireAuth(jwt, users),
+        params: t.Object({ clientId: t.Numeric({ minimum: 1 }) }),
+      },
+    )
+    .get(
+      "/",
+      ({ query }) => {
+        return service.listClients({
+          page: query.page,
+          limit: query.limit,
+          search: query.search,
+        });
+      },
+      {
+        detail: {
+          summary: "Lister les clients",
+          description:
+            "Liste les clients avec pagination (10 par page par défaut, 50 maximum) et recherche trigramme. La recherche accepte le prénom et le nom ensemble, dans les deux ordres, sans distinction de casse ni d'accents.",
+          tags: ["Clients"],
+        },
+        beforeHandle: requireAuth(jwt, users),
+        query: t.Object({
+          page: t.Integer({ minimum: 1, default: 1 }),
+          limit: t.Numeric({
+            minimum: 1,
+            maximum: 50,
+            multipleOf: 1,
+            default: 10,
+          }),
+          search: t.Optional(t.String({ maxLength: 50 })),
+        }),
+      },
+    );
+}

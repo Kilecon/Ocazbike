@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="../public/assets/ocazbike-logo.png" />
+    <meta name="theme-color" content="#162b29" />
+    <meta
+      name="description"
+      content="Ocazbike, vente et services vélo à Eysines."
+    />
+    <script>
+      (() => {
+        const browserLanguage = (navigator.languages.length
+          ? navigator.languages
+          : [navigator.language])
+          .map((language) => language.toLowerCase().split("-")[0])
+          .find((language) => language === "fr" || language === "en") || "en";
+        document.documentElement.lang = browserLanguage;
+
+        const storedTheme = localStorage.getItem("theme");
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        let resolved;
+        if (storedTheme === "light" || storedTheme === "dark") {
+          resolved = storedTheme;
+        } else if (prefersDark) {
+          resolved = "dark";
+        } else {
+          resolved = "light";
+        }
+        document.documentElement.dataset.theme = resolved;
+        document.documentElement.style.colorScheme = resolved;
+      })();
+    </script>
+    <title>Ocazbike | Vente et services vélo à Eysines</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./app/main.tsx"></script>
+  </body>
+</html>
