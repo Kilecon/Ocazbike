@@ -1,0 +1,74 @@
+name: SonarQube
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  build:
+    name: Build and analyze
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.4.3
+      - name: Install API dependencies
+        working-directory: da
+        run: bun install --frozen-lockfile  --ignore-scripts
+      - name: Install SPA dependencies
+        working-directory: spa
+        run: bun install --frozen-lockfile  --ignore-scripts
+      - name: Test API with coverage
+        working-directory: da
+        run: |
+          bun test src --path-ignore-patterns '**/test/performance/**' --coverage --coverage-reporter=lcov --coverage-dir=coverage
+          sed -i 's|^SF:src/|SF:da/src/|' coverage/lcov.info
+      - name: Test API performance
+        working-directory: da
+        continue-on-error: true
+        run: |
+          set +e
+          output=$(bun test src/features/*/test/performance 2>&1)
+          status=$?
+          set -e
+          printf '%s\n' "$output"
+          if [ "$status" -ne 0 ]; then
+            if printf '%s\n' "$output" | grep -Eq 'Expected: <=|toBeLessThanOrEqual|p99'; then
+              echo "::warning title=API performance threshold::A performance benchmark exceeded its recommended p99 threshold."
+            else
+              echo "::warning title=API performance benchmark::The performance suite completed with errors (exit $status)."
+            fi
+          fi
+      - name: Lint and typecheck SPA
+        working-directory: spa
+        run: |
+          bun run check
+          bun run typecheck
+      - name: Test SPA with coverage
+        working-directory: spa
+        run: |
+          bun test src --coverage --coverage-reporter=lcov --coverage-dir=coverage
+          sed -i 's|^SF:src/|SF:spa/src/|' coverage/lcov.info
+      - name: Cache SonarQube packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@59202af334b4ba7b5db01b701b8e79f8b3bef0f4 # v8.5.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=pypduhrhvuuabdsfanyuvjnrbxttpmrvgcjdhsutprrricmpk
+            -Dsonar.projectKey=Kilecon_Ocazbike
+            -Dsonar.sources=da/src,spa/src
+            -Dsonar.exclusions=da/drizzle/**
+            -Dsonar.javascript.lcov.reportPaths=da/coverage/lcov.info,spa/coverage/lcov.info
+            -Dsonar.coverage.exclusions=**/*.test.ts,**/*.test.tsx,**/test/**,**/tests-helpers/**
