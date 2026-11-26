@@ -1,0 +1,753 @@
+/* Figma dimensions converted to rem using a 16 CSS pixel reference root. */
+:root {
+  --oz-figma-primitives-number-0-125-rem: 0.125rem;
+  --oz-figma-primitives-number-0-25-rem: 0.25rem;
+  --oz-figma-primitives-number-0-5-rem: 0.5rem;
+  --oz-figma-primitives-number-0-75-rem: 0.75rem;
+  --oz-figma-primitives-number-1-rem: 1rem;
+  --oz-figma-primitives-number-1-25-rem: 1.25rem;
+  --oz-figma-primitives-number-1-5-rem: 1.5rem;
+  --oz-figma-primitives-number-2-rem: 2rem;
+  --oz-figma-primitives-number-2-5-rem: 2.5rem;
+  --oz-figma-primitives-number-3-rem: 3rem;
+  --oz-figma-primitives-number-4-rem: 4rem;
+  --oz-figma-primitives-colors-neutral-neutral-0: #ffffff;
+  --oz-figma-primitives-colors-neutral-neutral-50: #fafafa;
+  --oz-figma-primitives-colors-neutral-neutral-100: #eaeaea;
+  --oz-figma-primitives-colors-neutral-neutral-200: #c8c8c8;
+  --oz-figma-primitives-colors-neutral-neutral-300: #afafaf;
+  --oz-figma-primitives-colors-neutral-neutral-400: #969696;
+  --oz-figma-primitives-colors-neutral-neutral-500: #7d7d7d;
+  --oz-figma-primitives-colors-neutral-neutral-600: #646464;
+  --oz-figma-primitives-colors-neutral-neutral-700: #4b4b4b;
+  --oz-figma-primitives-colors-neutral-neutral-800: #323232;
+  --oz-figma-primitives-colors-neutral-neutral-900: #1e1f1f;
+  --oz-figma-primitives-colors-neutral-neutral-950: #151616;
+  --oz-figma-primitives-colors-neutral-neutral-1000: #000000;
+  --oz-figma-primitives-colors-green-green-50: #f0f8f0;
+  --oz-figma-primitives-colors-green-green-100: #e1f2e2;
+  --oz-figma-primitives-colors-green-green-200: #c4e4c5;
+  --oz-figma-primitives-colors-green-green-300: #a6d7a7;
+  --oz-figma-primitives-colors-green-green-400: #89c98a;
+  --oz-figma-primitives-colors-green-green-500: #6bbc6d;
+  --oz-figma-primitives-colors-green-green-600: #569657;
+  --oz-figma-primitives-colors-green-green-700: #407141;
+  --oz-figma-primitives-colors-green-green-800: #2b4b2c;
+  --oz-figma-primitives-colors-green-green-900: #152616;
+  --oz-figma-primitives-colors-green-green-950: #0b130b;
+  --oz-figma-primitives-colors-red-red-50: #fdebeb;
+  --oz-figma-primitives-colors-red-red-100: #fbd7d8;
+  --oz-figma-primitives-colors-red-red-200: #f7afb0;
+  --oz-figma-primitives-colors-red-red-300: #f38789;
+  --oz-figma-primitives-colors-red-red-400: #ef5f61;
+  --oz-figma-primitives-colors-red-red-500: #eb373a;
+  --oz-figma-primitives-colors-red-red-600: #bc2c2e;
+  --oz-figma-primitives-colors-red-red-700: #8d2123;
+  --oz-figma-primitives-colors-red-red-800: #5e1617;
+  --oz-figma-primitives-colors-red-red-900: #2f0b0c;
+  --oz-figma-primitives-colors-red-red-950: #180606;
+  --oz-figma-primitives-colors-orange-red-50: #fdf3e9;
+  --oz-figma-primitives-colors-orange-red-100: #fce7d4;
+  --oz-figma-primitives-colors-orange-red-200: #f9cea8;
+  --oz-figma-primitives-colors-orange-red-300: #f6b67d;
+  --oz-figma-primitives-colors-orange-red-400: #f39d51;
+  --oz-figma-primitives-colors-orange-red-500: #f08526;
+  --oz-figma-primitives-colors-orange-red-600: #c06a1e;
+  --oz-figma-primitives-colors-orange-red-700: #905017;
+  --oz-figma-primitives-colors-orange-red-800: #60350f;
+  --oz-figma-primitives-colors-orange-red-900: #301b08;
+  --oz-figma-primitives-colors-orange-red-950: #180d04;
+  --oz-figma-primitives-colors-blue-blue-50: #edf4fb;
+  --oz-figma-primitives-colors-blue-blue-100: #dbeaf7;
+  --oz-figma-primitives-colors-blue-blue-200: #b6d4ef;
+  --oz-figma-primitives-colors-blue-blue-300: #92bfe6;
+  --oz-figma-primitives-colors-blue-blue-400: #6da9de;
+  --oz-figma-primitives-colors-blue-blue-500: #4994d6;
+  --oz-figma-primitives-colors-blue-blue-600: #3a76ab;
+  --oz-figma-primitives-colors-blue-blue-700: #2c5980;
+  --oz-figma-primitives-colors-blue-blue-800: #1d3b56;
+  --oz-figma-primitives-colors-blue-blue-900: #0f1e2b;
+  --oz-figma-primitives-colors-blue-blue-950: #070f15;
+  --oz-figma-tokens-sizes-padding-xsss: 0.125rem;
+  --oz-figma-tokens-sizes-padding-xss: 0.25rem;
+  --oz-figma-tokens-sizes-padding-xs: 0.5rem;
+  --oz-figma-tokens-sizes-padding-s: 1rem;
+  --oz-figma-tokens-sizes-padding-m: 1.25rem;
+  --oz-figma-tokens-sizes-padding-l: 2rem;
+  --oz-figma-tokens-sizes-padding-xl: 3rem;
+  --oz-figma-tokens-sizes-radius-xss: 0.125rem;
+  --oz-figma-tokens-sizes-radius-xs: 0.25rem;
+  --oz-figma-tokens-sizes-radius-s: 0.5rem;
+  --oz-figma-tokens-sizes-radius-m: 0.75rem;
+  --oz-figma-tokens-sizes-radius-l: 1.25rem;
+  --oz-figma-tokens-sizes-radius-xl: 1.5rem;
+  --oz-figma-tokens-sizes-radius-xll: 2rem;
+  --oz-figma-tokens-sizes-sizes-component-xs: 1rem;
+  --oz-figma-tokens-sizes-sizes-component-s: 1.25rem;
+  --oz-figma-tokens-sizes-sizes-component-m: 1.5rem;
+  --oz-figma-tokens-sizes-sizes-component-l: 2.5rem;
+  --oz-figma-tokens-sizes-sizes-component-xl: 3rem;
+  --oz-figma-tokens-sizes-sizes-text-xss: 0.75rem;
+  --oz-figma-tokens-sizes-sizes-text-xs: 1rem;
+  --oz-figma-tokens-sizes-sizes-text-s: 1.25rem;
+  --oz-figma-tokens-sizes-sizes-text-m: 1.5rem;
+  --oz-figma-tokens-sizes-sizes-text-l: 2.5rem;
+  --oz-figma-tokens-sizes-sizes-text-xl: 3rem;
+  --oz-figma-tokens-colors-light-mode-surface-surface-background-default: #ffffff;
+  --oz-figma-tokens-colors-light-mode-surface-surface-background-accent: #ffffff;
+  --oz-figma-tokens-colors-light-mode-surface-surface-disabled: #eaeaea;
+  --oz-figma-tokens-colors-light-mode-surface-surface-background-start: #ffffff;
+  --oz-figma-tokens-colors-light-mode-surface-surface-background-end: #e1f2e2;
+  --oz-figma-tokens-colors-light-mode-surface-surface-logo: #ffffff;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-gradient-start: #a6d7a7;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-gradient-start-hover: #c4e4c5;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-gradient-end: #6bbc6d;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-gradient-end-hover: #89c98a;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-gradient-start-pressed: #e1f2e2;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-gradient-end-pressed: #a6d7a7;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-gradient-start: #ffffff;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-gradient-end: #e1f2e2;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-gradient-start-hover: #f0f8f0;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-gradient-end-hover: #c4e4c5;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-gradient-start-pressed: #f0f8f0;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-gradient-end-pressed: #a6d7a7;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-negative-gradient-start: #f38789;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-negative-gradient-end: #eb373a;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-negative-gradient-start-hover: #f7afb0;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-negative-gradient-end-hover: #ef5f61;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-negative-gradient-start-pressed: #fbd7d8;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-negative-gradient-end-pressed: #f38789;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-negative-gradient-start: #fdebeb;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-negative-gradient-end: #f7afb0;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-negative-gradient-start-hover: #fdebeb;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-negative-gradient-end-hover: #f38789;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-negative-gradient-start-pressed: #fbd7d8;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-negative-gradient-end-pressed: #ef5f61;
+  --oz-figma-tokens-colors-light-mode-surface-button-surface-button-disabled: #eaeaea;
+  --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-default: #ffffff;
+  --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-default-hover: #eaeaea;
+  --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-default-pressed: #c8c8c8;
+  --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-default-accent: #eaeaea;
+  --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-default-accent-hover: #c8c8c8;
+  --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-default-accent-pressed: #afafaf;
+  --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-active-soft: #e1f2e2;
+  --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-active: #569657;
+  --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-active-disabled: #a6d7a7;
+  --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-innactive: #7d7d7d;
+  --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-innactive-disabled: #c8c8c8;
+  --oz-figma-tokens-colors-light-mode-surface-sidebar-surface-sidebar-gradient-start: #407141;
+  --oz-figma-tokens-colors-light-mode-surface-sidebar-surface-sidebar-gradient-end: #569657;
+  --oz-figma-tokens-colors-light-mode-surface-sidebar-surface-sidebar-item-innactive-hover: #407141;
+  --oz-figma-tokens-colors-light-mode-surface-sidebar-surface-sidebar-item-innactive-pressed: #2b4b2c;
+  --oz-figma-tokens-colors-light-mode-surface-sidebar-surface-sidebar-item-active: #f0f8f0;
+  --oz-figma-tokens-colors-light-mode-surface-sidebar-surface-sidebar-item-active-hover: #e1f2e2;
+  --oz-figma-tokens-colors-light-mode-surface-sidebar-surface-sidebar-item-active-pressed: #c4e4c5;
+  --oz-figma-tokens-colors-light-mode-surface-sidebar-surface-sidebar-icon-button-hover: #407141;
+  --oz-figma-tokens-colors-light-mode-surface-sidebar-surface-sidebar-icon-button-pressed: #2b4b2c;
+  --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-draft-soft: #eaeaea;
+  --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-draft-bold: #afafaf;
+  --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-info-soft: #dbeaf7;
+  --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-info-bold: #92bfe6;
+  --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-warning-soft: #fce7d4;
+  --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-warning-bold: #f6b67d;
+  --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-error-soft: #fbd7d8;
+  --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-error-bold: #f38789;
+  --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-success-soft: #e1f2e2;
+  --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-success-bold: #a6d7a7;
+  --oz-figma-tokens-colors-light-mode-border-border-primary: #afafaf;
+  --oz-figma-tokens-colors-light-mode-border-border-secondary: #c8c8c8;
+  --oz-figma-tokens-colors-light-mode-border-border-sidebar: #6bbc6d;
+  --oz-figma-tokens-colors-light-mode-border-border-sidebar-item: #c4e4c5;
+  --oz-figma-tokens-colors-light-mode-border-border-focus: #4994d6;
+  --oz-figma-tokens-colors-light-mode-border-button-border-button: #407141;
+  --oz-figma-tokens-colors-light-mode-border-button-border-button-negative: #8d2123;
+  --oz-figma-tokens-colors-light-mode-border-button-border-button-disabled: #c8c8c8;
+  --oz-figma-tokens-colors-light-mode-border-cta-border-cta: #afafaf;
+  --oz-figma-tokens-colors-light-mode-border-cta-border-cta-disabled: #c8c8c8;
+  --oz-figma-tokens-colors-light-mode-border-input-border-input: #afafaf;
+  --oz-figma-tokens-colors-light-mode-border-input-border-input-disabled: #c8c8c8;
+  --oz-figma-tokens-colors-light-mode-border-input-border-input-error: #bc2c2e;
+  --oz-figma-tokens-colors-light-mode-border-input-border-input-warning: #c06a1e;
+  --oz-figma-tokens-colors-light-mode-border-input-border-input-sucess: #569657;
+  --oz-figma-tokens-colors-light-mode-text-text-button-primary: #0b130b;
+  --oz-figma-tokens-colors-light-mode-text-text-button-secondary: #407141;
+  --oz-figma-tokens-colors-light-mode-text-text-button-secondary-negative: #5e1617;
+  --oz-figma-tokens-colors-light-mode-text-text-button-disabled: #646464;
+  --oz-figma-tokens-colors-light-mode-text-text-sidebar-innactive: #ffffff;
+  --oz-figma-tokens-colors-light-mode-text-text-sidebar-active: #0b130b;
+  --oz-figma-tokens-colors-light-mode-text-text-default: #1e1f1f;
+  --oz-figma-tokens-colors-light-mode-text-text-disabled: #646464;
+  --oz-figma-tokens-colors-light-mode-text-text-error: #8d2123;
+  --oz-figma-tokens-colors-light-mode-text-text-warning: #905017;
+  --oz-figma-tokens-colors-light-mode-text-text-success: #407141;
+  --oz-figma-tokens-colors-light-mode-effect-button-shadow: rgba(
+    50,
+    50,
+    50,
+    0.24
+  );
+  --oz-primary: var(
+    --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-active
+  );
+  --oz-primary-dark: var(--oz-figma-tokens-colors-light-mode-text-text-success);
+  --oz-primary-hover: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-gradient-start-hover
+  );
+  --oz-foreground: var(--oz-figma-tokens-colors-light-mode-text-text-default);
+  --oz-muted: var(--oz-figma-tokens-colors-light-mode-text-text-disabled);
+  --oz-soft: var(
+    --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-default-hover
+  );
+  --oz-border: var(--oz-figma-tokens-colors-light-mode-border-border-primary);
+  --oz-orange: var(
+    --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-warning-bold
+  );
+  --oz-warning-text: var(--oz-figma-tokens-colors-light-mode-text-text-warning);
+  --oz-mint: var(
+    --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-active-soft
+  );
+  --oz-focus: var(--oz-figma-tokens-colors-light-mode-border-border-focus);
+  --oz-destructive: var(--oz-figma-tokens-colors-light-mode-text-text-error);
+  --oz-destructive-hover: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-negative-gradient-start-hover
+  );
+  --oz-destructive-soft: var(
+    --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-error-soft
+  );
+  --oz-outline-hover: var(
+    --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-default-hover
+  );
+  --oz-control-border: var(
+    --oz-figma-tokens-colors-light-mode-border-input-border-input
+  );
+  --oz-surface: var(
+    --oz-figma-tokens-colors-light-mode-surface-surface-background-default
+  );
+  --oz-on-dark: var(
+    --oz-figma-tokens-colors-light-mode-text-text-sidebar-innactive
+  );
+  --oz-sidebar-text: var(
+    --oz-figma-tokens-colors-light-mode-text-text-sidebar-innactive
+  );
+  --oz-sidebar-muted: var(
+    --oz-figma-tokens-colors-light-mode-text-text-sidebar-innactive
+  );
+  --oz-avatar-foreground: var(
+    --oz-figma-tokens-colors-light-mode-text-text-sidebar-active
+  );
+  --oz-admin-sidebar-start: var(
+    --oz-figma-tokens-colors-light-mode-surface-sidebar-surface-sidebar-gradient-start
+  );
+  --oz-admin-sidebar-end: var(
+    --oz-figma-tokens-colors-light-mode-surface-sidebar-surface-sidebar-gradient-end
+  );
+  --oz-admin-sidebar-hover: var(
+    --oz-figma-tokens-colors-light-mode-surface-sidebar-surface-sidebar-item-innactive-hover
+  );
+  --oz-admin-sidebar-active: var(
+    --oz-figma-tokens-colors-light-mode-surface-sidebar-surface-sidebar-item-active
+  );
+  --oz-admin-sidebar-active-hover: var(
+    --oz-figma-tokens-colors-light-mode-surface-sidebar-surface-sidebar-item-active-hover
+  );
+  --oz-admin-sidebar-line: var(
+    --oz-figma-tokens-colors-light-mode-border-border-sidebar
+  );
+  --oz-sidebar-count-bg: var(
+    --oz-figma-tokens-colors-light-mode-surface-surface-background-default
+  );
+  --oz-sidebar-count-text: var(
+    --oz-figma-tokens-colors-light-mode-text-text-default
+  );
+  --oz-sidebar-avatar-bg: var(--oz-figma-primitives-colors-green-green-100);
+  --oz-sidebar-avatar-text: var(
+    --oz-figma-tokens-colors-light-mode-text-text-default
+  );
+  --oz-theme-switch-track: var(
+    --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-innactive
+  );
+  --oz-theme-switch-thumb: var(
+    --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-default
+  );
+  --oz-theme-switch-icon: var(
+    --oz-figma-tokens-colors-light-mode-text-text-disabled
+  );
+  --oz-tag-surface: var(
+    --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-default-hover
+  );
+  --oz-tag-surface-hover: var(
+    --oz-figma-tokens-colors-light-mode-surface-cta-surface-cta-default-pressed
+  );
+  --oz-page-start: var(
+    --oz-figma-tokens-colors-light-mode-surface-surface-background-start
+  );
+  --oz-page-end: var(
+    --oz-figma-tokens-colors-light-mode-surface-surface-background-end
+  );
+  --oz-page-bg: var(
+    --oz-figma-tokens-colors-light-mode-surface-surface-background-default
+  );
+  --oz-button-primary-start: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-gradient-start
+  );
+  --oz-button-primary-end: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-gradient-end
+  );
+  --oz-button-primary-start-hover: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-gradient-start-hover
+  );
+  --oz-button-primary-end-hover: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-gradient-end-hover
+  );
+  --oz-button-primary-start-pressed: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-gradient-start-pressed
+  );
+  --oz-button-primary-end-pressed: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-gradient-end-pressed
+  );
+  --oz-button-secondary-start: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-gradient-start
+  );
+  --oz-button-secondary-end: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-gradient-end
+  );
+  --oz-button-secondary-start-hover: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-gradient-start-hover
+  );
+  --oz-button-secondary-end-hover: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-gradient-end-hover
+  );
+  --oz-button-secondary-start-pressed: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-gradient-start-pressed
+  );
+  --oz-button-secondary-end-pressed: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-gradient-end-pressed
+  );
+  --oz-button-secondary-negative-start: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-negative-gradient-start
+  );
+  --oz-button-secondary-negative-end: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-negative-gradient-end
+  );
+  --oz-button-secondary-negative-start-hover: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-negative-gradient-start-hover
+  );
+  --oz-button-secondary-negative-end-hover: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-negative-gradient-end-hover
+  );
+  --oz-button-secondary-negative-start-pressed: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-negative-gradient-start-pressed
+  );
+  --oz-button-secondary-negative-end-pressed: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-secondary-negative-gradient-end-pressed
+  );
+  --oz-button-destructive-start: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-negative-gradient-start
+  );
+  --oz-button-destructive-end: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-negative-gradient-end
+  );
+  --oz-button-destructive-start-hover: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-negative-gradient-start-hover
+  );
+  --oz-button-destructive-end-hover: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-negative-gradient-end-hover
+  );
+  --oz-button-destructive-start-pressed: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-negative-gradient-start-pressed
+  );
+  --oz-button-destructive-end-pressed: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-primary-negative-gradient-end-pressed
+  );
+  --oz-button-text-primary: var(
+    --oz-figma-tokens-colors-light-mode-text-text-button-primary
+  );
+  --oz-button-text-secondary: var(
+    --oz-figma-tokens-colors-light-mode-text-text-button-secondary
+  );
+  --oz-button-text-destructive: var(
+    --oz-figma-tokens-colors-light-mode-text-text-button-secondary-negative
+  );
+  --oz-button-text-disabled: var(
+    --oz-figma-tokens-colors-light-mode-text-text-button-disabled
+  );
+  --oz-button-border: var(
+    --oz-figma-tokens-colors-light-mode-border-button-border-button
+  );
+  --oz-button-border-destructive: var(
+    --oz-figma-tokens-colors-light-mode-border-button-border-button-negative
+  );
+  --oz-button-border-disabled: var(
+    --oz-figma-tokens-colors-light-mode-border-button-border-button-disabled
+  );
+  --oz-button-surface-disabled: var(
+    --oz-figma-tokens-colors-light-mode-surface-button-surface-button-disabled
+  );
+  --oz-button-shadow: var(
+    --oz-figma-tokens-colors-light-mode-effect-button-shadow
+  );
+  --oz-input-border-disabled: var(
+    --oz-figma-tokens-colors-light-mode-border-input-border-input-disabled
+  );
+  --oz-input-surface-disabled: var(
+    --oz-figma-tokens-colors-light-mode-surface-surface-disabled
+  );
+  --oz-badge-draft-soft: var(
+    --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-draft-soft
+  );
+  --oz-badge-draft-bold: var(
+    --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-draft-bold
+  );
+  --oz-badge-info-soft: var(
+    --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-info-soft
+  );
+  --oz-badge-info-bold: var(
+    --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-info-bold
+  );
+  --oz-badge-warning-soft: var(
+    --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-warning-soft
+  );
+  --oz-badge-warning-bold: var(
+    --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-warning-bold
+  );
+  --oz-badge-error-soft: var(
+    --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-error-soft
+  );
+  --oz-badge-error-bold: var(
+    --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-error-bold
+  );
+  --oz-badge-success-soft: var(
+    --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-success-soft
+  );
+  --oz-badge-success-bold: var(
+    --oz-figma-tokens-colors-light-mode-surface-badge-surface-badge-success-bold
+  );
+}
+
+html[data-theme="dark"] {
+  --oz-figma-tokens-colors-dark-mode-surface-surface-background-default: #151616;
+  --oz-figma-tokens-colors-dark-mode-surface-surface-background-accent: #1e1f1f;
+  --oz-figma-tokens-colors-dark-mode-surface-surface-disabled: #000000;
+  --oz-figma-tokens-colors-dark-mode-surface-surface-background-start: #0b130b;
+  --oz-figma-tokens-colors-dark-mode-surface-surface-background-end: #2b4b2c;
+  --oz-figma-tokens-colors-dark-mode-surface-surface-logo: #ffffff;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-gradient-start: #2b4b2c;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-gradient-end: #569657;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-gradient-start-hover: #152616;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-gradient-end-hover: #407141;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-gradient-start-pressed: #0b130b;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-gradient-end-pressed: #2b4b2c;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-gradient-start: #0b130b;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-gradient-end: #2b4b2c;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-gradient-start-hover: #152616;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-gradient-end-hover: #407141;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-gradient-start-pressed: #2b4b2c;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-gradient-end-pressed: #569657;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-negative-gradient-start: #5e1617;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-negative-gradient-end: #bc2c2e;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-negative-gradient-start-hover: #2f0b0c;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-negative-gradient-end-hover: #8d2123;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-negative-gradient-start-pressed: #180606;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-negative-gradient-end-pressed: #5e1617;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-negative-gradient-start: #180606;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-negative-gradient-end: #5e1617;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-negative-gradient-start-hover: #2f0b0c;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-negative-gradient-end-hover: #8d2123;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-negative-gradient-start-pressed: #5e1617;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-negative-gradient-end-pressed: #bc2c2e;
+  --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-disabled: #151616;
+  --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-default: #1e1f1f;
+  --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-default-hover: #323232;
+  --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-default-pressed: #4b4b4b;
+  --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-default-accent: #323232;
+  --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-default-accent-hover: #4b4b4b;
+  --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-default-accent-pressed: #646464;
+  --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-active-soft: #2b4b2c;
+  --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-active: #6bbc6d;
+  --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-active-disabled: #407141;
+  --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-innactive: #afafaf;
+  --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-innactive-disabled: #646464;
+  --oz-figma-tokens-colors-dark-mode-surface-sidebar-surface-sidebar-gradient-start: #407141;
+  --oz-figma-tokens-colors-dark-mode-surface-sidebar-surface-sidebar-gradient-end: #2b4b2c;
+  --oz-figma-tokens-colors-dark-mode-surface-sidebar-surface-sidebar-item-innactive-hover: #569657;
+  --oz-figma-tokens-colors-dark-mode-surface-sidebar-surface-sidebar-item-innactive-pressed: #407141;
+  --oz-figma-tokens-colors-dark-mode-surface-sidebar-surface-sidebar-item-active: #89c98a;
+  --oz-figma-tokens-colors-dark-mode-surface-sidebar-surface-sidebar-item-active-hover: #6bbc6d;
+  --oz-figma-tokens-colors-dark-mode-surface-sidebar-surface-sidebar-item-active-pressed: #569657;
+  --oz-figma-tokens-colors-dark-mode-surface-sidebar-surface-sidebar-icon-button-hover: #2b4b2c;
+  --oz-figma-tokens-colors-dark-mode-surface-sidebar-surface-sidebar-icon-button-pressed: #152616;
+  --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-draft-soft: #4b4b4b;
+  --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-draft-bold: #646464;
+  --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-info-soft: #2c5980;
+  --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-info-bold: #3a76ab;
+  --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-warning-soft: #905017;
+  --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-warning-bold: #c06a1e;
+  --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-error-soft: #8d2123;
+  --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-error-bold: #bc2c2e;
+  --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-success-soft: #407141;
+  --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-success-bold: #569657;
+  --oz-figma-tokens-colors-dark-mode-border-border-primary: #4b4b4b;
+  --oz-figma-tokens-colors-dark-mode-border-border-secondary: #323232;
+  --oz-figma-tokens-colors-dark-mode-border-border-sidebar: #569657;
+  --oz-figma-tokens-colors-dark-mode-border-border-sidebar-item: #c4e4c5;
+  --oz-figma-tokens-colors-dark-mode-border-border-focus: #4994d6;
+  --oz-figma-tokens-colors-dark-mode-border-button-border-button: #a6d7a7;
+  --oz-figma-tokens-colors-dark-mode-border-button-border-button-negative: #f38789;
+  --oz-figma-tokens-colors-dark-mode-border-button-border-button-disabled: #4b4b4b;
+  --oz-figma-tokens-colors-dark-mode-border-cta-border-cta: #7d7d7d;
+  --oz-figma-tokens-colors-dark-mode-border-cta-border-cta-disabled: #4b4b4b;
+  --oz-figma-tokens-colors-dark-mode-border-input-border-input: #4b4b4b;
+  --oz-figma-tokens-colors-dark-mode-border-input-border-input-disabled: #323232;
+  --oz-figma-tokens-colors-dark-mode-border-input-border-input-error: #f38789;
+  --oz-figma-tokens-colors-dark-mode-border-input-border-input-warning: #f6b67d;
+  --oz-figma-tokens-colors-dark-mode-border-input-border-input-sucess: #a6d7a7;
+  --oz-figma-tokens-colors-dark-mode-text-text-button-primary: #ffffff;
+  --oz-figma-tokens-colors-dark-mode-text-text-button-secondary: #ffffff;
+  --oz-figma-tokens-colors-dark-mode-text-text-button-secondary-negative: #ffffff;
+  --oz-figma-tokens-colors-dark-mode-text-text-button-disabled: #afafaf;
+  --oz-figma-tokens-colors-dark-mode-text-text-sidebar-innactive: #ffffff;
+  --oz-figma-tokens-colors-dark-mode-text-text-sidebar-active: #0b130b;
+  --oz-figma-tokens-colors-dark-mode-text-text-default: #ffffff;
+  --oz-figma-tokens-colors-dark-mode-text-text-disabled: #afafaf;
+  --oz-figma-tokens-colors-dark-mode-text-text-error: #f38789;
+  --oz-figma-tokens-colors-dark-mode-text-text-warning: #f6b67d;
+  --oz-figma-tokens-colors-dark-mode-text-text-success: #a6d7a7;
+  --oz-figma-tokens-colors-dark-mode-effect-button-shadow: rgba(
+    255,
+    255,
+    255,
+    0.16
+  );
+  --oz-primary: var(
+    --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-active
+  );
+  --oz-primary-dark: var(--oz-figma-tokens-colors-dark-mode-text-text-success);
+  --oz-primary-hover: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-gradient-start-hover
+  );
+  --oz-foreground: var(--oz-figma-tokens-colors-dark-mode-text-text-default);
+  --oz-muted: var(--oz-figma-tokens-colors-dark-mode-text-text-disabled);
+  --oz-soft: var(
+    --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-default-hover
+  );
+  --oz-border: var(--oz-figma-tokens-colors-dark-mode-border-border-primary);
+  --oz-orange: var(
+    --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-warning-bold
+  );
+  --oz-warning-text: var(--oz-figma-tokens-colors-dark-mode-text-text-warning);
+  --oz-mint: var(
+    --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-active-soft
+  );
+  --oz-focus: var(--oz-figma-tokens-colors-dark-mode-border-border-focus);
+  --oz-destructive: var(--oz-figma-tokens-colors-dark-mode-text-text-error);
+  --oz-destructive-hover: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-negative-gradient-start-hover
+  );
+  --oz-destructive-soft: var(
+    --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-error-soft
+  );
+  --oz-outline-hover: var(
+    --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-default-hover
+  );
+  --oz-control-border: var(
+    --oz-figma-tokens-colors-dark-mode-border-input-border-input
+  );
+  --oz-surface: var(
+    --oz-figma-tokens-colors-dark-mode-surface-surface-background-default
+  );
+  --oz-on-dark: var(
+    --oz-figma-tokens-colors-dark-mode-text-text-sidebar-innactive
+  );
+  --oz-sidebar-text: var(
+    --oz-figma-tokens-colors-dark-mode-text-text-sidebar-innactive
+  );
+  --oz-sidebar-muted: var(
+    --oz-figma-tokens-colors-dark-mode-text-text-sidebar-innactive
+  );
+  --oz-avatar-foreground: var(
+    --oz-figma-tokens-colors-dark-mode-text-text-sidebar-active
+  );
+  --oz-admin-sidebar-start: var(
+    --oz-figma-tokens-colors-dark-mode-surface-sidebar-surface-sidebar-gradient-start
+  );
+  --oz-admin-sidebar-end: var(
+    --oz-figma-tokens-colors-dark-mode-surface-sidebar-surface-sidebar-gradient-end
+  );
+  --oz-admin-sidebar-hover: var(
+    --oz-figma-tokens-colors-dark-mode-surface-sidebar-surface-sidebar-item-innactive-hover
+  );
+  --oz-admin-sidebar-active: var(
+    --oz-figma-tokens-colors-dark-mode-surface-sidebar-surface-sidebar-item-active
+  );
+  --oz-admin-sidebar-active-hover: var(
+    --oz-figma-tokens-colors-dark-mode-surface-sidebar-surface-sidebar-item-active-hover
+  );
+  --oz-admin-sidebar-line: var(
+    --oz-figma-tokens-colors-dark-mode-border-border-sidebar
+  );
+  --oz-sidebar-count-bg: var(
+    --oz-figma-tokens-colors-dark-mode-surface-surface-background-default
+  );
+  --oz-sidebar-count-text: var(
+    --oz-figma-tokens-colors-dark-mode-text-text-default
+  );
+  --oz-sidebar-avatar-bg: var(--oz-figma-primitives-colors-green-green-100);
+  --oz-sidebar-avatar-text: var(--oz-figma-primitives-colors-green-green-950);
+  --oz-theme-switch-track: var(
+    --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-default
+  );
+  --oz-theme-switch-thumb: var(
+    --oz-figma-tokens-colors-dark-mode-text-text-disabled
+  );
+  --oz-theme-switch-icon: var(--oz-figma-primitives-colors-neutral-neutral-800);
+  --oz-tag-surface: var(
+    --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-default-hover
+  );
+  --oz-tag-surface-hover: var(
+    --oz-figma-tokens-colors-dark-mode-surface-cta-surface-cta-default-pressed
+  );
+  --oz-page-start: var(
+    --oz-figma-tokens-colors-dark-mode-surface-surface-background-start
+  );
+  --oz-page-end: var(
+    --oz-figma-tokens-colors-dark-mode-surface-surface-background-end
+  );
+  --oz-page-bg: var(
+    --oz-figma-tokens-colors-dark-mode-surface-surface-background-default
+  );
+  --oz-button-primary-start: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-gradient-start
+  );
+  --oz-button-primary-end: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-gradient-end
+  );
+  --oz-button-primary-start-hover: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-gradient-start-hover
+  );
+  --oz-button-primary-end-hover: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-gradient-end-hover
+  );
+  --oz-button-primary-start-pressed: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-gradient-start-pressed
+  );
+  --oz-button-primary-end-pressed: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-gradient-end-pressed
+  );
+  --oz-button-secondary-start: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-gradient-start
+  );
+  --oz-button-secondary-end: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-gradient-end
+  );
+  --oz-button-secondary-start-hover: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-gradient-start-hover
+  );
+  --oz-button-secondary-end-hover: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-gradient-end-hover
+  );
+  --oz-button-secondary-start-pressed: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-gradient-start-pressed
+  );
+  --oz-button-secondary-end-pressed: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-gradient-end-pressed
+  );
+  --oz-button-secondary-negative-start: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-negative-gradient-start
+  );
+  --oz-button-secondary-negative-end: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-negative-gradient-end
+  );
+  --oz-button-secondary-negative-start-hover: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-negative-gradient-start-hover
+  );
+  --oz-button-secondary-negative-end-hover: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-negative-gradient-end-hover
+  );
+  --oz-button-secondary-negative-start-pressed: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-negative-gradient-start-pressed
+  );
+  --oz-button-secondary-negative-end-pressed: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-secondary-negative-gradient-end-pressed
+  );
+  --oz-button-destructive-start: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-negative-gradient-start
+  );
+  --oz-button-destructive-end: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-negative-gradient-end
+  );
+  --oz-button-destructive-start-hover: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-negative-gradient-start-hover
+  );
+  --oz-button-destructive-end-hover: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-negative-gradient-end-hover
+  );
+  --oz-button-destructive-start-pressed: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-negative-gradient-start-pressed
+  );
+  --oz-button-destructive-end-pressed: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-primary-negative-gradient-end-pressed
+  );
+  --oz-button-text-primary: var(
+    --oz-figma-tokens-colors-dark-mode-text-text-button-primary
+  );
+  --oz-button-text-secondary: var(
+    --oz-figma-tokens-colors-dark-mode-text-text-button-secondary
+  );
+  --oz-button-text-destructive: var(
+    --oz-figma-tokens-colors-dark-mode-text-text-button-secondary-negative
+  );
+  --oz-button-text-disabled: var(
+    --oz-figma-tokens-colors-dark-mode-text-text-button-disabled
+  );
+  --oz-button-border: var(
+    --oz-figma-tokens-colors-dark-mode-border-button-border-button
+  );
+  --oz-button-border-destructive: var(
+    --oz-figma-tokens-colors-dark-mode-border-button-border-button-negative
+  );
+  --oz-button-border-disabled: var(
+    --oz-figma-tokens-colors-dark-mode-border-button-border-button-disabled
+  );
+  --oz-button-surface-disabled: var(
+    --oz-figma-tokens-colors-dark-mode-surface-button-surface-button-disabled
+  );
+  --oz-button-shadow: var(
+    --oz-figma-tokens-colors-dark-mode-effect-button-shadow
+  );
+  --oz-input-border-disabled: var(
+    --oz-figma-tokens-colors-dark-mode-border-input-border-input-disabled
+  );
+  --oz-input-surface-disabled: var(
+    --oz-figma-tokens-colors-dark-mode-surface-surface-disabled
+  );
+  --oz-badge-draft-soft: var(
+    --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-draft-soft
+  );
+  --oz-badge-draft-bold: var(
+    --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-draft-bold
+  );
+  --oz-badge-info-soft: var(
+    --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-info-soft
+  );
+  --oz-badge-info-bold: var(
+    --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-info-bold
+  );
+  --oz-badge-warning-soft: var(
+    --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-warning-soft
+  );
+  --oz-badge-warning-bold: var(
+    --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-warning-bold
+  );
+  --oz-badge-error-soft: var(
+    --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-error-soft
+  );
+  --oz-badge-error-bold: var(
+    --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-error-bold
+  );
+  --oz-badge-success-soft: var(
+    --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-success-soft
+  );
+  --oz-badge-success-bold: var(
+    --oz-figma-tokens-colors-dark-mode-surface-badge-surface-badge-success-bold
+  );
+}

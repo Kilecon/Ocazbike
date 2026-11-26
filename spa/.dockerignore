@@ -1,0 +1,9 @@
+.env
+.env.*
+.git/
+.idea/
+.cache/
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo

@@ -1,0 +1,723 @@
+@import "tailwindcss";
+@import "./figma-tokens.css";
+@source "../../";
+@custom-variant dark (
+  &:where(html[data-theme="dark"], html[data-theme="dark"] *)
+);
+
+@font-face {
+  font-family: "Chillax";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 700;
+  src: url("../../../public/assets/fonts/Chillax-Variable.woff2")
+    format("woff2-variations");
+}
+
+:root {
+  --font-sans: "Chillax", "Avenir Next", sans-serif;
+  --font-display: "Chillax", "Avenir Next", sans-serif;
+}
+
+@theme {
+  --font-sans: "Chillax", "Avenir Next", sans-serif;
+  --font-display: "Chillax", "Avenir Next", sans-serif;
+  --radius-sm: var(--oz-figma-tokens-sizes-radius-xss);
+  --radius-md: var(--oz-figma-tokens-sizes-radius-s);
+  --radius-lg: var(--oz-figma-tokens-sizes-radius-m);
+  --radius-xl: var(--oz-figma-tokens-sizes-radius-l);
+  --radius-2xl: var(--oz-figma-tokens-sizes-radius-xl);
+  --shadow-lg:
+    0 0.625rem 0.9375rem -0.1875rem #0000001a,
+    0 0.25rem 0.375rem -0.25rem #0000001a;
+  --shadow-xl:
+    0 1.25rem 1.5625rem -0.3125rem #0000001a,
+    0 0.5rem 0.625rem -0.375rem #0000001a;
+  --color-primary: var(--oz-primary);
+  --color-primary-hover: var(--oz-primary-hover);
+  --color-destructive: var(--oz-destructive);
+  --color-destructive-hover: var(--oz-destructive-hover);
+  --color-focus: var(--oz-focus);
+  --color-outline-hover: var(--oz-outline-hover);
+  --color-foreground: var(--oz-foreground);
+  --color-surface: var(--oz-surface);
+  --color-surface-muted: var(--oz-soft);
+  --color-muted: var(--oz-muted);
+  --color-mint: var(--oz-mint);
+  --color-destructive-soft: var(--oz-destructive-soft);
+  --color-border: var(--oz-border);
+  --color-control-border: var(--oz-control-border);
+}
+
+/* Tailwind's border, focus and accessibility utilities otherwise use pixels. */
+@utility border {
+  border-width: 0.0625rem;
+}
+
+@utility border-b {
+  border-bottom-width: 0.0625rem;
+}
+
+@utility border-t {
+  border-top-width: 0.0625rem;
+}
+
+@utility border-l {
+  border-left-width: 0.0625rem;
+}
+
+@utility border-r {
+  border-right-width: 0.0625rem;
+}
+
+@utility border-* {
+  border-width: calc(--value(integer) * 0.0625rem);
+}
+
+@utility border-b-* {
+  border-bottom-width: calc(--value(integer) * 0.0625rem);
+}
+
+@utility border-l-* {
+  border-left-width: calc(--value(integer) * 0.0625rem);
+}
+
+@utility outline-* {
+  outline-width: calc(--value(integer) * 0.0625rem);
+}
+
+@utility outline-offset-* {
+  outline-offset: calc(--value(integer) * 0.0625rem);
+}
+
+@utility underline-offset-* {
+  text-underline-offset: calc(--value(integer) * 0.0625rem);
+}
+
+@utility ring-* {
+  --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0
+    calc(--value(integer) * 0.0625rem + var(--tw-ring-offset-width))
+    var(--tw-ring-color, currentColor);
+}
+
+@utility rounded-full {
+  border-radius: calc(infinity * 1rem);
+}
+
+@utility sr-only {
+  width: 0.0625rem;
+  height: 0.0625rem;
+  margin: -0.0625rem;
+}
+
+/* Shared utility groups: same cascade layer as the utilities they bundle. */
+@utility oz-field {
+  /* Form label stacking its caption above the control. */
+  @apply grid gap-1.5 text-xs font-medium text-foreground;
+}
+
+@utility oz-focus-ring {
+  @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus;
+}
+
+@utility oz-focus-scope {
+  /* Thicker focus outline for every control inside a page or card. */
+  @apply [&_*:focus-visible]:outline-[0.1875rem] [&_*:focus-visible]:outline-offset-[0.1875rem] [&_*:focus-visible]:outline-[var(--oz-focus)];
+}
+
+@layer components {
+  .oz-card-title {
+    font-size: var(--oz-figma-tokens-sizes-sizes-text-m);
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .oz-admin-layout {
+    background: radial-gradient(
+      ellipse at bottom right,
+      var(--oz-page-start),
+      var(--oz-page-end)
+    );
+  }
+
+  .oz-operation-tab-active {
+    border: 0.0625rem solid var(--oz-button-border);
+    background: linear-gradient(
+      90deg,
+      var(--oz-button-primary-end),
+      var(--oz-button-primary-start)
+    );
+    color: var(--oz-button-text-primary);
+  }
+
+  .oz-button-primary,
+  .oz-button-secondary {
+    border: 0.0625rem solid var(--oz-button-border);
+    box-shadow: 0 0.0625rem 0.25rem var(--oz-button-shadow);
+    line-height: 1;
+    transition:
+      background 150ms ease,
+      border-color 150ms ease,
+      box-shadow 150ms ease;
+  }
+
+  .oz-button-primary {
+    background: linear-gradient(
+      90deg,
+      var(--oz-button-primary-start),
+      var(--oz-button-primary-end)
+    );
+    color: var(--oz-button-text-primary);
+  }
+
+  .oz-button-primary:hover:not(:disabled) {
+    background: linear-gradient(
+      90deg,
+      var(--oz-button-primary-start-hover),
+      var(--oz-button-primary-end-hover)
+    );
+  }
+
+  .oz-button-primary:active:not(:disabled) {
+    background: linear-gradient(
+      90deg,
+      var(--oz-button-primary-start-pressed),
+      var(--oz-button-primary-end-pressed)
+    );
+  }
+
+  .oz-button-secondary {
+    border-color: var(--oz-button-border);
+    background: linear-gradient(
+      90deg,
+      var(--oz-button-secondary-start),
+      var(--oz-button-secondary-end)
+    );
+    color: var(--oz-button-text-secondary);
+  }
+
+  .oz-button-secondary:hover:not(:disabled) {
+    background: linear-gradient(
+      90deg,
+      var(--oz-button-secondary-start-hover),
+      var(--oz-button-secondary-end-hover)
+    );
+  }
+
+  .oz-button-secondary:active:not(:disabled) {
+    background: linear-gradient(
+      90deg,
+      var(--oz-button-secondary-start-pressed),
+      var(--oz-button-secondary-end-pressed)
+    );
+  }
+
+  .oz-button-primary.oz-button-negative {
+    border-color: var(--oz-button-border-destructive);
+    background: linear-gradient(
+      90deg,
+      var(--oz-button-destructive-start),
+      var(--oz-button-destructive-end)
+    );
+    color: var(--oz-button-text-destructive);
+  }
+
+  .oz-button-primary.oz-button-negative:hover:not(:disabled) {
+    background: linear-gradient(
+      90deg,
+      var(--oz-button-destructive-start-hover),
+      var(--oz-button-destructive-end-hover)
+    );
+  }
+
+  .oz-button-primary.oz-button-negative:active:not(:disabled) {
+    background: linear-gradient(
+      90deg,
+      var(--oz-button-destructive-start-pressed),
+      var(--oz-button-destructive-end-pressed)
+    );
+  }
+
+  .oz-button-secondary.oz-button-negative {
+    border-color: var(--oz-button-border-destructive);
+    background: linear-gradient(
+      90deg,
+      var(--oz-button-secondary-negative-start),
+      var(--oz-button-secondary-negative-end)
+    );
+    color: var(--oz-button-text-destructive);
+  }
+
+  .oz-button-secondary.oz-button-negative:hover:not(:disabled) {
+    background: linear-gradient(
+      90deg,
+      var(--oz-button-secondary-negative-start-hover),
+      var(--oz-button-secondary-negative-end-hover)
+    );
+  }
+
+  .oz-button-secondary.oz-button-negative:active:not(:disabled) {
+    background: linear-gradient(
+      90deg,
+      var(--oz-button-secondary-negative-start-pressed),
+      var(--oz-button-secondary-negative-end-pressed)
+    );
+  }
+
+  .oz-button-primary:disabled,
+  .oz-button-secondary:disabled {
+    border-color: var(--oz-button-border-disabled);
+    background: var(--oz-button-surface-disabled);
+    box-shadow: none;
+    color: var(--oz-button-text-disabled);
+    cursor: not-allowed;
+  }
+
+  .oz-button-ghost {
+    background: transparent;
+    color: var(--oz-foreground);
+    line-height: 1;
+  }
+
+  .oz-button-ghost:hover:not(:disabled) {
+    background: var(--oz-outline-hover);
+  }
+
+  .oz-input {
+    min-height: var(--oz-figma-tokens-sizes-sizes-component-l);
+    border: 0.0625rem solid var(--oz-control-border);
+    border-radius: var(--oz-figma-tokens-sizes-radius-xs);
+    background: var(--oz-surface);
+    color: var(--oz-foreground);
+    font-size: var(--oz-figma-tokens-sizes-sizes-text-xs);
+    line-height: 1.3;
+  }
+
+  .oz-input:focus-visible {
+    outline: 0.125rem solid var(--oz-focus);
+    outline-offset: 0.125rem;
+  }
+
+  .oz-input[aria-invalid="true"],
+  textarea.oz-input:user-invalid {
+    border-color: var(
+      --oz-figma-tokens-colors-light-mode-border-input-border-input-error
+    );
+  }
+
+  html[data-theme="dark"] .oz-input[aria-invalid="true"],
+  html[data-theme="dark"] textarea.oz-input:user-invalid {
+    border-color: var(
+      --oz-figma-tokens-colors-dark-mode-border-input-border-input-error
+    );
+  }
+
+  input.oz-input:read-only:not(:disabled),
+  textarea.oz-input:read-only:not(:disabled) {
+    border-color: var(--oz-input-border-disabled);
+  }
+
+  .oz-input:disabled {
+    border-color: var(--oz-input-border-disabled);
+    background: var(--oz-input-surface-disabled);
+    color: var(--oz-muted);
+    cursor: not-allowed;
+  }
+
+  .oz-filter-chip {
+    border-radius: calc(infinity * 1rem);
+  }
+
+  .oz-card {
+    border: 0.0625rem solid var(--oz-border);
+    border-radius: var(--oz-figma-tokens-sizes-radius-m);
+    background: var(--oz-surface);
+    color: var(--oz-foreground);
+  }
+
+  .oz-admin-sidebar {
+    background: linear-gradient(
+      180deg,
+      var(--oz-admin-sidebar-start),
+      var(--oz-admin-sidebar-end)
+    );
+  }
+
+  .oz-sidebar-item > a {
+    color: var(--oz-sidebar-text);
+  }
+
+  .oz-sidebar-item.is-active {
+    background: var(--oz-admin-sidebar-active);
+  }
+
+  .oz-sidebar-item.is-active > a {
+    color: var(--oz-avatar-foreground);
+    font-weight: 600;
+  }
+
+  .oz-sidebar-item:not(.is-active):hover {
+    background: var(--oz-admin-sidebar-hover);
+  }
+
+  .oz-sidebar-item.is-active:hover {
+    background: var(--oz-admin-sidebar-active-hover);
+  }
+
+  .oz-sidebar-item .oz-sidebar-icon {
+    color: var(--oz-on-dark);
+  }
+
+  .oz-sidebar-item.is-active .oz-sidebar-icon {
+    color: var(--oz-avatar-foreground);
+  }
+
+  .oz-badge.oz-sidebar-count {
+    border: 0;
+    background: var(--oz-sidebar-count-bg);
+    color: var(--oz-sidebar-count-text);
+  }
+
+  .oz-sidebar-item.is-active .oz-badge.oz-sidebar-count {
+    border: 0.0625rem solid var(--oz-control-border);
+  }
+
+  .oz-sidebar-avatar {
+    background: var(--oz-sidebar-avatar-bg);
+    color: var(--oz-sidebar-avatar-text);
+  }
+
+  .oz-theme-switch {
+    position: relative;
+    display: inline-flex;
+    height: 1.5rem;
+    width: 3rem;
+    align-items: center;
+    border: 0;
+    border-radius: calc(infinity * 1rem);
+    background: var(--oz-theme-switch-track);
+    padding: 0.125rem;
+    transition: background-color 150ms ease;
+  }
+
+  .oz-theme-switch-thumb {
+    display: grid;
+    height: 1.25rem;
+    width: 1.25rem;
+    place-items: center;
+    border-radius: calc(infinity * 1rem);
+    background: var(--oz-theme-switch-thumb);
+    color: var(--oz-theme-switch-icon);
+    transition: transform 150ms ease;
+  }
+
+  html[data-theme="dark"] .oz-theme-switch-thumb {
+    transform: translateX(1.5rem);
+  }
+
+  .oz-badge-draft {
+    background: var(--oz-badge-draft-soft);
+    color: var(--oz-muted);
+  }
+
+  .oz-badge-info {
+    background: var(--oz-badge-info-soft);
+    color: var(--oz-foreground);
+  }
+
+  .oz-badge-warning {
+    background: var(--oz-badge-warning-soft);
+    color: var(--oz-warning-text);
+  }
+
+  .oz-badge-error {
+    background: var(--oz-badge-error-soft);
+    color: var(--oz-destructive);
+  }
+
+  .oz-badge-success {
+    background: var(--oz-badge-success-soft);
+    color: var(--oz-primary-dark);
+  }
+
+  .oz-badge[data-slot="badge"]:not(.oz-sidebar-count) {
+    color: var(--oz-button-text-primary);
+  }
+
+  .oz-toast-info {
+    border-left-color: var(--oz-badge-info-soft);
+    background: var(--oz-badge-info-bold);
+    color: var(--oz-button-text-primary);
+  }
+
+  .oz-toast-warning {
+    border-left-color: var(--oz-badge-warning-soft);
+    background: var(--oz-badge-warning-bold);
+    color: var(--oz-figma-primitives-colors-green-green-950);
+  }
+
+  .oz-toast-error {
+    border-left-color: var(--oz-badge-error-soft);
+    background: var(--oz-badge-error-bold);
+    color: var(--oz-button-text-primary);
+  }
+
+  .oz-toast-success {
+    border-left-color: var(--oz-badge-success-soft);
+    background: var(--oz-badge-success-bold);
+    color: var(--oz-figma-primitives-colors-green-green-950);
+  }
+
+  .oz-tag {
+    background: var(--oz-tag-surface);
+  }
+
+  .oz-tag:hover {
+    background: var(--oz-tag-surface-hover);
+  }
+}
+
+@layer base {
+  :root {
+    font-family: var(--font-sans);
+    color: var(--oz-foreground);
+    background: var(--oz-surface);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    color-scheme: light;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
+  }
+
+  html[data-theme="dark"] {
+    color-scheme: dark;
+  }
+
+  body {
+    min-width: 2rem;
+    min-height: 100vh;
+    margin: 0;
+    background: var(--oz-page-bg);
+    color: var(--oz-foreground);
+    line-height: 1.55;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  select:focus-visible {
+    outline: 0.1875rem solid var(--oz-focus);
+    outline-offset: 0.25rem;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--oz-primary);
+  }
+
+  ::selection {
+    background: var(--oz-mint);
+    color: var(--oz-foreground);
+  }
+
+  #root {
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  @media (prefers-reduced-motion) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  @media (max-width: 47.5rem) {
+    html {
+      scroll-padding-top: 4.5rem;
+    }
+  }
+}
+
+.oz-quote-switch {
+  width: 3rem;
+  height: 1.625rem;
+  flex-shrink: 0;
+  appearance: none;
+  border: 0.0625rem solid var(--oz-control-border);
+  border-radius: 999rem;
+  background: var(--oz-muted);
+  padding: 0.125rem;
+  cursor: pointer;
+}
+
+.oz-quote-switch::before {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999rem;
+  background: var(--oz-surface);
+  content: "";
+}
+
+.oz-quote-switch:checked {
+  background: var(--oz-primary);
+}
+
+.oz-quote-switch:checked::before {
+  transform: translateX(1.375rem);
+}
+
+.oz-quote-switch:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.oz-date-picker {
+  container-type: inline-size;
+  --oz-calendar-selected-text: var(
+    --oz-figma-primitives-colors-neutral-neutral-0
+  );
+  --oz-calendar-surface: var(
+    --oz-figma-tokens-colors-light-mode-surface-surface-background-accent
+  );
+  width: 22.5rem;
+  max-width: 100%;
+  padding: 1.25rem;
+  background: var(--oz-calendar-surface);
+  color: var(--oz-foreground);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+html[data-theme="dark"] .oz-date-picker {
+  --oz-calendar-selected-text: var(
+    --oz-figma-primitives-colors-neutral-neutral-900
+  );
+  --oz-calendar-surface: var(
+    --oz-figma-tokens-colors-dark-mode-surface-surface-background-accent
+  );
+}
+
+.oz-date-picker .rdp-month {
+  position: relative;
+}
+
+.oz-date-picker .rdp-month_caption {
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  border-radius: 0.5rem;
+  background: var(--oz-input-surface-disabled);
+  padding: 0.5rem 4.5rem 0.5rem 0.5rem;
+}
+
+.oz-date-picker .rdp-dropdowns {
+  display: flex;
+  min-width: 0;
+  gap: 0.5rem;
+}
+
+.oz-calendar-select {
+  min-width: 0;
+  border: 0;
+  border-radius: 0.25rem;
+  appearance: none;
+  background: var(--oz-calendar-surface);
+  padding: 0.25rem 1.5rem 0.25rem 0.5rem;
+  color: inherit;
+  font: inherit;
+  text-transform: capitalize;
+}
+
+.oz-date-picker .rdp-nav {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.oz-date-picker .rdp-button_previous,
+.oz-date-picker .rdp-button_next {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border-radius: 0.125rem;
+  cursor: pointer;
+}
+
+@container (max-width: 17rem) {
+  .oz-date-picker .rdp-month_caption {
+    padding-right: 0.5rem;
+  }
+
+  .oz-date-picker .rdp-nav {
+    position: static;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+  }
+}
+
+.oz-date-picker .rdp-month_grid {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0.25rem;
+  padding: 0.25rem;
+}
+
+.oz-date-picker .rdp-weekday {
+  padding: 0.5rem 0 0.75rem;
+  color: var(--oz-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.oz-date-picker .rdp-day {
+  height: 2.5rem;
+  padding: 0;
+  text-align: center;
+}
+
+.oz-date-picker .rdp-day_button {
+  display: grid;
+  width: 100%;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 0.5rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.oz-date-picker .rdp-today .rdp-day_button {
+  background: var(--oz-mint);
+}
+
+.oz-date-picker .rdp-day_button:hover,
+.oz-date-picker .rdp-button_previous:hover,
+.oz-date-picker .rdp-button_next:hover {
+  background: var(--oz-soft);
+}
+
+.oz-date-picker .rdp-day_button:active {
+  background: var(--oz-outline-hover);
+}
+
+.oz-date-picker .rdp-selected .rdp-day_button {
+  background: var(--oz-primary);
+  color: var(--oz-calendar-selected-text);
+}
+
+.oz-date-picker .rdp-hidden {
+  visibility: hidden;
+}
+
+.oz-date-picker button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
