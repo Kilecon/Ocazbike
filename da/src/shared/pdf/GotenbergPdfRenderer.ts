@@ -26,12 +26,13 @@ export class GotenbergPdfRenderer implements HtmlToPdfRenderer {
     form.append("failOnResourceLoadingFailed", "true");
     form.append("failOnResourceHttpStatusCodes", "[499,599]");
     let response: Response;
+    let baseUrl = this.url;
+    while (baseUrl.endsWith("/")) {
+      baseUrl = baseUrl.slice(0, -1);
+    }
     try {
       response = await fetch(
-        new URL(
-          "forms/chromium/convert/html",
-          `${this.url.replace(/\/+$/, "")}/`,
-        ),
+        new URL("forms/chromium/convert/html", `${baseUrl}/`),
         {
           method: "POST",
           body: form,

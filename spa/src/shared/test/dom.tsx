@@ -44,6 +44,7 @@ export async function createDom(path = "/admin") {
     (name) =>
       [name, Object.getOwnPropertyDescriptor(globalThis, name)] as const,
   );
+  const browserRecord = browser as unknown as Record<string, unknown>;
   for (const name of scrollOffsets) {
     Object.defineProperty(globalThis, name, {
       configurable: true,
@@ -51,15 +52,13 @@ export async function createDom(path = "/admin") {
     });
   }
   for (const name of names) {
+    let value = browserRecord[name];
+    if (name === "IS_REACT_ACT_ENVIRONMENT") value = true;
+    else if (name === "scrollTo") value = browser.scrollTo.bind(browser);
     Object.defineProperty(globalThis, name, {
       configurable: true,
       writable: true,
-      value:
-        name === "IS_REACT_ACT_ENVIRONMENT"
-          ? true
-          : name === "scrollTo"
-            ? browser.scrollTo.bind(browser)
-            : browser[name],
+      value,
     });
   }
   const { createRoot } = await import("react-dom/client");
@@ -101,6 +100,10 @@ export async function interact(callback: () => void) {
   await act(() => Promise.resolve(callback()));
 }
 
+export async function click(target: HTMLElement) {
+  await interact(() => target.click());
+}
+
 export async function setValue(element: Element, value: string) {
   let prototype: object;
   if (element.tagName === "TEXTAREA") {
@@ -126,10 +129,13 @@ export async function setValue(element: Element, value: string) {
 /** Flushes React work until `predicate` holds, for async routing and queries. */
 export async function waitFor(predicate: () => boolean, timeoutMs = 2000) {
   const deadline = Date.now() + timeoutMs;
-  while (!predicate()) {
+  const poll = async (): Promise<void> => {
+    if (predicate()) return;
     if (Date.now() > deadline) throw new Error("waitFor timed out");
     await act(() => new Promise((resolve) => setTimeout(resolve, 5)));
-  }
+    await poll();
+  };
+  await poll();
 }
 
 export type TestDom = Awaited<ReturnType<typeof createDom>>;
@@ -152,9 +158,6 @@ export function domQueries(getDom: () => TestDom | undefined) {
     ].find((item) => item.textContent?.trim() === text);
     if (!found && required) throw new Error(`Missing button ${text}`);
     return (found ?? null) as unknown as HTMLElement | null;
-  }
-  async function click(target: HTMLElement) {
-    await interact(() => target.click());
   }
   async function submit(selector = "form") {
     await interact(() =>

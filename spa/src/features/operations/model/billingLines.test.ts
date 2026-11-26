@@ -24,9 +24,9 @@ describe("billing line calculations", () => {
       discount: "0",
       total: "-10.55",
     });
-    expect(discountForLine({ ...line, discount: "0" }, "Remise")).toBe(
-      undefined,
-    );
+    expect(
+      discountForLine({ ...line, discount: "0" }, "Remise"),
+    ).toBeUndefined();
     expect(
       discountForLine({ ...line, description: "VTT", discount: "5" }, "Remise")
         ?.description,

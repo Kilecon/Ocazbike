@@ -12,13 +12,12 @@ export function PhoneInput({
   const { t } = useTranslation();
   const validate = (field: HTMLInputElement) => {
     const value = field.value.trim();
-    const message = value
-      ? isValidPhoneNumber(value)
-        ? ""
-        : t("invalidPhone")
-      : required
-        ? t("requiredField")
-        : "";
+    let message = "";
+    if (!value && required) {
+      message = t("requiredField");
+    } else if (value && !isValidPhoneNumber(value)) {
+      message = t("invalidPhone");
+    }
     field.setCustomValidity(message);
   };
 

@@ -74,7 +74,7 @@ describe("operation workflow", () => {
         }),
       ),
     ).toBe(9);
-    expect(closedAtOf(createBillingOperation({ snapshots: [] }))).toBe(null);
+    expect(closedAtOf(createBillingOperation({ snapshots: [] }))).toBeNull();
   });
 });
 describe("creation message", () => {

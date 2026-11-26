@@ -1,8 +1,5 @@
 import { readFileSync } from "node:fs";
-import {
-  formatDocumentAmount,
-  formatDocumentDate,
-} from "../../../../../spa/src/features/billing-documents/format";
+import { formatDocumentDate } from "../../../../../spa/src/features/billing-documents/format";
 import { renderDocumentTemplateFromData } from "../../../../../spa/src/features/billing-documents/render";
 import { documentDataFromSnapshot } from "../../../../../spa/src/features/billing-documents/snapshot";
 import { documentLogo } from "../../../../../spa/src/features/billing-documents/templates/layout";
@@ -21,7 +18,7 @@ const embeddedLogo = documentLogo.replace(
   `src="data:image/png;base64,${logo}"`,
 );
 
-export const formatPdfAmount = formatDocumentAmount;
+export { formatDocumentAmount as formatPdfAmount } from "../../../../../spa/src/features/billing-documents/format";
 export function formatPdfDate(value: unknown): string {
   if (
     value !== null &&

@@ -6,6 +6,7 @@ CREATE TABLE `refresh_sessions` (
 	`revoked_at_ms` integer,
 	`user_agent` text,
 	`created_at_ms` integer DEFAULT (cast((julianday('now') - 2440587.5)*86400000 as integer)) NOT NULL,
+	-- NOSONAR - generated migration SQL repeats the SQLite format string and unixepoch constant.
 	`expires_at` text GENERATED ALWAYS AS (CASE WHEN expires_at_ms IS NULL THEN NULL ELSE strftime('%Y-%m-%dT%H:%M:%SZ', expires_at_ms / 1000, 'unixepoch') END) VIRTUAL,
 	`revoked_at` text GENERATED ALWAYS AS (CASE WHEN revoked_at_ms IS NULL THEN NULL ELSE strftime('%Y-%m-%dT%H:%M:%SZ', revoked_at_ms / 1000, 'unixepoch') END) VIRTUAL,
 	`created_at` text GENERATED ALWAYS AS (CASE WHEN created_at_ms IS NULL THEN NULL ELSE strftime('%Y-%m-%dT%H:%M:%SZ', created_at_ms / 1000, 'unixepoch') END) VIRTUAL,

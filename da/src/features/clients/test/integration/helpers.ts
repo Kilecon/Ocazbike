@@ -106,7 +106,7 @@ export function createClientIntegrationFixture(
         updatedAtEpochMs: now,
       });
     },
-    async login(user: User = admin) {
+    login(user: User = admin) {
       return app.handle(
         new Request("http://localhost/auth/login", {
           method: "POST",

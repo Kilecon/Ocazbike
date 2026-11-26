@@ -97,7 +97,7 @@ describe("app routing and session", () => {
 
     expect(dom.browser.location.pathname).toBe("/admin/repairs");
     expect(dom.browser.location.search).toBe("?status=pending");
-    expect(dom.browser.history.length).toBe(historyLength + 1);
+    expect(dom.browser.history).toHaveLength(historyLength + 1);
     expect(scrolls).not.toContainEqual([{ top: 0, left: 0 }]);
   });
 

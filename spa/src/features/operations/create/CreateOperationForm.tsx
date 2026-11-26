@@ -93,6 +93,27 @@ export function CreateOperationForm({
   }[activeDate];
   const billingLines = useBillingLines();
   const { total, formattedLines } = billingLines;
+  const isDetailsStep = step === "details";
+  const shouldSendQuoteEmail =
+    createQuote && sendQuoteEmail && selectedClientEmail !== "";
+  let submitLabel:
+    | "saving"
+    | "continueToBilling"
+    | "saveRepair"
+    | "saveSale"
+    | "savePurchase"
+    | "saveRental" = operationSaveLabelKeys[type];
+  if (saving) {
+    submitLabel = "saving";
+  } else if (isDetailsStep) {
+    submitLabel = "continueToBilling";
+  }
+  const modalSize = isDetailsStep ? "lg" : "xl";
+  const formClass = isDetailsStep
+    ? "grid grid-cols-1"
+    : "flex max-h-[calc(100dvh-2.125rem)] flex-col";
+  const stepNumber = isDetailsStep ? 1 : 2;
+  const stepLabel = isDetailsStep ? "cancel" : "previousPage";
 
   const submit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -124,8 +145,7 @@ export function CreateOperationForm({
     await onSubmit({
       clientId: selectedClient.id,
       createQuote,
-      sendQuoteEmail:
-        createQuote && sendQuoteEmail && selectedClientEmail !== "",
+      sendQuoteEmail: shouldSendQuoteEmail,
       date: `${date}T12:00:00Z`,
       serviceStartAt: isoDate(serviceStartAt),
       serviceEndAt: isoDate(serviceEndAt, true),
@@ -137,22 +157,15 @@ export function CreateOperationForm({
   return (
     <Modal
       ref={dialogRef}
-      size={step === "details" ? "lg" : "xl"}
-      scrollable={step === "details"}
+      size={modalSize}
+      scrollable={isDetailsStep}
       aria-labelledby="create-operation-dialog-title"
       onCancel={(event) => {
         if (saving) event.preventDefault();
       }}
       onClose={onCancel}
     >
-      <form
-        className={
-          step === "billing"
-            ? "flex max-h-[calc(100dvh-2.125rem)] flex-col"
-            : "grid grid-cols-1"
-        }
-        onSubmit={(event) => void submit(event)}
-      >
+      <form className={formClass} onSubmit={(event) => void submit(event)}>
         <header className="flex shrink-0 items-center justify-between gap-4 border-b border-border p-5">
           <h2
             ref={headingRef}
@@ -163,8 +176,7 @@ export function CreateOperationForm({
             {t("newOperation")} {t(OPERATION_TITLE_KEYS[type])}
             <span className="sr-only">
               {" "}
-              —{" "}
-              {t("operationCreationStep", { step: step === "details" ? 1 : 2 })}
+              — {t("operationCreationStep", { step: stepNumber })}
             </span>
           </h2>
           <Button
@@ -327,7 +339,7 @@ export function CreateOperationForm({
               }
             }}
           >
-            {t(step === "details" ? "cancel" : "previousPage")}
+            {t(stepLabel)}
           </Button>
           <Button
             type="submit"
@@ -338,13 +350,7 @@ export function CreateOperationForm({
               (step === "billing" && total < 0)
             }
           >
-            {t(
-              saving
-                ? "saving"
-                : step === "details"
-                  ? "continueToBilling"
-                  : operationSaveLabelKeys[type],
-            )}
+            {t(submitLabel)}
           </Button>
         </footer>
       </form>

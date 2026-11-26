@@ -8,12 +8,12 @@ export type Session =
   | { status: "password-change-required" }
   | { status: "anonymous"; error?: "FORBIDDEN" | "loginError" };
 
-const STAFF_ROLES: readonly string[] = ["Admin", "Subadmin"];
+const STAFF_ROLES = new Set(["Admin", "Subadmin"]);
 
 async function loadSession(): Promise<Session> {
   try {
     const user = await getCurrentUser();
-    if (!STAFF_ROLES.includes(user.role)) {
+    if (!STAFF_ROLES.has(user.role)) {
       void logout().catch(() => {});
       return { status: "anonymous", error: "FORBIDDEN" };
     }

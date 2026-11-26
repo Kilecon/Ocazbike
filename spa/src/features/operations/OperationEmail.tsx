@@ -111,9 +111,10 @@ export function OperationEmailButton({
   const actionLabel = kind
     ? t(kind === "quote" ? "sendQuoteEmailAction" : "sendInvoiceEmailAction")
     : t("noDocumentToEmail");
-  const status = sentAt
+  const sentStatus = sentAt
     ? t("emailSentOn", { date: formatLocalDate(sentAt, language) })
     : t("emailNotSent");
+  const actionText = sentAt ? t("resendDocumentEmail") : t("sendDocumentEmail");
 
   const send = async () => {
     if (!kind || !clientEmail || sending || disabledReason !== undefined)
@@ -122,10 +123,12 @@ export function OperationEmailButton({
     try {
       const result = await sendOperationEmail(operationId, kind);
       setLastDelivery(result);
+      const successKey =
+        result.kind === "quote" ? "quoteEmailSent" : "invoiceEmailSent";
       showToast(
         "success",
         t("toastSuccess"),
-        t(result.kind === "quote" ? "quoteEmailSent" : "invoiceEmailSent", {
+        t(successKey, {
           email: clientEmail,
         }),
       );
@@ -145,16 +148,15 @@ export function OperationEmailButton({
         variant="outline"
         disabled={sending || disabledReason !== undefined}
         title={disabledReason ?? actionLabel}
-        aria-label={`${actionLabel} — ${status}`}
+        aria-label={`${actionLabel} — ${sentStatus}`}
         onClick={(event) => {
           event.stopPropagation();
           void send();
         }}
       >
         <Mail size="0.9375rem" aria-hidden="true" />
-        {t(sentAt ? "resendDocumentEmail" : "sendDocumentEmail")}
+        {actionText}
       </Button>
-      <span className="text-xs text-muted">{status}</span>
     </div>
   );
 }

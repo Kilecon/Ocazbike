@@ -70,11 +70,10 @@ export function OperationDetail({
 
   const clientEmail = operation.client.email?.trim() ?? "";
   const zeroTotal = hasZeroTotal(operation);
-  const payment = awaitsPayment(operation)
-    ? zeroTotal
-      ? "zero"
-      : "due"
-    : "none";
+  let payment: "zero" | "due" | "none" = "none";
+  if (awaitsPayment(operation)) {
+    payment = zeroTotal ? "zero" : "due";
+  }
   const formatDate = (timestamp: number | null) =>
     timestamp === null
       ? t("notSpecified")

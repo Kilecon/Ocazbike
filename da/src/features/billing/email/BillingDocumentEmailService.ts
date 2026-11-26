@@ -97,25 +97,23 @@ function composeMessage(
   const storeName = store.name || "Ocazbike";
   const number = billingDocumentNumber(snapshot);
   const purchase = snapshot.payload.type === "purchase";
-  const label =
-    snapshot.kind === "quote"
-      ? purchase
-        ? "devis de rachat"
-        : "devis"
-      : purchase
-        ? "facture de rachat"
-        : "facture";
+  let label = "facture";
+  if (snapshot.kind === "quote") {
+    label = purchase ? "devis de rachat" : "devis";
+  } else if (purchase) {
+    label = "facture de rachat";
+  }
   const client = operation.client;
   const greetingName = client.isProfessional
     ? (client.companyName ?? `${client.firstname} ${client.lastname}`)
     : `${client.firstname} ${client.lastname}`;
   const amount = formatPdfAmount(snapshotTotal(snapshot));
-  const details =
-    snapshot.kind === "quote"
-      ? `Montant : ${amount}. Ce devis est valable jusqu’au ${formatPdfDate(snapshot.payload.validUntil)}.`
-      : snapshot.status === "paid"
-        ? `Montant : ${amount}, réglé le ${formatPdfDate(snapshot.paidAt ?? snapshot.payload.date)}.`
-        : `Montant à régler : ${amount}.`;
+  let details = `Montant à régler : ${amount}.`;
+  if (snapshot.kind === "quote") {
+    details = `Montant : ${amount}. Ce devis est valable jusqu’au ${formatPdfDate(snapshot.payload.validUntil)}.`;
+  } else if (snapshot.status === "paid") {
+    details = `Montant : ${amount}, réglé le ${formatPdfDate(snapshot.paidAt ?? snapshot.payload.date)}.`;
+  }
   const phones = [store.phone, store.secondaryPhone]
     .filter(Boolean)
     .join(" / ");

@@ -15,7 +15,7 @@ export function OperationLinesTable({
         className="min-h-0 flex-1 overflow-auto overscroll-contain"
         aria-label={t("billingLines")}
         // biome-ignore lint/a11y/noNoninteractiveTabindex: The scroll region must be keyboard accessible.
-        tabIndex={0}
+        tabIndex={0} // NOSONAR - intentionally keyboard-focusable scroll region
       >
         <table className="w-full min-w-[32rem] border-collapse text-left [&_th]:border-b [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:text-xs [&_th]:text-muted [&_td]:border-b [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:text-sm [&_td]:text-foreground">
           <thead className="sticky top-0 z-10 bg-[var(--oz-input-surface-disabled)]">

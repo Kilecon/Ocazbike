@@ -51,7 +51,7 @@ export function BillingLinesEditor({
         className="min-h-0 overflow-auto overscroll-contain"
         aria-label={t("billingLines")}
         // biome-ignore lint/a11y/noNoninteractiveTabindex: The scroll region must be keyboard accessible.
-        tabIndex={0}
+        tabIndex={0} // NOSONAR - intentionally keyboard-focusable scroll region
       >
         <table className="w-full min-w-[68rem] table-fixed border-collapse text-left [&_td]:px-1.5 [&_td]:py-2 [&_td]:align-top [&_td:first-child]:pl-0 [&_td:last-child]:pr-0 [&_th]:px-1.5 [&_th]:pb-2 [&_th]:text-xs [&_th]:font-medium [&_th:first-child]:pl-0 [&_th:last-child]:pr-0">
           <colgroup>
