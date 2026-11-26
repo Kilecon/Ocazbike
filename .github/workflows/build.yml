@@ -67,7 +67,7 @@ jobs:
         with:
           args: >
             -Dsonar.organization=pypduhrhvuuabdsfanyuvjnrbxttpmrvgcjdhsutprrricmpk
-            -Dsonar.projectKey=Kilecon_Ocazbike
+            -Dsonar.projectKey=Kilecon_Ocazbike2
             -Dsonar.sources=da/src,spa/src
             -Dsonar.exclusions=da/drizzle/**
             -Dsonar.javascript.lcov.reportPaths=da/coverage/lcov.info,spa/coverage/lcov.info
