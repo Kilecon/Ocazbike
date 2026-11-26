@@ -21,6 +21,14 @@ const operationSaveLabelKeys = {
   rental: "saveRental",
 } as const;
 
+type SubmitLabelKey =
+  | "saving"
+  | "continueToBilling"
+  | "saveRepair"
+  | "saveSale"
+  | "savePurchase"
+  | "saveRental";
+
 function localDate(value: Date): string {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
 }
@@ -28,6 +36,47 @@ function localDate(value: Date): string {
 function isoDate(value: string, endOfDay = false): string | undefined {
   if (!value) return undefined;
   return `${value}T${endOfDay ? "23:59:59" : "00:00:00"}Z`;
+}
+
+function getServicePeriodError(
+  start: string,
+  end: string,
+  message: string,
+): string | undefined {
+  if (!start || !end) return undefined;
+  if (end < start) return message;
+  return undefined;
+}
+
+function getFormPresentation(
+  step: "details" | "billing",
+  saving: boolean,
+  type: BillingDocumentType,
+): {
+  isDetailsStep: boolean;
+  submitLabel: SubmitLabelKey;
+  modalSize: "lg" | "xl";
+  formClass: string;
+  stepNumber: number;
+  stepLabel: "cancel" | "previousPage";
+} {
+  const isDetailsStep = step === "details";
+  let submitLabel: SubmitLabelKey = operationSaveLabelKeys[type];
+  if (saving) {
+    submitLabel = "saving";
+  } else if (isDetailsStep) {
+    submitLabel = "continueToBilling";
+  }
+  return {
+    isDetailsStep,
+    submitLabel,
+    modalSize: isDetailsStep ? "lg" : "xl",
+    formClass: isDetailsStep
+      ? "grid grid-cols-1"
+      : "flex max-h-[calc(100dvh-2.125rem)] flex-col",
+    stepNumber: isDetailsStep ? 1 : 2,
+    stepLabel: isDetailsStep ? "cancel" : "previousPage",
+  };
 }
 
 export type NewOperationInput = Omit<
@@ -74,10 +123,11 @@ export function CreateOperationForm({
   const [sendQuoteEmail, setSendQuoteEmail] = useState(false);
   const selectedClientEmail = selectedClient?.email?.trim() ?? "";
   const requiresServicePeriod = type === "rental";
-  const servicePeriodError =
-    serviceStartAt && serviceEndAt && serviceEndAt < serviceStartAt
-      ? t("serviceEndBeforeStart")
-      : undefined;
+  const servicePeriodError = getServicePeriodError(
+    serviceStartAt,
+    serviceEndAt,
+    t("serviceEndBeforeStart"),
+  );
   const calendarValue = { date, start: serviceStartAt, end: serviceEndAt }[
     activeDate
   ];
@@ -93,27 +143,16 @@ export function CreateOperationForm({
   }[activeDate];
   const billingLines = useBillingLines();
   const { total, formattedLines } = billingLines;
-  const isDetailsStep = step === "details";
   const shouldSendQuoteEmail =
     createQuote && sendQuoteEmail && selectedClientEmail !== "";
-  let submitLabel:
-    | "saving"
-    | "continueToBilling"
-    | "saveRepair"
-    | "saveSale"
-    | "savePurchase"
-    | "saveRental" = operationSaveLabelKeys[type];
-  if (saving) {
-    submitLabel = "saving";
-  } else if (isDetailsStep) {
-    submitLabel = "continueToBilling";
-  }
-  const modalSize = isDetailsStep ? "lg" : "xl";
-  const formClass = isDetailsStep
-    ? "grid grid-cols-1"
-    : "flex max-h-[calc(100dvh-2.125rem)] flex-col";
-  const stepNumber = isDetailsStep ? 1 : 2;
-  const stepLabel = isDetailsStep ? "cancel" : "previousPage";
+  const {
+    isDetailsStep,
+    submitLabel,
+    modalSize,
+    formClass,
+    stepNumber,
+    stepLabel,
+  } = getFormPresentation(step, saving, type);
 
   const submit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();

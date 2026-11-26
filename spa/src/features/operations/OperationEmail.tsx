@@ -108,9 +108,13 @@ export function OperationEmailButton({
   else if (!clientEmail) disabledReason = t("clientEmailMissingHint");
   else if (sentToday) disabledReason = t("emailErrorAlreadySentToday");
 
-  const actionLabel = kind
-    ? t(kind === "quote" ? "sendQuoteEmailAction" : "sendInvoiceEmailAction")
-    : t("noDocumentToEmail");
+  let actionLabel = t("noDocumentToEmail");
+  if (kind) {
+    let actionKey: "sendInvoiceEmailAction" | "sendQuoteEmailAction" =
+      "sendInvoiceEmailAction";
+    if (kind === "quote") actionKey = "sendQuoteEmailAction";
+    actionLabel = t(actionKey);
+  }
   const sentStatus = sentAt
     ? t("emailSentOn", { date: formatLocalDate(sentAt, language) })
     : t("emailNotSent");
