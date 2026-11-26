@@ -79,7 +79,7 @@ function CalendarDropdown({
   );
 }
 
-function CalendarChevron({ orientation }: ChevronProps) {
+function CalendarChevron({ orientation }: Readonly<ChevronProps>) {
   const Icon = orientation === "left" ? ChevronLeft : ChevronRight;
   return <Icon className="size-5" aria-hidden="true" />;
 }

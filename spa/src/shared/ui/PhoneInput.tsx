@@ -8,7 +8,7 @@ export function PhoneInput({
   onChange,
   onBlur,
   ...props
-}: Omit<ComponentProps<typeof Input>, "type" | "pattern" | "ref">) {
+}: Readonly<Omit<ComponentProps<typeof Input>, "type" | "pattern" | "ref">>) {
   const { t } = useTranslation();
   const validate = (field: HTMLInputElement) => {
     const value = field.value.trim();

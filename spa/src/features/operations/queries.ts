@@ -54,8 +54,12 @@ export function invalidateOperations(
   queryClient: QueryClient,
   operation?: BillingOperationDTO,
 ) {
-  const freshKey = operation && operationKeys.detail(operation.id);
-  if (operation && freshKey) queryClient.setQueryData(freshKey, operation);
+  const freshKey = operation?.id
+    ? operationKeys.detail(operation.id)
+    : undefined;
+  if (freshKey && operation) {
+    queryClient.setQueryData(freshKey, operation);
+  }
   return queryClient.invalidateQueries({
     queryKey: operationKeys.all,
     predicate: ({ queryKey }) =>
