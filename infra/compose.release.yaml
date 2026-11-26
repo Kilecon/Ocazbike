@@ -651,7 +651,6 @@ networks:
   pdf:
     internal: true
   observability:
-    internal: true
   backup:
     internal: true
   loki-host:
@@ -659,7 +658,6 @@ networks:
   proxying:
     external: true
   mailpit:
-    internal: true
 
 volumes:
   grafana-data:
