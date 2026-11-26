@@ -161,6 +161,7 @@ export function OperationEmailButton({
         <Mail size="0.9375rem" aria-hidden="true" />
         {actionText}
       </Button>
+      <span className="text-xs text-muted">{sentStatus}</span>
     </div>
   );
 }
